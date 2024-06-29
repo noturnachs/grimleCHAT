@@ -6,7 +6,7 @@ import ChatInput from "./components/chatInput";
 
 // Use the environment variable for the server URL
 const SERVER_ORIGIN =
-  process.env.REACT_APP_SERVER_ORIGIN || "http://localhost:3001";
+  process.env.REACT_APP_SERVER_ORIGIN ;
 
 const socket = io(SERVER_ORIGIN, {
   reconnection: true,
