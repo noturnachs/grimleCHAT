@@ -1,13 +1,45 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Inter Regular";
+  src: url("/public/fonts/Inter-Regular.ttf") format("truetype");
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@font-face {
+  font-family: "Inter Medium";
+  src: url("/public/fonts/Inter-Medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Inter Bold";
+  src: url("/public/fonts/Inter-Bold.ttf") format("truetype");
+}
+
+* {
+  @apply transition-all duration-300 ease-in-out;
+  font-family: "Inter Regular", sans-serif;
+}
+
+/* Scrollable chat area styles */
+.scrollable-chat {
+  @apply flex-grow overflow-y-auto p-4 bg-[#192734];
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #dadce0 transparent; /* Firefox */
+}
+
+.scrollable-chat::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.scrollable-chat::-webkit-scrollbar-track {
+  background: transparent; /* Background of the scrollbar track */
+}
+
+.scrollable-chat::-webkit-scrollbar-thumb {
+  background-color: #1a1a1a; /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Rounded corners for the scrollbar thumb */
+  border: 2px solid transparent; /* Space around the thumb */
+  background-clip: content-box; /* Ensures the border is transparent */
 }
