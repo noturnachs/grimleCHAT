@@ -1,36 +1,284 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import io from "socket.io-client";
 import Chat from "./components/chat";
 import ChatInput from "./components/chatInput";
-import { useLocation } from "react-router-dom"; // Import useLocation
+import { jellyTriangle } from "ldrs";
+import { MotionValue, motion, useSpring, useTransform } from "framer-motion";
 
-const socket = io("http://localhost:3001");
+jellyTriangle.register();
 
-function ChatRoom() {
-  const [messages, setMessages] = useState([]);
-  const { state } = useLocation();
-  const username = state?.username || "Anonymous";
+const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
+
+const socket = io(SERVER_ORIGIN, {
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  timeout: 20000, // 20 seconds
+});
+
+const fontSize = 25;
+const padding = 15;
+const height = fontSize + padding;
+function Counter({ value }) {
+  return (
+    <div
+      style={{ fontSize }}
+      className="flex space-x-2 overflow-hidden rounded bg-white px-2 leading-none text-gray-900 w-max fixed md:bottom-2 bottom-20 right-2"
+    >
+      <Digit place={100000} value={value} />
+      <Digit place={10000} value={value} />
+      <Digit place={1000} value={value} />
+      <Digit place={100} value={value} />
+      <Digit place={10} value={value} />
+      <Digit place={1} value={value} />
+      <span className="text-[#3ba55c] flex items-center text-[20px] md:text-[25px]">
+        ONLINE USERS
+      </span>
+    </div>
+  );
+}
+
+function Digit({ place, value }) {
+  const valueRoundedToPlace = Math.floor(value / place) % 10;
+  const animatedValue = useSpring(valueRoundedToPlace);
 
   useEffect(() => {
+    animatedValue.set(valueRoundedToPlace);
+  }, [animatedValue, valueRoundedToPlace]);
+
+  return (
+    <div style={{ height }} className="relative w-[1ch] tabular-nums">
+      {[...Array(10).keys()].map((i) => (
+        <Number key={i} mv={animatedValue} number={i} />
+      ))}
+    </div>
+  );
+}
+
+function Number({ mv, number }) {
+  const y = useTransform(mv, (latest) => {
+    const placeValue = latest;
+    const offset = (10 + number - placeValue) % 10;
+
+    let memo = offset * height;
+
+    if (offset > 5) {
+      memo -= 10 * height;
+    }
+
+    return memo;
+  });
+
+  return (
+    <motion.span
+      style={{ y }}
+      className="absolute inset-0 flex items-center justify-center"
+    >
+      {number}
+    </motion.span>
+  );
+}
+function ChatRoom() {
+  const [messages, setMessages] = useState([]);
+  const [userCount, setUserCount] = useState(0);
+  const [room, setRoom] = useState(null);
+  const [loadingMessage, setLoadingMessage] = useState("Start Finding a Match");
+  const [loading, setLoading] = useState(false); // Loading state
+  const { state } = useLocation();
+  const navigate = useNavigate();
+  const username = state?.username || null;
+  const [initialStart, setInitialStart] = useState(true);
+  const [fromChat, setFromChat] = useState(false);
+  const loadingTexts = [
+    "Waiting for partner...",
+    "Looking for your soulmate...",
+    "Finding a match...",
+    "Connecting you to someone <3...",
+    "Creating a spark...",
+    "Searching for the one...",
+    "On the hunt for love...",
+    "Seeking your perfect pair...",
+    "Getting ready for romance...",
+    "Preparing for a perfect match...",
+    "Igniting a connection...",
+    "Building anticipation...",
+    "Just a moment longer...",
+    "Love is in the air...",
+    "Cupid is working his magic...",
+    "Your love story is about to begin...",
+    "The stars are aligning...",
+    "Destiny is calling...",
+    "Fate is bringing you closer...",
+    "Love is worth the wait...",
+    "Matching you with happiness...",
+    "Searching high and low for love...",
+    "We're almost there...",
+    "Patience is a virtue...",
+    "Good things come to those who wait...",
+    "Love is patient, love is kind...",
+    "The best is yet to come...",
+    "Your heart will skip a beat soon...",
+    "Love is just around the corner...",
+    "Get ready to fall in love...",
+  ];
+
+  const socketRef = useRef();
+
+  useEffect(() => {
+    socketRef.current = socket;
+
+    const handleUserCountUpdate = (count) => {
+      setUserCount(count);
+    };
+
+    // Subscribe to the 'userCountUpdate' event
+    socketRef.current.on("userCountUpdate", handleUserCountUpdate);
+
+    // Clean up event listener on component unmount
+    return () => {
+      socketRef.current.off("userCountUpdate", handleUserCountUpdate);
+    };
+  }, []); // Empty dependency array ensures this effect runs only once
+
+  useEffect(() => {
+    let interval;
+    if (fromChat && loadingMessage === "Find Again?") {
+      // Do not start interval yet
+    } else if (
+      loadingMessage !== "Start Finding a Match" &&
+      loadingMessage !== "Find Again?"
+    ) {
+      interval = setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * loadingTexts.length);
+        setLoadingMessage(loadingTexts[randomIndex]);
+      }, 3000);
+    }
+
     socket.on("message", (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
-    return () => {
-      socket.off("message");
+    socket.on("matchFound", ({ room, username: matchedUsername }) => {
+      setRoom(room);
+      setLoadingMessage("Start Finding a Match"); // Reset to default when match is found
+      setLoading(false); // Stop loading animation
+      console.log(`Matched with ${matchedUsername} in room ${room}`);
+      setMessages([
+        {
+          username: "System",
+          messageText: `Connected with ${matchedUsername}`,
+        },
+      ]);
+    });
+
+    socket.on("userLeft", ({ message }) => {
+      setRoom(null);
+      setMessages([]);
+      console.log(message);
+      setLoadingMessage("Find Again?");
+      setLoading(false); // Stop loading animation
+      setFromChat(true);
+    });
+
+    // Handle disconnect
+    const handleBeforeUnload = () => {
+      socket.emit("leaveRoom", username);
+      navigate("/");
     };
-  }, []);
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      socket.off("message");
+      socket.off("matchFound");
+      socket.off("userLeft");
+    };
+  }, [loadingMessage, navigate, username, loadingTexts, fromChat]);
+
+  const startMatch = () => {
+    if (loadingMessage === "Find Again?") {
+      setLoadingMessage(loadingTexts[0]);
+      setInitialStart(false);
+      setFromChat(false);
+    } else {
+      setLoadingMessage(loadingTexts[0]);
+      setInitialStart(false);
+    }
+    setLoading(true); // Start loading animation
+    socket.emit("startMatch", username);
+  };
 
   const sendMessage = (messageText) => {
-    if (messageText.trim() !== "") {
-      socket.emit("sendMessage", { username, messageText });
+    if (messageText.trim() !== "" && room) {
+      socket.emit("sendMessage", { room, message: { username, messageText } });
     }
   };
 
+  const onEndChat = () => {
+    if (room) {
+      socket.emit("leaveRoom", username);
+      setRoom(null);
+      setMessages([]);
+      console.log("You have left the chat and are back in the queue.");
+    }
+    setLoadingMessage("Find Again?");
+    setLoading(false); // Stop loading animation
+    setFromChat(true);
+    navigate("/"); // Redirect to home
+  };
+
+  if (!username) {
+    return <Navigate to="/" />;
+  }
+
   return (
-    <div className="bg-zinc-900 h-screen">
-      <Chat messages={messages} />
-      <ChatInput sendMessage={sendMessage} />
+    <div className="bg-[#192734] h-screen flex flex-col">
+      {!room && <Counter value={userCount} />}
+      {!room ? (
+        <div className="flex flex-col items-center justify-center h-full">
+          <button
+            onClick={startMatch}
+            className={`${
+              loading ? "bg-transparent mb-5" : "bg-blue-500 mb-1"
+            } text-white font-normal p-2 rounded`}
+            disabled={loading} // Disable button when loading
+          >
+            {initialStart || fromChat ? loadingMessage : loadingMessage}
+          </button>
+          {loading && (
+            <l-jelly-triangle
+              size="30"
+              speed="1.75"
+              color="#80c794"
+              className="inline-block ml-2"
+            ></l-jelly-triangle>
+          )}
+          {/* <button
+            onClick={onEndChat} // Update to call onEndChat
+            className="bg-red-500 text-white font-normal p-2 rounded mt-6"
+          >
+            Cancel
+          </button> */}
+
+          <button
+            onClick={onEndChat}
+            className="mt-6 inline-flex items-center px-4 py-2 bg-red-600 transition ease-in-out delay-75 hover:bg-red-700 text-white text-sm font-medium rounded-md hover:-translate-y-1 hover:scale-110"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-col h-full overflow-hidden">
+          <div className="scrollable-chat">
+            <Chat messages={messages} />
+          </div>
+          <ChatInput sendMessage={sendMessage} onEndChat={onEndChat} />
+        </div>
+      )}
     </div>
   );
 }
