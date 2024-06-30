@@ -56,6 +56,13 @@ function ChatInput({
   return (
     <div className="p-2 bg-gray-800">
       <form onSubmit={handleSubmit} className="flex items-center">
+        <button
+          type="button"
+          onClick={handleEndChatClick}
+          className="bg-red-500 text-white p-2 rounded mr-2"
+        >
+          {confirmEndChat ? "Confirm" : "End Chat"}
+        </button>
         <input
           ref={buttonRef}
           type="text"
@@ -71,13 +78,6 @@ function ChatInput({
           className="bg-blue-500 text-white p-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Send
-        </button>
-        <button
-          type="button"
-          onClick={handleEndChatClick}
-          className="bg-red-500 text-white p-2 rounded ml-2"
-        >
-          {confirmEndChat ? "Confirm" : "End Chat"}
         </button>
       </form>
     </div>
