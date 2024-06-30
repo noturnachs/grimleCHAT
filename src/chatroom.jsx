@@ -3,9 +3,10 @@ import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import io from "socket.io-client";
 import Chat from "./components/chat";
 import ChatInput from "./components/chatInput";
-import { jellyTriangle } from "ldrs";
+import { jellyTriangle, leapfrog } from "ldrs";
 
 jellyTriangle.register();
+leapfrog.register();
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
 
@@ -29,6 +30,8 @@ function ChatRoom() {
   const [initialStart, setInitialStart] = useState(true);
   const [fromChat, setFromChat] = useState(false);
   const [prevUsernameLeft, setPrevUsernameLeft] = useState(""); // Track the username of the previous user who left
+  const [typingStatus, setTypingStatus] = useState({}); // Track typing status
+
   const loadingTexts = [
     "Waiting for partner...",
     "Looking for your soulmate...",
@@ -112,14 +115,23 @@ function ChatRoom() {
       setUserCount(count);
     };
 
+    const handleTyping = ({ username: typingUsername, typing }) => {
+      if (typingUsername !== username) {
+        // Only update typing status if it's the other user
+        setTypingStatus({ username: typingUsername, typing });
+      }
+    };
+
     // Subscribe to the 'userCountUpdate' event
     socketRef.current.on("userCountUpdate", handleUserCountUpdate);
+    socketRef.current.on("typing", handleTyping);
 
-    // Clean up event listener on component unmount
     return () => {
+      // Clean up event listener when the component unmounts
       socketRef.current.off("userCountUpdate", handleUserCountUpdate);
+      socketRef.current.off("typing", handleTyping);
     };
-  }, []); // Empty dependency array ensures this effect runs only once
+  }, [username]);
 
   useEffect(() => {
     let interval;
@@ -135,24 +147,27 @@ function ChatRoom() {
       }, 3000);
     }
 
-    socket.on("message", (message) => {
+    socketRef.current.on("message", (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
-    socket.on("matchFound", ({ room, username: matchedUsername }) => {
-      setRoom(room);
-      setLoadingMessage("Start Finding a Match"); // Reset to default when match is found
-      setLoading(false); // Stop loading animation
-      console.log(`Matched with ${matchedUsername} in room ${room}`);
-      setMessages([
-        {
-          username: "System",
-          messageText: `Connected with ${matchedUsername}`,
-        },
-      ]);
-    });
+    socketRef.current.on(
+      "matchFound",
+      ({ room, username: matchedUsername }) => {
+        setRoom(room);
+        setLoadingMessage("Start Finding a Match"); // Reset to default when match is found
+        setLoading(false); // Stop loading animation
+        console.log(`Matched with ${matchedUsername} in room ${room}`);
+        setMessages([
+          {
+            username: "System",
+            messageText: `Connected with ${matchedUsername}`,
+          },
+        ]);
+      }
+    );
 
-    socket.on("userLeft", ({ message, username: leftUsername }) => {
+    socketRef.current.on("userLeft", ({ message, username: leftUsername }) => {
       setRoom(null);
       setMessages([]);
       console.log(message);
@@ -164,7 +179,7 @@ function ChatRoom() {
 
     // Handle disconnect
     const handleBeforeUnload = () => {
-      socket.emit("leaveRoom", username);
+      socketRef.current.emit("leaveRoom", username);
       navigate("/");
     };
 
@@ -173,9 +188,9 @@ function ChatRoom() {
     return () => {
       clearInterval(interval);
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      socket.off("message");
-      socket.off("matchFound");
-      socket.off("userLeft");
+      socketRef.current.off("message");
+      socketRef.current.off("matchFound");
+      socketRef.current.off("userLeft");
     };
   }, [loadingMessage, navigate, username, loadingTexts, fromChat]);
 
@@ -190,18 +205,21 @@ function ChatRoom() {
     }
     setLoading(true); // Start loading animation
     setPrevUsernameLeft("");
-    socket.emit("startMatch", username);
+    socketRef.current.emit("startMatch", username);
   };
 
   const sendMessage = (messageText) => {
     if (messageText.trim() !== "" && room) {
-      socket.emit("sendMessage", { room, message: { username, messageText } });
+      socketRef.current.emit("sendMessage", {
+        room,
+        message: { username, messageText },
+      });
     }
   };
 
   const onEndChat = () => {
     if (room) {
-      socket.emit("leaveRoom", username);
+      socketRef.current.emit("leaveRoom", username);
       setRoom(null);
       setMessages([]);
       console.log("You have left the chat and are back in the queue.");
@@ -209,7 +227,10 @@ function ChatRoom() {
     setLoadingMessage("Find Again?");
     setLoading(false); // Stop loading animation
     setFromChat(true);
-    navigate("/"); // Redirect to home
+  };
+
+  const handleCancel = () => {
+    navigate("/");
   };
 
   if (!username) {
@@ -243,7 +264,7 @@ function ChatRoom() {
             ></l-jelly-triangle>
           )}
           <button
-            onClick={onEndChat}
+            onClick={handleCancel}
             className="mt-6 inline-flex items-center px-4 py-2 bg-red-600 transition ease-in-out delay-75 hover:bg-red-700 text-white text-sm font-medium rounded-md hover:-translate-y-1 hover:scale-110"
           >
             Cancel
@@ -253,8 +274,22 @@ function ChatRoom() {
         <div className="flex flex-col h-full overflow-hidden">
           <div className="scrollable-chat">
             <Chat messages={messages} />
+            {typingStatus.typing && (
+              <div className="flex items-center">
+                <span className="text-gray-400 ml-2">
+                  {typingStatus.username} is typing&nbsp;
+                </span>
+                <l-leapfrog size="20" speed="2.5" color="#9ca3af"></l-leapfrog>
+              </div>
+            )}
           </div>
-          <ChatInput sendMessage={sendMessage} onEndChat={onEndChat} />
+          <ChatInput
+            sendMessage={sendMessage}
+            onEndChat={onEndChat}
+            socket={socketRef.current}
+            room={room}
+            username={username}
+          />
         </div>
       )}
     </div>
