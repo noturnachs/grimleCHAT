@@ -1,0 +1,27 @@
+{
+  "styles": {
+    "usernames": {
+      "admin": {
+        "fontSize": "12px",
+        "fontWeight": "normal",
+        "color": "#FFD700"
+      },
+      "default": {
+        "fontSize": "12px",
+        "fontWeight": "normal",
+        "color": "#666666"
+      }
+    },
+    "messages": {
+      "admin": {
+        "color": "#000000",
+        "fontWeight": "extrabold",
+        "background": "linear-gradient(to right, #FFD700, #FF6347)"
+      },
+      "default": {
+        "backgroundColor": "#434242",
+        "color": "#FFFFFF"
+      }
+    }
+  }
+}
