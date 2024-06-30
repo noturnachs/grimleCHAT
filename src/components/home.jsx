@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import io from "socket.io-client";
-import { MotionValue, motion, useSpring, useTransform } from "framer-motion";
+import { motion, useSpring, useTransform } from "framer-motion";
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
 const socket = io(SERVER_ORIGIN, {
@@ -82,6 +82,9 @@ function Home() {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [userCount, setUserCount] = useState(0); // State to store user count
+  const [error, setError] = useState(""); // State to store error messages
+  const [password, setPassword] = useState(""); // State to store password
+  const [showPasswordInput, setShowPasswordInput] = useState(false); // State to show password input
   const navigate = useNavigate();
 
   const socketRef = useRef();
@@ -102,12 +105,43 @@ function Home() {
     };
   }, []); // Empty dependency array ensures this effect runs only once
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setError(""); // Reset error message
+
+    if (username.toLowerCase().includes("admin")) {
+      if (username.toLowerCase() === "admin" && !showPasswordInput) {
+        setShowPasswordInput(true);
+        return;
+      } else if (username.toLowerCase() === "admin" && showPasswordInput) {
+        try {
+          const response = await fetch(`${SERVER_ORIGIN}/validate-admin`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ password }),
+          });
+
+          const result = await response.json();
+          if (!result.success) {
+            setError("Incorrect admin password.");
+            return;
+          }
+        } catch (error) {
+          setError("Server error. Please try again later.");
+          return;
+        }
+      } else {
+        setError("Username cannot contain the word 'admin'.");
+        return;
+      }
+    }
+
     if (username.trim() !== "" && over18 && agreeTerms) {
       navigate("/chat", { state: { username } });
     } else {
-      alert("Please fulfill the age requirement and acknowledge the terms.");
+      setError("Please fulfill the age requirement and acknowledge the terms.");
     }
   };
 
@@ -174,6 +208,10 @@ function Home() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="text-red-500 text-sm text-center">{error}</div>
+          )}
+
           <div>
             <input
               id="username"
@@ -185,6 +223,20 @@ function Home() {
               type="text"
             />
           </div>
+
+          {showPasswordInput && (
+            <div>
+              <input
+                id="password"
+                value={password}
+                placeholder="Enter admin password"
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="bg-[#192734] border-2 border-[#3e3e3e] rounded-lg text-white px-6 py-3 text-base hover:border-[#fff] cursor-pointer transition w-full"
+                type="password"
+              />
+            </div>
+          )}
 
           {/* Checkboxes */}
           <div className="flex flex-col gap-2">
