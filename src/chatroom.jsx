@@ -4,7 +4,6 @@ import io from "socket.io-client";
 import Chat from "./components/chat";
 import ChatInput from "./components/chatInput";
 import { jellyTriangle } from "ldrs";
-import { MotionValue, motion, useSpring, useTransform } from "framer-motion";
 
 jellyTriangle.register();
 
@@ -18,68 +17,6 @@ const socket = io(SERVER_ORIGIN, {
   timeout: 20000, // 20 seconds
 });
 
-const fontSize = 25;
-const padding = 15;
-const height = fontSize + padding;
-function Counter({ value }) {
-  return (
-    <div
-      style={{ fontSize }}
-      className="flex space-x-2 overflow-hidden rounded bg-white px-2 leading-none text-gray-900 w-max fixed md:bottom-2 bottom-20 right-2"
-    >
-      <Digit place={100000} value={value} />
-      <Digit place={10000} value={value} />
-      <Digit place={1000} value={value} />
-      <Digit place={100} value={value} />
-      <Digit place={10} value={value} />
-      <Digit place={1} value={value} />
-      <span className="text-[#3ba55c] flex items-center text-[20px] md:text-[25px]">
-        ONLINE USERS
-      </span>
-    </div>
-  );
-}
-
-function Digit({ place, value }) {
-  const valueRoundedToPlace = Math.floor(value / place) % 10;
-  const animatedValue = useSpring(valueRoundedToPlace);
-
-  useEffect(() => {
-    animatedValue.set(valueRoundedToPlace);
-  }, [animatedValue, valueRoundedToPlace]);
-
-  return (
-    <div style={{ height }} className="relative w-[1ch] tabular-nums">
-      {[...Array(10).keys()].map((i) => (
-        <Number key={i} mv={animatedValue} number={i} />
-      ))}
-    </div>
-  );
-}
-
-function Number({ mv, number }) {
-  const y = useTransform(mv, (latest) => {
-    const placeValue = latest;
-    const offset = (10 + number - placeValue) % 10;
-
-    let memo = offset * height;
-
-    if (offset > 5) {
-      memo -= 10 * height;
-    }
-
-    return memo;
-  });
-
-  return (
-    <motion.span
-      style={{ y }}
-      className="absolute inset-0 flex items-center justify-center"
-    >
-      {number}
-    </motion.span>
-  );
-}
 function ChatRoom() {
   const [messages, setMessages] = useState([]);
   const [userCount, setUserCount] = useState(0);
@@ -91,6 +28,7 @@ function ChatRoom() {
   const username = state?.username || null;
   const [initialStart, setInitialStart] = useState(true);
   const [fromChat, setFromChat] = useState(false);
+  const [prevUsernameLeft, setPrevUsernameLeft] = useState(""); // Track the username of the previous user who left
   const loadingTexts = [
     "Waiting for partner...",
     "Looking for your soulmate...",
@@ -173,13 +111,14 @@ function ChatRoom() {
       ]);
     });
 
-    socket.on("userLeft", ({ message }) => {
+    socket.on("userLeft", ({ message, username: leftUsername }) => {
       setRoom(null);
       setMessages([]);
       console.log(message);
       setLoadingMessage("Find Again?");
       setLoading(false); // Stop loading animation
       setFromChat(true);
+      setPrevUsernameLeft(leftUsername); // Set the username of the user who left
     });
 
     // Handle disconnect
@@ -209,6 +148,7 @@ function ChatRoom() {
       setInitialStart(false);
     }
     setLoading(true); // Start loading animation
+    setPrevUsernameLeft("");
     socket.emit("startMatch", username);
   };
 
@@ -237,9 +177,13 @@ function ChatRoom() {
 
   return (
     <div className="bg-[#192734] h-screen flex flex-col">
-      {!room && <Counter value={userCount} />}
       {!room ? (
         <div className="flex flex-col items-center justify-center h-full">
+          {prevUsernameLeft && (
+            <div className="text-white mb-4">
+              {prevUsernameLeft} left the chat.
+            </div>
+          )}
           <button
             onClick={startMatch}
             className={`${
@@ -257,13 +201,6 @@ function ChatRoom() {
               className="inline-block ml-2"
             ></l-jelly-triangle>
           )}
-          {/* <button
-            onClick={onEndChat} // Update to call onEndChat
-            className="bg-red-500 text-white font-normal p-2 rounded mt-6"
-          >
-            Cancel
-          </button> */}
-
           <button
             onClick={onEndChat}
             className="mt-6 inline-flex items-center px-4 py-2 bg-red-600 transition ease-in-out delay-75 hover:bg-red-700 text-white text-sm font-medium rounded-md hover:-translate-y-1 hover:scale-110"
