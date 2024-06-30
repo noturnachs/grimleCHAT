@@ -1,9 +1,17 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
-function ChatInput({ sendMessage, onEndChat, disabled }) {
+function ChatInput({
+  sendMessage,
+  onEndChat,
+  disabled,
+  socket,
+  room,
+  username,
+}) {
   const [messageText, setMessageText] = useState("");
   const [confirmEndChat, setConfirmEndChat] = useState(false);
   const buttonRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
 
   const handleEndChatClick = () => {
     if (confirmEndChat) {
@@ -15,7 +23,6 @@ function ChatInput({ sendMessage, onEndChat, disabled }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-
     sendMessage(messageText);
     setMessageText("");
 
@@ -24,6 +31,28 @@ function ChatInput({ sendMessage, onEndChat, disabled }) {
     }
   };
 
+  const handleTyping = (e) => {
+    setMessageText(e.target.value);
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    socket.emit("typing", { room, username, typing: true });
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("typing", { room, username, typing: false });
+    }, 2000); // 2 seconds after the user stops typing
+  };
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="p-2 bg-gray-800">
       <form onSubmit={handleSubmit} className="flex items-center">
@@ -31,7 +60,7 @@ function ChatInput({ sendMessage, onEndChat, disabled }) {
           ref={buttonRef}
           type="text"
           value={messageText}
-          onChange={(e) => setMessageText(e.target.value)}
+          onChange={handleTyping}
           disabled={disabled} // Disable input field when partner has left
           className="flex-grow p-2 mr-2 bg-gray-700 text-white rounded"
           placeholder="Type your message..."
