@@ -15,11 +15,6 @@ function Chat({ messages }) {
 
   return (
     <div className="flex flex-col space-y-4">
-      {/* {connectedWith && (
-        <div className="text-center text-white py-2">
-          Connected with {connectedWith}
-        </div>
-      )} */}
       {messages.map((message, index) => (
         <div
           key={index}
