@@ -25,12 +25,14 @@ body {
   @apply transition-all duration-300 ease-in-out;
   font-family: "Inter Regular", sans-serif;
 }
-
-/* Scrollable chat area styles */
+/* Full height for the chat area */
 .scrollable-chat {
   @apply flex-grow overflow-y-auto p-4 bg-[#192734];
   scrollbar-width: thin; /* Firefox */
   scrollbar-color: #dadce0 transparent; /* Firefox */
+  height: calc(
+    100vh - 4rem
+  ); /* Adjust height to full viewport minus any fixed elements */
 }
 
 .scrollable-chat::-webkit-scrollbar {
