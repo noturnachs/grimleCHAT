@@ -1,12 +1,25 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
 function Chat({ messages }) {
   const { state } = useLocation();
   const username = state?.username || "Anonymous";
+  const connectedWith = messages.length > 0 ? messages[0].username : null;
+  const chatEndRef = useRef(null);
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   return (
-    <div className="flex flex-col space-y-4 p-4">
+    <div className="flex flex-col space-y-4">
+      {/* {connectedWith && (
+        <div className="text-center text-white py-2">
+          Connected with {connectedWith}
+        </div>
+      )} */}
       {messages.map((message, index) => (
         <div
           key={index}
@@ -22,7 +35,7 @@ function Chat({ messages }) {
               className={`p-2 rounded-xl max-w-xs ${
                 message.username === username
                   ? "bg-blue-500 text-white"
-                  : "bg-[#222222] text-white"
+                  : "bg-[#434242] text-white transparent"
               }`}
             >
               <p className="text-sm font-normal text-white">
@@ -32,6 +45,7 @@ function Chat({ messages }) {
           </div>
         </div>
       ))}
+      <div ref={chatEndRef} />
     </div>
   );
 }

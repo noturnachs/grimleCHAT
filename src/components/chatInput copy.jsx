@@ -7,8 +7,7 @@ function ChatInput({ sendMessage, onEndChat }) {
 
   const handleEndChatClick = () => {
     if (confirmEndChat) {
-      // onEndChat(); // End the chat
-      alert("CHAT ENDED!");
+      onEndChat(); // End the chat
     } else {
       setConfirmEndChat(true); // Show confirmation message
     }
@@ -31,7 +30,7 @@ function ChatInput({ sendMessage, onEndChat }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="fixed bottom-0 left-0 w-full bg-[#192734] p-5"
+      className=" bottom-0 left-0 w-full bg-[#192734] p-2"
     >
       <div className="flex items-center rounded-full bg-transparent p-3 shadow-sm border-2 border-[#38444d]">
         <button
@@ -53,7 +52,7 @@ function ChatInput({ sendMessage, onEndChat }) {
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
             placeholder="Write a message..."
-            className="w-full rounded-full py-2 px-4 focus:outline-none bg-transparent text-[#e7e9ea]"
+            className="w-full rounded-full p-3 focus:outline-none bg-transparent text-[#e7e9ea]"
           />
         </div>
 

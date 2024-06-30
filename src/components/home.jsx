@@ -1,12 +1,106 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import io from "socket.io-client";
+import { MotionValue, motion, useSpring, useTransform } from "framer-motion";
+
+const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
+const socket = io(SERVER_ORIGIN, {
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  timeout: 20000, // 20 seconds
+});
+
+const fontSize = 30;
+const padding = 15;
+const height = fontSize + padding;
+
+function Counter({ value }) {
+  return (
+    <div
+      style={{ fontSize }}
+      className="flex space-x-2 overflow-hidden rounded bg-white px-2 leading-none text-gray-900"
+    >
+      <Digit place={100000} value={value} />
+      <Digit place={10000} value={value} />
+      <Digit place={1000} value={value} />
+      <Digit place={100} value={value} />
+      <Digit place={10} value={value} />
+      <Digit place={1} value={value} />
+      <span className="text-[#3ba55c] flex items-center text-[20px] md:text-[25px]">
+        ONLINE USERS
+      </span>
+    </div>
+  );
+}
+
+function Digit({ place, value }) {
+  const valueRoundedToPlace = Math.floor(value / place) % 10;
+  const animatedValue = useSpring(valueRoundedToPlace);
+
+  useEffect(() => {
+    animatedValue.set(valueRoundedToPlace);
+  }, [animatedValue, valueRoundedToPlace]);
+
+  return (
+    <div style={{ height }} className="relative w-[1ch] tabular-nums">
+      {[...Array(10).keys()].map((i) => (
+        <Number key={i} mv={animatedValue} number={i} />
+      ))}
+    </div>
+  );
+}
+
+function Number({ mv, number }) {
+  const y = useTransform(mv, (latest) => {
+    const placeValue = latest;
+    const offset = (10 + number - placeValue) % 10;
+
+    let memo = offset * height;
+
+    if (offset > 5) {
+      memo -= 10 * height;
+    }
+
+    return memo;
+  });
+
+  return (
+    <motion.span
+      style={{ y }}
+      className="absolute inset-0 flex items-center justify-center"
+    >
+      {number}
+    </motion.span>
+  );
+}
 
 function Home() {
   const [username, setUsername] = useState("");
   const [over18, setOver18] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [userCount, setUserCount] = useState(0); // State to store user count
   const navigate = useNavigate();
+
+  const socketRef = useRef();
+
+  useEffect(() => {
+    socketRef.current = socket;
+
+    const handleUserCountUpdate = (count) => {
+      setUserCount(count);
+    };
+
+    // Subscribe to the 'userCountUpdate' event
+    socketRef.current.on("userCountUpdate", handleUserCountUpdate);
+
+    // Clean up event listener on component unmount
+    return () => {
+      socketRef.current.off("userCountUpdate", handleUserCountUpdate);
+    };
+  }, []); // Empty dependency array ensures this effect runs only once
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -20,14 +114,18 @@ function Home() {
   return (
     <div className="h-screen flex flex-col justify-center items-center bg-[#192734]">
       <div className="bg-[#15202b] p-8 rounded-lg shadow-lg max-w-md w-full">
-        <h1 className="text-2xl font-bold mb-6 text-white text-center">
+        <h1 className="text-2xl font-normal mb-6 text-white text-center">
           Welcome to GrimleChat
         </h1>
 
         <p className="text-sm text-gray-300 mb-4">
-          A platform for meaningful conversations and connections.
+          Talk with random strangers anywhere and everywhere.
         </p>
-        {/*-----terms and conditions popup code here------*/}
+
+        {/* Display user count */}
+        <div className="text-sm text-gray-300 mb-4 text-center">
+          <Counter value={userCount} />
+        </div>
 
         {showTerms && (
           <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-[#192734] bg-opacity-50 text-gray-300">
@@ -75,62 +173,75 @@ function Home() {
           </div>
         )}
 
-        {/*------------------------------------------------------*/}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="text-white block mb-2">
-              Username
-            </label>
             <input
-              type="text"
               id="username"
               value={username}
+              placeholder="What should we call you?"
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full p-2 rounded border border-black bg-gray-400"
               required
+              className="bg-[#192734] border-2 border-[#3e3e3e] rounded-lg text-white px-6 py-3 text-base hover:border-[#fff] cursor-pointer transition w-full"
+              type="text"
             />
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="over18"
-              checked={over18}
-              onChange={() => setOver18(!over18)}
-              className="mr-2"
-              required
-            />
-            <label htmlFor="over18" className="text-white">
+          {/* Checkboxes */}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="over18"
+              className="text-white flex items-center text-md"
+            >
+              <input
+                type="checkbox"
+                id="over18"
+                checked={over18}
+                onChange={() => setOver18(!over18)}
+                className="mr-2 w-4 h-4"
+                required
+              />
               I am over 18 years old
             </label>
-          </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="agreeTerms"
-              checked={agreeTerms}
-              onChange={() => setAgreeTerms(!agreeTerms)}
-              className="mr-2"
-              required
-            />
-            <label htmlFor="agreeTerms" className="text-white">
-              I agree to the{" "}
-              <span
-                className="underline cursor-pointer"
+            <label
+              htmlFor="agreeTerms"
+              className="text-white flex items-center text-md"
+            >
+              <input
+                type="checkbox"
+                id="agreeTerms"
+                checked={agreeTerms}
+                onChange={() => setAgreeTerms(!agreeTerms)}
+                className="mr-2 w-4 h-4"
+                required
+              />
+              I agree to the&nbsp;
+              <button
+                type="button"
                 onClick={() => setShowTerms(true)}
+                className="underline cursor-pointer"
               >
                 Terms of Service
-              </span>
+              </button>
             </label>
           </div>
 
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded"
-          >
-            Enter Chat
-          </button>
+          {!showTerms && (
+            <button
+              type="submit"
+              className="overflow-hidden w-full p-2 h-12 bg-[#325E87] text-white border-none rounded-md text-md font-normal cursor-pointer relative z-10 group flex items-center justify-center"
+            >
+              <span className="absolute inset-0 flex items-center justify-center bg-[#325E87] group-hover:opacity-0 transition-opacity duration-1000">
+                Are you ready?
+              </span>
+              <span className="absolute w-[200%] h-32 -top-8 -left-1/2 bg-green-200 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-500 duration-1000 origin-bottom"></span>
+              <span className="absolute w-[200%] h-32 -top-8 -left-1/2 bg-green-400 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-700 duration-700 origin-bottom"></span>
+              <span className="absolute w-[200%] h-32 -top-8 -left-1/2 bg-green-600 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-1000 duration-500 origin-bottom"></span>
+              <span className="group-hover:opacity-100 group-hover:duration-1000 duration-100 opacity-0 absolute inset-0 flex items-center justify-center z-10">
+                Continue
+              </span>
+            </button>
+          )}
         </form>
       </div>
     </div>

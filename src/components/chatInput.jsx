@@ -52,7 +52,7 @@ function ChatInput({ sendMessage, onEndChat }) {
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
             placeholder="Write a message..."
-            className="w-full rounded-full py-2 px-4 focus:outline-none bg-transparent text-[#e7e9ea]"
+            className="w-full rounded-full p-3 focus:outline-none bg-transparent text-[#e7e9ea]"
           />
         </div>
 
