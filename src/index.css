@@ -17,6 +17,10 @@
   src: url("/public/fonts/Inter-Bold.ttf") format("truetype");
 }
 
+body {
+  @apply bg-[#192734];
+}
+
 * {
   @apply transition-all duration-300 ease-in-out;
   font-family: "Inter Regular", sans-serif;
