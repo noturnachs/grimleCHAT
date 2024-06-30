@@ -107,6 +107,14 @@ function ChatRoom() {
   ];
 
   const socketRef = useRef();
+  const chatContainerRef = useRef(null); // Ref for the chat container
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   useEffect(() => {
     socketRef.current = socket;
@@ -117,92 +125,74 @@ function ChatRoom() {
 
     const handleTyping = ({ username: typingUsername, typing }) => {
       if (typingUsername !== username) {
-        // Only update typing status if it's the other user
         setTypingStatus({ username: typingUsername, typing });
       }
     };
 
-    // Subscribe to the 'userCountUpdate' event
-    socketRef.current.on("userCountUpdate", handleUserCountUpdate);
-    socketRef.current.on("typing", handleTyping);
-
-    return () => {
-      // Clean up event listener when the component unmounts
-      socketRef.current.off("userCountUpdate", handleUserCountUpdate);
-      socketRef.current.off("typing", handleTyping);
-    };
-  }, [username]);
-
-  useEffect(() => {
-    let interval;
-    if (fromChat && loadingMessage === "Find Again?") {
-      // Do not start interval yet
-    } else if (
-      loadingMessage !== "Start Finding a Match" &&
-      loadingMessage !== "Find Again?"
-    ) {
-      interval = setInterval(() => {
-        const randomIndex = Math.floor(Math.random() * loadingTexts.length);
-        setLoadingMessage(loadingTexts[randomIndex]);
-      }, 3000);
-    }
-
-    socketRef.current.on("message", (message) => {
+    const handleMessage = (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
-    });
+    };
 
-    socketRef.current.on(
-      "matchFound",
-      ({ room, username: matchedUsername }) => {
-        setRoom(room);
-        setLoadingMessage("Start Finding a Match"); // Reset to default when match is found
-        setLoading(false); // Stop loading animation
-        console.log(`Matched with ${matchedUsername} in room ${room}`);
-        setMessages([
-          {
-            username: "System",
-            messageText: `Connected with ${matchedUsername}`,
-          },
-        ]);
-      }
-    );
+    const handleMatchFound = ({ room, username: matchedUsername }) => {
+      setRoom(room);
+      setLoadingMessage("Start Finding a Match");
+      setLoading(false);
+      console.log(`Matched with ${matchedUsername} in room ${room}`);
+      setMessages([
+        {
+          username: "System",
+          messageText: `Connected with ${matchedUsername}`,
+        },
+      ]);
+    };
 
-    socketRef.current.on("userLeft", ({ message, username: leftUsername }) => {
+    const handleUserLeft = ({ message, username: leftUsername }) => {
       setRoom(null);
       setMessages([]);
       console.log(message);
       setLoadingMessage("Find Again?");
-      setLoading(false); // Stop loading animation
+      setLoading(false);
       setFromChat(true);
-      setPrevUsernameLeft(leftUsername); // Set the username of the user who left
-    });
+      setPrevUsernameLeft(leftUsername);
+    };
 
-    // Handle disconnect
     const handleBeforeUnload = () => {
       socketRef.current.emit("leaveRoom", username);
       navigate("/");
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
+    socketRef.current.on("userCountUpdate", handleUserCountUpdate);
+    socketRef.current.on("typing", handleTyping);
+    socketRef.current.on("message", handleMessage);
+    socketRef.current.on("matchFound", handleMatchFound);
+    socketRef.current.on("userLeft", handleUserLeft);
+
+    const interval = setInterval(() => {
+      if (
+        loadingMessage !== "Start Finding a Match" &&
+        loadingMessage !== "Find Again?"
+      ) {
+        const randomIndex = Math.floor(Math.random() * loadingTexts.length);
+        setLoadingMessage(loadingTexts[randomIndex]);
+      }
+    }, 3000);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      socketRef.current.off("message");
-      socketRef.current.off("matchFound");
-      socketRef.current.off("userLeft");
+      socketRef.current.off("userCountUpdate", handleUserCountUpdate);
+      socketRef.current.off("typing", handleTyping);
+      socketRef.current.off("message", handleMessage);
+      socketRef.current.off("matchFound", handleMatchFound);
+      socketRef.current.off("userLeft", handleUserLeft);
     };
   }, [loadingMessage, navigate, username, loadingTexts, fromChat]);
 
   const startMatch = () => {
-    if (loadingMessage === "Find Again?") {
-      setLoadingMessage(loadingTexts[0]);
-      setInitialStart(false);
-      setFromChat(false);
-    } else {
-      setLoadingMessage(loadingTexts[0]);
-      setInitialStart(false);
-    }
+    setLoadingMessage(loadingTexts[0]);
+    setInitialStart(false);
+    setFromChat(false);
     setLoading(true); // Start loading animation
     setPrevUsernameLeft("");
     socketRef.current.emit("startMatch", username);
@@ -257,9 +247,9 @@ function ChatRoom() {
           </button>
           {loading && (
             <l-jelly-triangle
-              size="30"
-              speed="1.75"
-              color="#80c794"
+              size="50"
+              speed="1.50"
+              color="#04d9ff"
               className="inline-block ml-2"
             ></l-jelly-triangle>
           )}
@@ -272,7 +262,7 @@ function ChatRoom() {
         </div>
       ) : (
         <div className="flex flex-col h-full overflow-hidden">
-          <div className="scrollable-chat">
+          <div className="scrollable-chat" ref={chatContainerRef}>
             <Chat messages={messages} />
             {typingStatus.typing && (
               <div className="flex items-center">
