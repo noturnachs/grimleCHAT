@@ -28,7 +28,7 @@ function Counter({ value }) {
       <Digit place={100} value={value} />
       <Digit place={10} value={value} />
       <Digit place={1} value={value} />
-      <span className="text-[#3ba55c] flex items-center text-[20px] md:text-[25px]">
+      <span className="text-[#3ba55c] font-extrabold	 flex items-center text-[20px] md:text-[25px]">
         ONLINE USERS
       </span>
     </div>
