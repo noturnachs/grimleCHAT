@@ -30,8 +30,9 @@ function Chat({ messages }) {
               className={`p-2 rounded-xl max-w-xs ${
                 message.username === username
                   ? "bg-blue-500 text-white"
-                  : "bg-[#434242] text-white transparent"
+                  : "bg-[#434242] text-white"
               }`}
+              style={{ wordBreak: "break-word" }}
             >
               <p className="text-sm font-normal text-white">
                 {message.messageText}
