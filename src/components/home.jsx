@@ -20,7 +20,7 @@ function Counter({ value }) {
   return (
     <div
       style={{ fontSize }}
-      className="flex space-x-2 overflow-hidden rounded bg-white px-2 leading-none text-gray-900"
+      className="flex space-x-2 overflow-hidden rounded bg-[#0d141b] px-2 leading-none text-white"
     >
       <Digit place={100000} value={value} />
       <Digit place={10000} value={value} />
@@ -147,9 +147,9 @@ function Home() {
 
   return (
     <div className="h-screen flex flex-col justify-center items-center bg-[#192734]">
-      <div className="bg-[#15202b] p-8 rounded-lg shadow-lg max-w-md w-full">
+      <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-max md:p-8">
         <h1 className="text-2xl font-normal mb-6 text-white text-center">
-          Welcome to GrimleChat
+          Welcome to LeeyosChat
         </h1>
 
         <p className="text-sm text-gray-300 mb-4">
@@ -165,36 +165,36 @@ function Home() {
           <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-[#192734] bg-opacity-50 text-gray-300">
             <div className="bg-[#15202b] p-6 rounded-lg shadow-lg">
               <h2 className="text-lg font-semibold mb-4">
-                GrimleChat Terms and Conditions
+                LeeyosChat Terms and Conditions
               </h2>
               <p>
-                By using GrimleChat, you agree to the following terms and
+                By using LeeyosChat, you agree to the following terms and
                 conditions:
               </p>
               <ul className="list-disc pl-6 mb-4">
-                <li>You must be at least 18 years old to use GrimleChat.</li>
+                <li>You must be at least 18 years old to use LeeyosChat.</li>
                 <li>
                   You are solely responsible for your interactions and the
-                  messages you send on GrimleChat.
+                  messages you send on LeeyosChat.
                 </li>
                 <li>
                   Do not send any illegal, harmful, threatening, abusive,
                   harassing, defamatory, vulgar, obscene, hateful, or racially,
-                  ethnically, or otherwise objectionable messages on GrimleChat.
+                  ethnically, or otherwise objectionable messages on LeeyosChat.
                 </li>
                 <li>
-                  Do not impersonate any other person or entity on GrimleChat.
+                  Do not impersonate any other person or entity on LeeyosChat.
                 </li>
                 <li>
-                  We reserve the right to terminate access to GrimleChat for
+                  We reserve the right to terminate access to LeeyosChat for
                   users who violate our community guidelines.
                 </li>
               </ul>
               <p className="font-semibold">Disclaimer of Liability</p>
               <p>
-                GrimleChat is provided on an "as is" basis. We make no
-                warranties about the operation of GrimleChat or the information
-                on it. You agree that your use of GrimleChat is at your sole
+                LeeyosChat is provided on an "as is" basis. We make no
+                warranties about the operation of LeeyosChat or the information
+                on it. You agree that your use of LeeyosChat is at your sole
                 risk.
               </p>
               <button
