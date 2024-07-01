@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { motion, useSpring, useTransform } from "framer-motion";
 
 function ChatInput({
   sendMessage,
@@ -12,10 +13,25 @@ function ChatInput({
   const [confirmEndChat, setConfirmEndChat] = useState(false);
   const buttonRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const [isTyping, setIsTyping] = useState(false); // State to track if user is typing
+
+  const springConfig = {
+    type: "spring",
+    stiffness: 700,
+    damping: 30,
+  };
+
+  // Spring animation for scale effect
+  const scaleSpring = useSpring(0, springConfig);
+  const scaleTransform = useTransform(scaleSpring, (value) =>
+    value > 0 ? 1 + value / 2 : 1
+  );
 
   const handleEndChatClick = () => {
     if (confirmEndChat) {
-      socket.emit("leaveRoom", { room, username }); // Emit event to server
+      if (socket) {
+        socket.emit("leaveRoom", { room, username }); // Emit event to server
+      }
       onEndChat(); // End the chat locally
     } else {
       setConfirmEndChat(true); // Show confirmation message
@@ -35,15 +51,23 @@ function ChatInput({
   const handleTyping = (e) => {
     setMessageText(e.target.value);
 
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
+    if (socket) {
+      if (!isTyping) {
+        setIsTyping(true); // Set typing state to true
+        scaleSpring.set(1); // Trigger scale animation
+      }
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      socket.emit("typing", { room, username, typing: true });
+
+      typingTimeoutRef.current = setTimeout(() => {
+        setIsTyping(false); // Set typing state to false
+        socket.emit("typing", { room, username, typing: false });
+      }, 2000); // 2 seconds after the user stops typing
     }
-
-    socket.emit("typing", { room, username, typing: true });
-
-    typingTimeoutRef.current = setTimeout(() => {
-      socket.emit("typing", { room, username, typing: false });
-    }, 2000); // 2 seconds after the user stops typing
   };
 
   useEffect(() => {
@@ -73,13 +97,14 @@ function ChatInput({
           className="flex-grow p-2 mr-2 bg-gray-700 text-white rounded"
           placeholder="Type your message..."
         />
-        <button
+        <motion.button
           type="submit"
           disabled={disabled} // Disable send button when partner has left
           className="bg-blue-500 text-white p-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ scale: scaleTransform }} // Apply scale animation
         >
           Send
-        </button>
+        </motion.button>
       </form>
     </div>
   );
