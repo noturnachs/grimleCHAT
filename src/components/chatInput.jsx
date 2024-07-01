@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
+import autosize from "autosize";
 
 function ChatInput({
   sendMessage,
@@ -12,29 +13,30 @@ function ChatInput({
   const [messageText, setMessageText] = useState("");
   const [confirmEndChat, setConfirmEndChat] = useState(false);
   const buttonRef = useRef(null);
+  const textareaRef = useRef(null);
   const typingTimeoutRef = useRef(null);
-  const [isTyping, setIsTyping] = useState(false); // State to track if user is typing
+  const [isTyping, setIsTyping] = useState(false);
 
-  const springConfig = {
-    type: "spring",
-    stiffness: 700,
-    damping: 30,
-  };
-
-  // Spring animation for scale effect
+  const springConfig = { stiffness: 300, damping: 20 };
   const scaleSpring = useSpring(0, springConfig);
   const scaleTransform = useTransform(scaleSpring, (value) =>
-    value > 0 ? 1 + value / 2 : 1
+    value > 0 ? 1 + value / 10 : 1
   );
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      autosize(textareaRef.current);
+    }
+  }, []);
 
   const handleEndChatClick = () => {
     if (confirmEndChat) {
       if (socket) {
-        socket.emit("leaveRoom", { room, username }); // Emit event to server
+        socket.emit("leaveRoom", { room, username });
       }
-      onEndChat(); // End the chat locally
+      onEndChat();
     } else {
-      setConfirmEndChat(true); // Show confirmation message
+      setConfirmEndChat(true);
     }
   };
 
@@ -44,7 +46,7 @@ function ChatInput({
     setMessageText("");
 
     if (buttonRef.current) {
-      buttonRef.current.focus(); // Focus on the input field after sending message
+      buttonRef.current.focus();
     }
   };
 
@@ -53,8 +55,8 @@ function ChatInput({
 
     if (socket) {
       if (!isTyping) {
-        setIsTyping(true); // Set typing state to true
-        scaleSpring.set(1); // Trigger scale animation
+        setIsTyping(true);
+        scaleSpring.set(1);
       }
 
       if (typingTimeoutRef.current) {
@@ -64,9 +66,9 @@ function ChatInput({
       socket.emit("typing", { room, username, typing: true });
 
       typingTimeoutRef.current = setTimeout(() => {
-        setIsTyping(false); // Set typing state to false
+        setIsTyping(false);
         socket.emit("typing", { room, username, typing: false });
-      }, 2000); // 2 seconds after the user stops typing
+      }, 2000);
     }
   };
 
@@ -88,20 +90,21 @@ function ChatInput({
         >
           {confirmEndChat ? "Confirm" : "End Chat"}
         </button>
-        <input
-          ref={buttonRef}
-          type="text"
+        <textarea
+          ref={textareaRef}
           value={messageText}
           onChange={handleTyping}
-          disabled={disabled} // Disable input field when partner has left
-          className="flex-grow p-2 mr-2 bg-gray-700 text-white rounded"
+          disabled={disabled}
+          className="flex-grow p-2 mr-2 bg-gray-700 text-white rounded chat-input scrollbar-custom resize-none"
           placeholder="Type your message..."
+          rows={2}
         />
         <motion.button
           type="submit"
-          disabled={disabled} // Disable send button when partner has left
+          disabled={disabled}
           className="bg-blue-500 text-white p-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ scale: scaleTransform }} // Apply scale animation
+          style={{ scale: scaleTransform }}
+          whileTap={{ scale: 1.1 }}
         >
           Send
         </motion.button>
