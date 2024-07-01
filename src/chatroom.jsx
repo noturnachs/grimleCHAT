@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
-import io from "socket.io-client";
+import socket from "./socket"; // Import the singleton socket instance
 import Chat from "./components/chat";
 import ChatInput from "./components/chatInput";
 import { jellyTriangle, leapfrog } from "ldrs";
@@ -8,15 +8,7 @@ import { jellyTriangle, leapfrog } from "ldrs";
 jellyTriangle.register();
 leapfrog.register();
 
-const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
-
-const socket = io(SERVER_ORIGIN, {
-  reconnection: true,
-  reconnectionAttempts: Infinity,
-  reconnectionDelay: 1000,
-  reconnectionDelayMax: 5000,
-  timeout: 20000, // 20 seconds
-});
+// const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
 
 function ChatRoom() {
   const [messages, setMessages] = useState([]);
@@ -117,8 +109,6 @@ function ChatRoom() {
   }, [messages]);
 
   useEffect(() => {
-    socketRef.current = socket;
-
     const handleUserCountUpdate = (count) => {
       setUserCount(count);
     };
@@ -137,7 +127,6 @@ function ChatRoom() {
       setRoom(room);
       setLoadingMessage("Start Finding a Match");
       setLoading(false);
-      console.log(`Matched with ${matchedUsername} in room ${room}`);
       setMessages([
         {
           username: "System",
@@ -149,7 +138,6 @@ function ChatRoom() {
     const handleUserLeft = ({ message, username: leftUsername }) => {
       setRoom(null);
       setMessages([]);
-      console.log(message);
       setLoadingMessage("Find Again?");
       setLoading(false);
       setFromChat(true);
@@ -157,16 +145,16 @@ function ChatRoom() {
     };
 
     const handleBeforeUnload = () => {
-      socketRef.current.emit("leaveRoom", username);
+      socket.emit("leaveRoom", username);
       navigate("/");
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
-    socketRef.current.on("userCountUpdate", handleUserCountUpdate);
-    socketRef.current.on("typing", handleTyping);
-    socketRef.current.on("message", handleMessage);
-    socketRef.current.on("matchFound", handleMatchFound);
-    socketRef.current.on("userLeft", handleUserLeft);
+    socket.on("userCountUpdate", handleUserCountUpdate);
+    socket.on("typing", handleTyping);
+    socket.on("message", handleMessage);
+    socket.on("matchFound", handleMatchFound);
+    socket.on("userLeft", handleUserLeft);
 
     const interval = setInterval(() => {
       if (
@@ -181,11 +169,11 @@ function ChatRoom() {
     return () => {
       clearInterval(interval);
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      socketRef.current.off("userCountUpdate", handleUserCountUpdate);
-      socketRef.current.off("typing", handleTyping);
-      socketRef.current.off("message", handleMessage);
-      socketRef.current.off("matchFound", handleMatchFound);
-      socketRef.current.off("userLeft", handleUserLeft);
+      socket.off("userCountUpdate", handleUserCountUpdate);
+      socket.off("typing", handleTyping);
+      socket.off("message", handleMessage);
+      socket.off("matchFound", handleMatchFound);
+      socket.off("userLeft", handleUserLeft);
     };
   }, [loadingMessage, navigate, username, loadingTexts, fromChat]);
 
@@ -193,14 +181,14 @@ function ChatRoom() {
     setLoadingMessage(loadingTexts[0]);
     setInitialStart(false);
     setFromChat(false);
-    setLoading(true); // Start loading animation
+    setLoading(true);
     setPrevUsernameLeft("");
-    socketRef.current.emit("startMatch", username);
+    socket.emit("startMatch", username);
   };
 
   const sendMessage = (messageText) => {
     if (messageText.trim() !== "" && room) {
-      socketRef.current.emit("sendMessage", {
+      socket.emit("sendMessage", {
         room,
         message: { username, messageText },
       });
@@ -209,13 +197,12 @@ function ChatRoom() {
 
   const onEndChat = () => {
     if (room) {
-      socketRef.current.emit("leaveRoom", username);
+      socket.emit("leaveRoom", username);
       setRoom(null);
       setMessages([]);
-      console.log("You have left the chat and are back in the queue.");
     }
     setLoadingMessage("Find Again?");
-    setLoading(false); // Stop loading animation
+    setLoading(false);
     setFromChat(true);
   };
 

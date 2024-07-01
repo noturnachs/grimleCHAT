@@ -3,10 +3,10 @@ import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import io from "socket.io-client";
 import Chat from "./components/chat";
 import ChatInput from "./components/chatInput";
-import { jellyTriangle } from "ldrs";
-import { MotionValue, motion, useSpring, useTransform } from "framer-motion";
+import { jellyTriangle, leapfrog } from "ldrs";
 
 jellyTriangle.register();
+leapfrog.register();
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
 
@@ -18,68 +18,6 @@ const socket = io(SERVER_ORIGIN, {
   timeout: 20000, // 20 seconds
 });
 
-const fontSize = 25;
-const padding = 15;
-const height = fontSize + padding;
-function Counter({ value }) {
-  return (
-    <div
-      style={{ fontSize }}
-      className="flex space-x-2 overflow-hidden rounded bg-white px-2 leading-none text-gray-900 w-max fixed md:bottom-2 bottom-20 right-2"
-    >
-      <Digit place={100000} value={value} />
-      <Digit place={10000} value={value} />
-      <Digit place={1000} value={value} />
-      <Digit place={100} value={value} />
-      <Digit place={10} value={value} />
-      <Digit place={1} value={value} />
-      <span className="text-[#3ba55c] flex items-center text-[20px] md:text-[25px]">
-        ONLINE USERS
-      </span>
-    </div>
-  );
-}
-
-function Digit({ place, value }) {
-  const valueRoundedToPlace = Math.floor(value / place) % 10;
-  const animatedValue = useSpring(valueRoundedToPlace);
-
-  useEffect(() => {
-    animatedValue.set(valueRoundedToPlace);
-  }, [animatedValue, valueRoundedToPlace]);
-
-  return (
-    <div style={{ height }} className="relative w-[1ch] tabular-nums">
-      {[...Array(10).keys()].map((i) => (
-        <Number key={i} mv={animatedValue} number={i} />
-      ))}
-    </div>
-  );
-}
-
-function Number({ mv, number }) {
-  const y = useTransform(mv, (latest) => {
-    const placeValue = latest;
-    const offset = (10 + number - placeValue) % 10;
-
-    let memo = offset * height;
-
-    if (offset > 5) {
-      memo -= 10 * height;
-    }
-
-    return memo;
-  });
-
-  return (
-    <motion.span
-      style={{ y }}
-      className="absolute inset-0 flex items-center justify-center"
-    >
-      {number}
-    </motion.span>
-  );
-}
 function ChatRoom() {
   const [messages, setMessages] = useState([]);
   const [userCount, setUserCount] = useState(0);
@@ -91,6 +29,9 @@ function ChatRoom() {
   const username = state?.username || null;
   const [initialStart, setInitialStart] = useState(true);
   const [fromChat, setFromChat] = useState(false);
+  const [prevUsernameLeft, setPrevUsernameLeft] = useState(""); // Track the username of the previous user who left
+  const [typingStatus, setTypingStatus] = useState({}); // Track typing status
+
   const loadingTexts = [
     "Waiting for partner...",
     "Looking for your soulmate...",
@@ -122,6 +63,47 @@ function ChatRoom() {
     "Your heart will skip a beat soon...",
     "Love is just around the corner...",
     "Get ready to fall in love...",
+    "Scouting the area...",
+    "Searching nearby...",
+    "Widening the search...",
+    "Checking all the usual spots...",
+    "Looking for someone who shares your interests...",
+    "Finding someone who gets your jokes...",
+    "Matching you with someone who's just as awesome...",
+    "Seeking out a compatible connection...",
+    "Calculating compatibility...",
+    "Analyzing your profile...",
+    "Comparing your interests...",
+    "Finding your perfect match...",
+    "Piecing together your puzzle...",
+    "Building your connection...",
+    "Establishing a link...",
+    "Making introductions...",
+    "Breaking the ice...",
+    "Starting the conversation...",
+    "Laying the groundwork...",
+    "Planting the seeds of friendship...",
+    "Fostering a connection...",
+    "Cultivating a bond...",
+    "Creating chemistry...",
+    "Building a bridge...",
+    "Sparking a conversation...",
+    "Connecting the dots...",
+    "Weaving a connection...",
+    "Igniting a spark...",
+    "Creating a match made in heaven...",
+    "We're on the hunt for your perfect match...",
+    "Your perfect match is out there somewhere...",
+    "Don't worry, we'll find them for you...",
+    "We're working hard to find you a compatible partner...",
+    "We're leaving no stone unturned...",
+    "We're scouring the earth for your soulmate...",
+    "We're using all our resources to find you a match...",
+    "We're not giving up until we find you the perfect match...",
+    "We're confident that we'll find you someone special...",
+    "Your perfect match is just around the corner...",
+    "Be patient, your perfect match is on their way...",
+    "The wait is almost over...",
   ];
 
   const socketRef = useRef();
@@ -133,14 +115,23 @@ function ChatRoom() {
       setUserCount(count);
     };
 
+    const handleTyping = ({ username: typingUsername, typing }) => {
+      if (typingUsername !== username) {
+        // Only update typing status if it's the other user
+        setTypingStatus({ username: typingUsername, typing });
+      }
+    };
+
     // Subscribe to the 'userCountUpdate' event
     socketRef.current.on("userCountUpdate", handleUserCountUpdate);
+    socketRef.current.on("typing", handleTyping);
 
-    // Clean up event listener on component unmount
     return () => {
+      // Clean up event listener when the component unmounts
       socketRef.current.off("userCountUpdate", handleUserCountUpdate);
+      socketRef.current.off("typing", handleTyping);
     };
-  }, []); // Empty dependency array ensures this effect runs only once
+  }, [username]);
 
   useEffect(() => {
     let interval;
@@ -156,35 +147,39 @@ function ChatRoom() {
       }, 3000);
     }
 
-    socket.on("message", (message) => {
+    socketRef.current.on("message", (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
-    socket.on("matchFound", ({ room, username: matchedUsername }) => {
-      setRoom(room);
-      setLoadingMessage("Start Finding a Match"); // Reset to default when match is found
-      setLoading(false); // Stop loading animation
-      console.log(`Matched with ${matchedUsername} in room ${room}`);
-      setMessages([
-        {
-          username: "System",
-          messageText: `Connected with ${matchedUsername}`,
-        },
-      ]);
-    });
+    socketRef.current.on(
+      "matchFound",
+      ({ room, username: matchedUsername }) => {
+        setRoom(room);
+        setLoadingMessage("Start Finding a Match"); // Reset to default when match is found
+        setLoading(false); // Stop loading animation
+        console.log(`Matched with ${matchedUsername} in room ${room}`);
+        setMessages([
+          {
+            username: "System",
+            messageText: `Connected with ${matchedUsername}`,
+          },
+        ]);
+      }
+    );
 
-    socket.on("userLeft", ({ message }) => {
+    socketRef.current.on("userLeft", ({ message, username: leftUsername }) => {
       setRoom(null);
       setMessages([]);
       console.log(message);
       setLoadingMessage("Find Again?");
       setLoading(false); // Stop loading animation
       setFromChat(true);
+      setPrevUsernameLeft(leftUsername); // Set the username of the user who left
     });
 
     // Handle disconnect
     const handleBeforeUnload = () => {
-      socket.emit("leaveRoom", username);
+      socketRef.current.emit("leaveRoom", username);
       navigate("/");
     };
 
@@ -193,9 +188,9 @@ function ChatRoom() {
     return () => {
       clearInterval(interval);
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      socket.off("message");
-      socket.off("matchFound");
-      socket.off("userLeft");
+      socketRef.current.off("message");
+      socketRef.current.off("matchFound");
+      socketRef.current.off("userLeft");
     };
   }, [loadingMessage, navigate, username, loadingTexts, fromChat]);
 
@@ -209,18 +204,22 @@ function ChatRoom() {
       setInitialStart(false);
     }
     setLoading(true); // Start loading animation
-    socket.emit("startMatch", username);
+    setPrevUsernameLeft("");
+    socketRef.current.emit("startMatch", username);
   };
 
   const sendMessage = (messageText) => {
     if (messageText.trim() !== "" && room) {
-      socket.emit("sendMessage", { room, message: { username, messageText } });
+      socketRef.current.emit("sendMessage", {
+        room,
+        message: { username, messageText },
+      });
     }
   };
 
   const onEndChat = () => {
     if (room) {
-      socket.emit("leaveRoom", username);
+      socketRef.current.emit("leaveRoom", username);
       setRoom(null);
       setMessages([]);
       console.log("You have left the chat and are back in the queue.");
@@ -228,7 +227,10 @@ function ChatRoom() {
     setLoadingMessage("Find Again?");
     setLoading(false); // Stop loading animation
     setFromChat(true);
-    navigate("/"); // Redirect to home
+  };
+
+  const handleCancel = () => {
+    navigate("/");
   };
 
   if (!username) {
@@ -237,9 +239,13 @@ function ChatRoom() {
 
   return (
     <div className="bg-[#192734] h-screen flex flex-col">
-      {!room && <Counter value={userCount} />}
       {!room ? (
         <div className="flex flex-col items-center justify-center h-full">
+          {prevUsernameLeft && (
+            <div className="text-white mb-4">
+              {prevUsernameLeft} left the chat.
+            </div>
+          )}
           <button
             onClick={startMatch}
             className={`${
@@ -257,15 +263,8 @@ function ChatRoom() {
               className="inline-block ml-2"
             ></l-jelly-triangle>
           )}
-          {/* <button
-            onClick={onEndChat} // Update to call onEndChat
-            className="bg-red-500 text-white font-normal p-2 rounded mt-6"
-          >
-            Cancel
-          </button> */}
-
           <button
-            onClick={onEndChat}
+            onClick={handleCancel}
             className="mt-6 inline-flex items-center px-4 py-2 bg-red-600 transition ease-in-out delay-75 hover:bg-red-700 text-white text-sm font-medium rounded-md hover:-translate-y-1 hover:scale-110"
           >
             Cancel
@@ -275,8 +274,22 @@ function ChatRoom() {
         <div className="flex flex-col h-full overflow-hidden">
           <div className="scrollable-chat">
             <Chat messages={messages} />
+            {typingStatus.typing && (
+              <div className="flex items-center">
+                <span className="text-gray-400 ml-2">
+                  {typingStatus.username} is typing&nbsp;
+                </span>
+                <l-leapfrog size="20" speed="2.5" color="#9ca3af"></l-leapfrog>
+              </div>
+            )}
           </div>
-          <ChatInput sendMessage={sendMessage} onEndChat={onEndChat} />
+          <ChatInput
+            sendMessage={sendMessage}
+            onEndChat={onEndChat}
+            socket={socketRef.current}
+            room={room}
+            username={username}
+          />
         </div>
       )}
     </div>
