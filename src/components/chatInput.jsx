@@ -15,7 +15,8 @@ function ChatInput({
 
   const handleEndChatClick = () => {
     if (confirmEndChat) {
-      onEndChat(); // End the chat
+      socket.emit("leaveRoom", { room, username }); // Emit event to server
+      onEndChat(); // End the chat locally
     } else {
       setConfirmEndChat(true); // Show confirmation message
     }

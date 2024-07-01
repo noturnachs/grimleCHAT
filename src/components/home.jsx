@@ -1,16 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import io from "socket.io-client";
+import socket from "../socket"; // Import the singleton socket instance
 import { motion, useSpring, useTransform } from "framer-motion";
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
-const socket = io(SERVER_ORIGIN, {
-  reconnection: true,
-  reconnectionAttempts: Infinity,
-  reconnectionDelay: 1000,
-  reconnectionDelayMax: 5000,
-  timeout: 20000, // 20 seconds
-});
 
 const fontSize = 30;
 const padding = 15;
@@ -90,20 +83,16 @@ function Home() {
   const socketRef = useRef();
 
   useEffect(() => {
-    socketRef.current = socket;
-
     const handleUserCountUpdate = (count) => {
       setUserCount(count);
     };
 
-    // Subscribe to the 'userCountUpdate' event
-    socketRef.current.on("userCountUpdate", handleUserCountUpdate);
+    socket.on("userCountUpdate", handleUserCountUpdate);
 
-    // Clean up event listener on component unmount
     return () => {
-      socketRef.current.off("userCountUpdate", handleUserCountUpdate);
+      socket.off("userCountUpdate", handleUserCountUpdate);
     };
-  }, []); // Empty dependency array ensures this effect runs only once
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -144,7 +133,6 @@ function Home() {
       setError("Please fulfill the age requirement and acknowledge the terms.");
     }
   };
-
   return (
     <div className="h-screen flex flex-col justify-center items-center bg-[#192734]">
       <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-max md:p-8">
