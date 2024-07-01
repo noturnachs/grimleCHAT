@@ -72,6 +72,13 @@ function ChatInput({
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
   useEffect(() => {
     return () => {
       if (typingTimeoutRef.current) {
@@ -94,6 +101,7 @@ function ChatInput({
           ref={textareaRef}
           value={messageText}
           onChange={handleTyping}
+          onKeyDown={handleKeyDown}
           disabled={disabled}
           className="flex-grow p-2 mr-2 bg-gray-700 text-white rounded chat-input scrollbar-custom resize-none"
           placeholder="Type your message..."
