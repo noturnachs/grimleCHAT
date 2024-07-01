@@ -8,8 +8,6 @@ import { jellyTriangle, leapfrog } from "ldrs";
 jellyTriangle.register();
 leapfrog.register();
 
-// const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
-
 function ChatRoom() {
   const [messages, setMessages] = useState([]);
   const [userCount, setUserCount] = useState(0);
@@ -98,7 +96,7 @@ function ChatRoom() {
     "The wait is almost over...",
   ];
 
-  const socketRef = useRef();
+  const socketRef = useRef(socket);
   const chatContainerRef = useRef(null); // Ref for the chat container
 
   useEffect(() => {
@@ -176,7 +174,6 @@ function ChatRoom() {
       socket.off("userLeft", handleUserLeft);
     };
   }, [loadingMessage, navigate, username, loadingTexts, fromChat]);
-
   const startMatch = () => {
     setLoadingMessage(loadingTexts[0]);
     setInitialStart(false);
