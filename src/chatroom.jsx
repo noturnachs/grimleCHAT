@@ -4,6 +4,7 @@ import socket from "./socket"; // Import the singleton socket instance
 import Chat from "./components/chat";
 import ChatInput from "./components/chatInput";
 import { jellyTriangle, leapfrog } from "ldrs";
+import { loadingTexts } from "./loadingTexts"; // Import the loading texts
 
 jellyTriangle.register();
 leapfrog.register();
@@ -22,82 +23,20 @@ function ChatRoom() {
   const [prevUsernameLeft, setPrevUsernameLeft] = useState(""); // Track the username of the previous user who left
   const [typingStatus, setTypingStatus] = useState({}); // Track typing status
 
-  const loadingTexts = [
-    "Waiting for partner...",
-    "Looking for your soulmate...",
-    "Finding a match...",
-    "Connecting you to someone <3...",
-    "Creating a spark...",
-    "Searching for the one...",
-    "On the hunt for love...",
-    "Seeking your perfect pair...",
-    "Getting ready for romance...",
-    "Preparing for a perfect match...",
-    "Igniting a connection...",
-    "Building anticipation...",
-    "Just a moment longer...",
-    "Love is in the air...",
-    "Cupid is working his magic...",
-    "Your love story is about to begin...",
-    "The stars are aligning...",
-    "Destiny is calling...",
-    "Fate is bringing you closer...",
-    "Love is worth the wait...",
-    "Matching you with happiness...",
-    "Searching high and low for love...",
-    "We're almost there...",
-    "Patience is a virtue...",
-    "Good things come to those who wait...",
-    "Love is patient, love is kind...",
-    "The best is yet to come...",
-    "Your heart will skip a beat soon...",
-    "Love is just around the corner...",
-    "Get ready to fall in love...",
-    "Scouting the area...",
-    "Searching nearby...",
-    "Widening the search...",
-    "Checking all the usual spots...",
-    "Looking for someone who shares your interests...",
-    "Finding someone who gets your jokes...",
-    "Matching you with someone who's just as awesome...",
-    "Seeking out a compatible connection...",
-    "Calculating compatibility...",
-    "Analyzing your profile...",
-    "Comparing your interests...",
-    "Finding your perfect match...",
-    "Piecing together your puzzle...",
-    "Building your connection...",
-    "Establishing a link...",
-    "Making introductions...",
-    "Breaking the ice...",
-    "Starting the conversation...",
-    "Laying the groundwork...",
-    "Planting the seeds of friendship...",
-    "Fostering a connection...",
-    "Cultivating a bond...",
-    "Creating chemistry...",
-    "Building a bridge...",
-    "Sparking a conversation...",
-    "Connecting the dots...",
-    "Weaving a connection...",
-    "Igniting a spark...",
-    "Creating a match made in heaven...",
-    "We're on the hunt for your perfect match...",
-    "Your perfect match is out there somewhere...",
-    "Don't worry, we'll find them for you...",
-    "We're working hard to find you a compatible partner...",
-    "We're leaving no stone unturned...",
-    "We're scouring the earth for your soulmate...",
-    "We're using all our resources to find you a match...",
-    "We're not giving up until we find you the perfect match...",
-    "We're confident that we'll find you someone special...",
-    "Your perfect match is just around the corner...",
-    "Be patient, your perfect match is on their way...",
-    "The wait is almost over...",
-  ];
-
   const socketRef = useRef(socket);
   const chatContainerRef = useRef(null); // Ref for the chat container
+
+  useEffect(() => {
+    if (loading) {
+      const interval = setInterval(() => {
+        setLoadingMessage(
+          loadingTexts[Math.floor(Math.random() * loadingTexts.length)]
+        );
+      }, 3000);
+
+      return () => clearInterval(interval);
+    }
+  }, [loading]);
 
   useEffect(() => {
     if (chatContainerRef.current) {
