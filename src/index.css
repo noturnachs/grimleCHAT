@@ -49,3 +49,28 @@ body {
   border: 2px solid transparent; /* Space around the thumb */
   background-clip: content-box; /* Ensures the border is transparent */
 }
+/* Custom scrollbar styles */
+.scrollbar-custom {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #dadce0 transparent; /* Firefox */
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: transparent; /* Background of the scrollbar track */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #1a1a1a; /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Rounded corners for the scrollbar thumb */
+  border: 2px solid transparent; /* Space around the thumb */
+  background-clip: content-box; /* Ensures the border is transparent */
+}
+
+/* Prevent manual resizing of the textarea */
+.resize-none {
+  resize: none;
+}
