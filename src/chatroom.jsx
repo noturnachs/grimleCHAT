@@ -113,6 +113,7 @@ function ChatRoom() {
       socket.off("userLeft", handleUserLeft);
     };
   }, [loadingMessage, navigate, username, loadingTexts, fromChat]);
+
   const startMatch = () => {
     setLoadingMessage(loadingTexts[0]);
     setInitialStart(false);
