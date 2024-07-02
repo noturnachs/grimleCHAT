@@ -19,7 +19,15 @@
         "background": "linear-gradient(to right, #FFD700, #FF6347)"
       },
       "default": {
-        "backgroundColor": "#434242",
+        "backgroundColor": "#3b82f6",
+        "color": "#FFFFFF"
+      },
+      "sender": {
+        "background": "linear-gradient(to right, #1e3c72, #2a5298)",
+        "color": "#FFFFFF"
+      },
+      "receiver": {
+        "backgroundColor": "#2c2c2e",
         "color": "#FFFFFF"
       }
     }

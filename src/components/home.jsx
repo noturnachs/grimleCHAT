@@ -96,7 +96,7 @@ function Home() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError(""); // Reset error message
+    setError("");
 
     if (username.toLowerCase().includes("admin")) {
       if (username.toLowerCase() === "admin" && !showPasswordInput) {
@@ -128,6 +128,7 @@ function Home() {
     }
 
     if (username.trim() !== "" && over18 && agreeTerms) {
+      socket.emit("startMatch", username);
       navigate("/chat", { state: { username } });
     } else {
       setError("Please fulfill the age requirement and acknowledge the terms.");

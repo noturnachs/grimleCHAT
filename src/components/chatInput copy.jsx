@@ -1,70 +1,123 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { motion, useSpring, useTransform } from "framer-motion";
+import autosize from "autosize";
 
-function ChatInput({ sendMessage, onEndChat }) {
+function ChatInput({
+  sendMessage,
+  onEndChat,
+  disabled,
+  socket,
+  room,
+  username,
+}) {
   const [messageText, setMessageText] = useState("");
   const [confirmEndChat, setConfirmEndChat] = useState(false);
   const buttonRef = useRef(null);
+  const textareaRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const [isTyping, setIsTyping] = useState(false);
+
+  const springConfig = { stiffness: 300, damping: 20 };
+  const scaleSpring = useSpring(0, springConfig);
+  const scaleTransform = useTransform(scaleSpring, (value) =>
+    value > 0 ? 1 + value / 10 : 1
+  );
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      autosize(textareaRef.current);
+    }
+  }, []);
 
   const handleEndChatClick = () => {
     if (confirmEndChat) {
-      onEndChat(); // End the chat
+      if (socket) {
+        socket.emit("leaveRoom", { room, username });
+      }
+      onEndChat();
     } else {
-      setConfirmEndChat(true); // Show confirmation message
+      setConfirmEndChat(true);
     }
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-
     sendMessage(messageText);
     setMessageText("");
 
     if (buttonRef.current) {
-      buttonRef.current.classList.add("animate-bounce");
-      setTimeout(() => {
-        buttonRef.current.classList.remove("animate-bounce");
-      }, 500);
+      buttonRef.current.focus();
     }
   };
 
+  const handleTyping = (e) => {
+    setMessageText(e.target.value);
+
+    if (socket) {
+      if (!isTyping) {
+        setIsTyping(true);
+        scaleSpring.set(1);
+      }
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      socket.emit("typing", { room, username, typing: true });
+
+      typingTimeoutRef.current = setTimeout(() => {
+        setIsTyping(false);
+        socket.emit("typing", { room, username, typing: false });
+      }, 2000);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <form
-      onSubmit={handleSubmit}
-      className=" bottom-0 left-0 w-full bg-[#192734] p-2"
-    >
-      <div className="flex items-center rounded-full bg-transparent p-3 shadow-sm border-2 border-[#38444d]">
+    <div className="p-2 bg-gray-800">
+      <form onSubmit={handleSubmit} className="flex items-center">
         <button
           type="button"
           onClick={handleEndChatClick}
-          className={`mr-4 rounded-full px-4 py-2 hover:bg-[#961614] 
-                        ${
-                          confirmEndChat
-                            ? "bg-[#961614] text-white"
-                            : "bg-[#e02421] text-white"
-                        }`}
+          className="bg-red-500 text-white p-2 rounded mr-2"
         >
-          {confirmEndChat ? "Are you sure?" : "End Chat"}
+          {confirmEndChat ? "Confirm" : "End Chat"}
         </button>
-
-        <div className="flex-grow">
-          <input
-            type="text"
-            value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
-            placeholder="Write a message..."
-            className="w-full rounded-full p-3 focus:outline-none bg-transparent text-[#e7e9ea]"
-          />
-        </div>
-
-        <button
+        <textarea
+          ref={textareaRef}
+          value={messageText}
+          onChange={handleTyping}
+          onKeyDown={handleKeyDown}
+          disabled={disabled}
+          className="flex-grow p-2 mr-2 bg-gray-700 text-white rounded chat-input scrollbar-custom resize-none"
+          placeholder="Type your message..."
+          rows={2}
+        />
+        <motion.button
           type="submit"
-          ref={buttonRef}
-          className="ml-4 text-[#1d9bf0] font-semibold rounded-full px-4 py-2 hover:bg-[#1a8cd8] hover:text-white"
+          disabled={disabled}
+          className="bg-blue-500 text-white p-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ scale: scaleTransform }}
+          whileTap={{ scale: 1.1 }}
         >
           Send
-        </button>
-      </div>
-    </form>
+        </motion.button>
+      </form>
+    </div>
   );
 }
 

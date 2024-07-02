@@ -5,7 +5,6 @@ import userStyles from "./userStyles.json";
 function Chat({ messages }) {
   const { state } = useLocation();
   const username = state?.username || "Anonymous";
-  const connectedWith = messages.length > 0 ? messages[0].username : null;
   const chatEndRef = useRef(null);
 
   useEffect(() => {
@@ -21,51 +20,55 @@ function Chat({ messages }) {
   };
 
   // Get styles from JSON file for messages
-  const getMessageStyles = (messageUsername) => {
+  const getMessageStyles = (messageUsername, isSender) => {
     const styles = userStyles.styles.messages;
-    return styles[messageUsername] || styles.default;
+    if (messageUsername === "admin") {
+      return styles.admin;
+    }
+    return isSender ? styles.sender : styles.receiver;
   };
 
   return (
     <div className="flex flex-col space-y-4">
-      {messages.map((message, index) => (
-        <div
-          key={index}
-          className={`flex ${
-            message.username === username ? "justify-end" : "justify-start"
-          }`}
-        >
-          <div className="flex-col">
-            <span
-              className="font-normal"
-              style={{
-                ...getUsernameStyles(message.username),
-              }}
-            >
-              {message.username}
-            </span>
-            <div
-              className="p-2 rounded-xl max-w-xs"
-              style={{
-                ...getMessageStyles(message.username),
-                wordBreak: "break-word",
-              }}
-            >
-              <p
-                className="text-sm font-normal"
+      {messages.map((message, index) => {
+        const isSender = message.username === username;
+        return (
+          <div
+            key={index}
+            className={`flex ${isSender ? "justify-end" : "justify-start"}`}
+          >
+            <div className="flex-col">
+              <span
+                className="font-normal"
                 style={{
-                  color:
-                    message.username === "admin"
-                      ? getMessageStyles(message.username).color
-                      : getMessageStyles().color,
+                  ...getUsernameStyles(message.username),
                 }}
               >
-                {message.messageText}
-              </p>
+                {message.username}
+              </span>
+              <div
+                className="p-2 rounded-xl max-w-xs"
+                style={{
+                  ...getMessageStyles(message.username, isSender),
+                  wordBreak: "break-word",
+                }}
+              >
+                <p
+                  className="text-sm font-normal"
+                  style={{
+                    color:
+                      message.username === "admin"
+                        ? getMessageStyles(message.username, isSender).color
+                        : getMessageStyles(message.username, isSender).color,
+                  }}
+                >
+                  {message.messageText}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
       <div ref={chatEndRef} />
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import userStyles from "./userStyles.json";
 
 function Chat({ messages }) {
   const { state } = useLocation();
@@ -13,13 +14,20 @@ function Chat({ messages }) {
     }
   }, [messages]);
 
+  // Get styles from JSON file for usernames
+  const getUsernameStyles = (messageUsername) => {
+    const styles = userStyles.styles.usernames;
+    return styles[messageUsername] || styles.default;
+  };
+
+  // Get styles from JSON file for messages
+  const getMessageStyles = (messageUsername) => {
+    const styles = userStyles.styles.messages;
+    return styles[messageUsername] || styles.default;
+  };
+
   return (
     <div className="flex flex-col space-y-4">
-      {/* {connectedWith && (
-        <div className="text-center text-white py-2">
-          Connected with {connectedWith}
-        </div>
-      )} */}
       {messages.map((message, index) => (
         <div
           key={index}
@@ -28,17 +36,30 @@ function Chat({ messages }) {
           }`}
         >
           <div className="flex-col">
-            <span className="text-[12px] font-normal text-gray-500">
+            <span
+              className="font-normal"
+              style={{
+                ...getUsernameStyles(message.username),
+              }}
+            >
               {message.username}
             </span>
             <div
-              className={`p-2 rounded-xl max-w-xs ${
-                message.username === username
-                  ? "bg-blue-500 text-white"
-                  : "bg-[#434242] text-white transparent"
-              }`}
+              className="p-2 rounded-xl max-w-xs"
+              style={{
+                ...getMessageStyles(message.username),
+                wordBreak: "break-word",
+              }}
             >
-              <p className="text-sm font-normal text-white">
+              <p
+                className="text-sm font-normal"
+                style={{
+                  color:
+                    message.username === "admin"
+                      ? getMessageStyles(message.username).color
+                      : getMessageStyles().color,
+                }}
+              >
                 {message.messageText}
               </p>
             </div>
