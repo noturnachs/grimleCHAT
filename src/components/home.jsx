@@ -152,7 +152,7 @@ function Home() {
           </div>
 
           {showTerms && (
-            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-[#192734] bg-opacity-50 text-gray-300">
+            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-[#192734] bg-opacity-50 text-gray-300 z-50">
               <div className="bg-[#15202b] p-6 rounded-lg shadow-lg">
                 <h2 className="text-lg font-semibold mb-4">
                   LeeyosChat Terms and Conditions
@@ -299,7 +299,7 @@ function Home() {
           </p> */}
 
           {showTerms && (
-            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-[#192734] bg-opacity-50 text-gray-300">
+            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-[#192734] bg-opacity-50 text-gray-300 z-50">
               <div className="bg-[#15202b] p-6 rounded-lg shadow-lg">
                 <h2 className="text-lg font-semibold mb-4">
                   LeeyosChat Terms and Conditions
