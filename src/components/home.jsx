@@ -128,7 +128,7 @@ function Home() {
     }
 
     if (username.trim() !== "" && over18 && agreeTerms) {
-      socket.emit("startMatch", username);
+      // socket.emit("startMatch", username);
       navigate("/chat", { state: { username } });
     } else {
       setError("Please fulfill the age requirement and acknowledge the terms.");
@@ -271,7 +271,7 @@ function Home() {
 
             {!showTerms && (
               <button
-                type="submit"
+                // type="submit"
                 className="overflow-hidden w-full p-2 h-12 bg-[#325E87] text-white border-none rounded-md text-md font-normal cursor-pointer relative z-10 group flex items-center justify-center"
               >
                 <span className="absolute inset-0 flex items-center justify-center bg-[#325E87] group-hover:opacity-0 transition-opacity duration-1000">
