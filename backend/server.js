@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: "../.env" });
 const express = require("express");
 const http = require("http");
 const socketIO = require("socket.io");
@@ -9,25 +9,40 @@ const server = http.createServer(app);
 
 const io = socketIO(server, {
   cors: {
-    origin: process.env.CLIENT_ORIGIN, // Use environment variable for the origin
+    origin: process.env.CLIENT_ORIGIN,
     methods: ["GET", "POST"],
   },
-  pingInterval: 25000, // 25 seconds
-  pingTimeout: 60000, // 60 seconds
+  pingInterval: 25000,
+  pingTimeout: 60000,
   reconnect: true,
 });
 
+console.log("CLIENT_ORIGIN:", process.env.CLIENT_ORIGIN);
 const waitingQueue = [];
+let userCount = 0;
 
+app.use(cors());
+app.use(express.json());
+
+// Admin password validation endpoint
+app.post("/validate-admin", (req, res) => {
+  const { password } = req.body;
+  if (password === process.env.ADMIN_PASSWORD) {
+    res.json({ success: true });
+  } else {
+    res.json({ success: false });
+  }
+});
 io.on("connection", (socket) => {
   console.log("A user connected with socket ID:", socket.id);
+  userCount++;
+  io.emit("userCountUpdate", userCount);
 
   socket.on("startMatch", (username) => {
     console.log(
       `User ${username} with socket ID ${socket.id} is looking for a match`
     );
 
-    // Check if the user is already in the waiting queue
     if (waitingQueue.some((user) => user.socket.id === socket.id)) {
       console.log(`User ${username} is already in the waiting queue`);
       return;
@@ -39,6 +54,7 @@ io.on("connection", (socket) => {
       "Current waiting queue:",
       waitingQueue.map((user) => user.username)
     );
+
     if (waitingQueue.length >= 2) {
       const user1 = waitingQueue.shift();
       const user2 = waitingQueue.shift();
@@ -67,17 +83,28 @@ io.on("connection", (socket) => {
     io.to(room).emit("message", message);
   });
 
-  socket.on("leaveRoom", (username) => {
-    handleLeaveRoom(socket, username);
+  socket.on("leaveRoom", () => {
+    handleLeaveRoom(socket);
+  });
+
+  socket.on("leaveQueue", (username) => {
+    handleLeaveQueue(socket, username);
   });
 
   socket.on("disconnect", () => {
     console.log(`User with socket ID ${socket.id} disconnected`);
-    handleLeaveRoom(socket, socket.username);
+    handleLeaveRoom(socket);
+    userCount--;
+    io.emit("userCountUpdate", userCount);
+  });
+
+  socket.on("typing", ({ room, username, typing }) => {
+    io.to(room).emit("typing", { username, typing });
   });
 });
 
-function handleLeaveRoom(socket, username) {
+function handleLeaveRoom(socket) {
+  const username = socket.username; // Get the username from the socket object
   const rooms = Array.from(socket.rooms);
   const room = rooms.find((r) => r.startsWith("room-"));
   if (room) {
@@ -94,7 +121,9 @@ function handleLeaveRoom(socket, username) {
       if (remainingUserSocket) {
         remainingUserSocket.emit("userLeft", {
           message: `${username} has left the chat. You are back in the queue.`,
+          username: username, // Send the username of the user who left
         });
+        remainingUserSocket.leave(room);
         console.log(
           `${username} left the chat. ${remainingUserSocket.username} is back in the queue.`
         );
@@ -102,7 +131,6 @@ function handleLeaveRoom(socket, username) {
     }
   }
 
-  // Remove from waiting queue
   for (let i = 0; i < waitingQueue.length; i++) {
     if (waitingQueue[i].socket.id === socket.id) {
       console.log(
@@ -118,7 +146,23 @@ function handleLeaveRoom(socket, username) {
   );
 }
 
-const PORT = process.env.PORT || 3001; // Use environment variable for the port
+function handleLeaveQueue(socket, username) {
+  for (let i = 0; i < waitingQueue.length; i++) {
+    if (waitingQueue[i].socket.id === socket.id) {
+      console.log(
+        `Removing user ${waitingQueue[i].username} from the waiting queue`
+      );
+      waitingQueue.splice(i, 1);
+      break;
+    }
+  }
+  console.log(
+    "Current waiting queue after leaving:",
+    waitingQueue.map((user) => user.username)
+  );
+}
+
+const PORT = process.env.PORT;
 server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
