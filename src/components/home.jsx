@@ -438,7 +438,7 @@ function Home() {
           </div>
         </div>
       </div>
-      <footer className="absolute bottom-0 w-full text-center py-4 bg-transparent text-white">
+      <footer className="absolute bottom-0 w-full text-center py-4 bg-transparent text-white mt-20">
         <p>
           For reports/suggestions, please fill out this&nbsp;
           <a
