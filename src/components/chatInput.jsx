@@ -32,6 +32,7 @@ function ChatInput({
   const handleEndChatClick = () => {
     if (confirmEndChat) {
       if (socket) {
+        console.log(username, "leaving room", room);
         socket.emit("leaveRoom", { room, username });
       }
       onEndChat();
