@@ -112,7 +112,7 @@ function ChatRoom() {
       socket.off("matchFound", handleMatchFound);
       socket.off("userLeft", handleUserLeft);
     };
-  }, [loadingMessage, navigate, username, loadingTexts, fromChat]);
+  }, [loadingMessage, navigate, username]);
 
   const startMatch = () => {
     setLoadingMessage(loadingTexts[0]);
@@ -134,7 +134,7 @@ function ChatRoom() {
 
   const onEndChat = () => {
     if (room) {
-      socket.emit("leaveRoom", username);
+      socket.emit("leaveRoom");
       setRoom(null);
       setMessages([]);
     }
@@ -144,6 +144,7 @@ function ChatRoom() {
   };
 
   const handleCancel = () => {
+    socket.emit("leaveQueue", username);
     navigate("/");
   };
 
