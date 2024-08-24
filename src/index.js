@@ -4,7 +4,7 @@ import "./index.css";
 import Main from "./main";
 
 // Load environment variables
-const isMaintenance = "false"; // or this value could come from an environment variable like process.env.REACT_APP_IS_MAINTENANCE
+const isMaintenance = "true"; // or this value could come from an environment variable like process.env.REACT_APP_IS_MAINTENANCE
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
