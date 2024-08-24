@@ -2,32 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: "Inter Regular";
-  src: url("/public/fonts/Inter-Regular.ttf") format("truetype");
-}
-
-@font-face {
-  font-family: "Inter Medium";
-  src: url("/public/fonts/Inter-Medium.ttf") format("truetype");
-}
-
-@font-face {
-  font-family: "Inter Bold";
-  src: url("/public/fonts/Inter-Bold.ttf") format("truetype");
-}
-
 body {
   @apply bg-[#192734];
+  font-family: "Inter", sans-serif;
 }
 
 * {
   @apply transition-all duration-300 ease-in-out;
-  font-family: "Inter Regular", sans-serif;
+  font-family: "Inter", sans-serif;
 }
 /* Full height for the chat area */
 .scrollable-chat {
-  @apply flex-grow overflow-y-auto p-4 bg-[#192734];
+  @apply flex-grow overflow-y-auto p-4;
   scrollbar-width: thin; /* Firefox */
   scrollbar-color: #dadce0 transparent; /* Firefox */
   height: calc(

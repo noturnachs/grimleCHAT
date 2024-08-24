@@ -72,6 +72,8 @@ function Number({ mv, number }) {
 function Home() {
   const [username, setUsername] = useState("");
   const [over18, setOver18] = useState(false);
+  const [interest, setInterest] = useState([]);
+  const [interestInput, setInterestInput] = useState(""); // For handling the input field
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [userCount, setUserCount] = useState(0); // State to store user count
@@ -81,6 +83,18 @@ function Home() {
   const navigate = useNavigate();
 
   const socketRef = useRef();
+
+  const handleRemoveInterest = (indexToRemove) => {
+    setInterest(interest.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleInterestKeyDown = (e) => {
+    if (e.key === "Enter" && interestInput.trim()) {
+      e.preventDefault();
+      setInterest([...interest, interestInput.trim()]);
+      setInterestInput(""); // Clear the input field after adding the interest
+    }
+  };
 
   useEffect(() => {
     const handleUserCountUpdate = (count) => {
@@ -128,12 +142,12 @@ function Home() {
     }
 
     if (username.trim() !== "" && over18 && agreeTerms) {
-      // socket.emit("startMatch", username);
-      navigate("/chat", { state: { username } });
+      navigate("/chat", { state: { username, interest } }); // Pass interest along with username
     } else {
       setError("Please fulfill the age requirement and acknowledge the terms.");
     }
   };
+
   return (
     <div className="h-screen flex flex-col justify-center items-center bg-[#192734] p-4">
       <div className="flex flex-col space-y-10 justify-center items-center md:flex-row md:space-x-5 md:space-y-0">
@@ -213,6 +227,39 @@ function Home() {
                 className="bg-[#192734] border-2 border-[#3e3e3e] rounded-lg text-white px-6 py-3 text-base hover:border-[#fff] cursor-pointer transition w-full"
                 type="text"
               />
+
+              <input
+                id="interest"
+                value={interestInput}
+                placeholder="What are your interests?"
+                onChange={(e) => setInterestInput(e.target.value)}
+                onKeyDown={handleInterestKeyDown} // Add interest on Enter key
+                onBlur={() => {
+                  if (interestInput.trim()) {
+                    setInterest([...interest, interestInput.trim()]);
+                    setInterestInput(""); // Clear the input field after adding the interest
+                  }
+                }} // Add interest when the input loses focus
+                className="bg-[#192734] border-2 border-[#3e3e3e] rounded-lg text-white px-6 py-3 text-base hover:border-[#fff] cursor-pointer transition w-full mt-2"
+                type="text"
+              />
+              {/* Display the interests as tags with remove buttons */}
+              <div className="flex flex-wrap gap-2 mt-2">
+                {interest.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center bg-blue-500 text-white px-2 py-1 rounded-lg text-sm"
+                  >
+                    {item}
+                    <button
+                      className="ml-2 text-red-500 hover:text-red-700"
+                      onClick={() => handleRemoveInterest(index)}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {showPasswordInput && (

@@ -18,6 +18,7 @@ function ChatRoom() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const username = state?.username || null;
+  const interest = state?.interest || "";
   const [initialStart, setInitialStart] = useState(true);
   const [fromChat, setFromChat] = useState(false);
   const [prevUsernameLeft, setPrevUsernameLeft] = useState(""); // Track the username of the previous user who left
@@ -60,16 +61,32 @@ function ChatRoom() {
       setMessages((prevMessages) => [...prevMessages, message]);
     };
 
-    const handleMatchFound = ({ room, username: matchedUsername }) => {
+    const handleMatchFound = ({
+      room,
+      username: matchedUsername,
+      interest,
+    }) => {
       setRoom(room);
       setLoadingMessage("Start Finding a Match");
       setLoading(false);
-      setMessages([
+
+      // Initial system message
+      const newMessages = [
         {
           username: "System",
-          messageText: `Connected with ${matchedUsername}`,
+          messageText: `Connected with <strong>${matchedUsername}</strong>`,
         },
-      ]);
+      ];
+
+      // Add interest message if provided
+      if (interest) {
+        newMessages.push({
+          username: "System",
+          messageText: interest,
+        });
+      }
+
+      setMessages(newMessages);
     };
 
     const handleUserLeft = ({ message, username: leftUsername }) => {
@@ -120,7 +137,9 @@ function ChatRoom() {
     setFromChat(false);
     setLoading(true);
     setPrevUsernameLeft("");
-    socket.emit("startMatch", username);
+
+    // Emit the startMatch event with the username and interest
+    socket.emit("startMatch", { username, interest });
   };
 
   const sendMessage = (messageText) => {
@@ -186,8 +205,11 @@ function ChatRoom() {
           </button>
         </div>
       ) : (
-        <div className="flex flex-col h-full overflow-hidden">
-          <div className="scrollable-chat" ref={chatContainerRef}>
+        <div className="flex flex-col h-full overflow-hidden justify-center items-center">
+          <div
+            className="scrollable-chat w-full md:w-1/2 bg-[#212e3a]"
+            ref={chatContainerRef}
+          >
             <Chat messages={messages} />
             {typingStatus.typing && (
               <div className="flex items-center">

@@ -22,7 +22,7 @@ function Chat({ messages }) {
   // Get styles from JSON file for messages
   const getMessageStyles = (messageUsername, isSender) => {
     const styles = userStyles.styles.messages;
-    if (messageUsername === "admin") {
+    if (messageUsername === "admin" || messageUsername === "System") {
       return styles.admin;
     }
     return isSender ? styles.sender : styles.receiver;
@@ -46,25 +46,37 @@ function Chat({ messages }) {
               >
                 {message.username}
               </span>
-              <div
-                className="p-2 rounded-xl max-w-xs"
-                style={{
-                  ...getMessageStyles(message.username, isSender),
-                  wordBreak: "break-word",
-                }}
-              >
-                <p
-                  className="text-sm font-normal"
+
+              {message.username === "System" ? (
+                <div
+                  className="p-2 rounded-xl max-w-xs text-sm"
                   style={{
-                    color:
-                      message.username === "admin"
-                        ? getMessageStyles(message.username, isSender).color
-                        : getMessageStyles(message.username, isSender).color,
+                    ...getMessageStyles(message.username, isSender),
+                    wordBreak: "break-word",
+                  }}
+                  dangerouslySetInnerHTML={{ __html: message.messageText }} // Allow HTML rendering for System messages
+                />
+              ) : (
+                <div
+                  className="p-2 rounded-xl max-w-xs"
+                  style={{
+                    ...getMessageStyles(message.username, isSender),
+                    wordBreak: "break-word",
                   }}
                 >
-                  {message.messageText}
-                </p>
-              </div>
+                  <p
+                    className="text-sm font-normal"
+                    style={{
+                      color:
+                        message.username === "admin"
+                          ? getMessageStyles(message.username, isSender).color
+                          : getMessageStyles(message.username, isSender).color,
+                    }}
+                  >
+                    {message.messageText}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         );

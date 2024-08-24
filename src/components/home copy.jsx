@@ -96,7 +96,7 @@ function Home() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError(""); // Reset error message
+    setError("");
 
     if (username.toLowerCase().includes("admin")) {
       if (username.toLowerCase() === "admin" && !showPasswordInput) {
@@ -128,6 +128,7 @@ function Home() {
     }
 
     if (username.trim() !== "" && over18 && agreeTerms) {
+      // socket.emit("startMatch", username);
       navigate("/chat", { state: { username } });
     } else {
       setError("Please fulfill the age requirement and acknowledge the terms.");
@@ -151,7 +152,7 @@ function Home() {
           </div>
 
           {showTerms && (
-            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-[#192734] bg-opacity-50 text-gray-300">
+            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-[#192734] bg-opacity-50 text-gray-300 z-50">
               <div className="bg-[#15202b] p-6 rounded-lg shadow-lg">
                 <h2 className="text-lg font-semibold mb-4">
                   LeeyosChat Terms and Conditions
@@ -270,7 +271,7 @@ function Home() {
 
             {!showTerms && (
               <button
-                type="submit"
+                // type="submit"
                 className="overflow-hidden w-full p-2 h-12 bg-[#325E87] text-white border-none rounded-md text-md font-normal cursor-pointer relative z-10 group flex items-center justify-center"
               >
                 <span className="absolute inset-0 flex items-center justify-center bg-[#325E87] group-hover:opacity-0 transition-opacity duration-1000">
@@ -298,7 +299,7 @@ function Home() {
           </p> */}
 
           {showTerms && (
-            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-[#192734] bg-opacity-50 text-gray-300">
+            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-[#192734] bg-opacity-50 text-gray-300 z-50">
               <div className="bg-[#15202b] p-6 rounded-lg shadow-lg">
                 <h2 className="text-lg font-semibold mb-4">
                   LeeyosChat Terms and Conditions
@@ -437,6 +438,20 @@ function Home() {
           </div>
         </div>
       </div>
+      <footer className="absolute bottom-0 w-full text-center py-4 bg-transparent text-white mt-20">
+        <p>
+          For reports/suggestions, please fill out this&nbsp;
+          <a
+            href="https://forms.gle/ybVxyE4H9Fz5Lygr9"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-blue-400"
+          >
+            form
+          </a>
+          .
+        </p>
+      </footer>
     </div>
   );
 }
