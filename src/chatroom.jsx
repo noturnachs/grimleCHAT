@@ -96,6 +96,7 @@ function ChatRoom() {
       setLoading(false);
       setFromChat(true);
       setPrevUsernameLeft(leftUsername);
+      setTypingStatus({}); // Reset typing status when a user leaves
     };
 
     const handleBeforeUnload = () => {
@@ -156,6 +157,7 @@ function ChatRoom() {
       socket.emit("leaveRoom");
       setRoom(null);
       setMessages([]);
+      setTypingStatus({}); // Reset typing status when chat ends
     }
     setLoadingMessage("Find Again?");
     setLoading(false);
@@ -164,6 +166,7 @@ function ChatRoom() {
 
   const handleCancel = () => {
     socket.emit("leaveQueue", username);
+    setTypingStatus({}); // Reset typing status when canceling
     navigate("/");
   };
 
