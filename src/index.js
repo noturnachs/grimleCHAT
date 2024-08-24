@@ -3,7 +3,8 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import Main from "./main";
 
-const isMaintenance = true;
+// Load environment variables
+const isMaintenance = process.env.REACT_APP_IS_MAINTENANCE === "true";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
