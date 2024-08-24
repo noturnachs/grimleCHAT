@@ -12,28 +12,55 @@
         height: 100vh;
         margin: 0;
         font-family: Arial, sans-serif;
-        background-color: #f3f4f6;
-        color: #333;
+        background-color: #192734;
+        color: #eaeaea;
+        padding: 20px; /* Add padding for small screens */
+        box-sizing: border-box;
       }
       .container {
         text-align: center;
+        max-width: 320px; /* Limit the width on larger screens */
+        width: 100%; /* Ensure it scales down properly */
       }
       h1 {
-        font-size: 2em;
+        font-size: 1.8em; /* Slightly smaller for mobile */
         margin-bottom: 0.5em;
+        color: #ffffff;
       }
       p {
-        font-size: 1.2em;
+        font-size: 1em; /* Slightly smaller for mobile */
         margin-bottom: 1em;
+        color: #b0b0b0;
+      }
+      .spinner-container {
+        position: relative;
+        width: 60px; /* Increase size for better visibility on mobile */
+        height: 60px;
+        margin: 0 auto 20px; /* Add margin below the spinner */
       }
       .spinner {
-        border: 4px solid #f3f4f6;
-        border-top: 4px solid #333;
+        border: 4px solid #192734;
+        border-top: 4px solid #eaeaea;
         border-radius: 50%;
-        width: 40px;
-        height: 40px;
+        width: 100%;
+        height: 100%;
         animation: spin 1s linear infinite;
-        margin: 0 auto;
+      }
+
+      .witty-message {
+        font-size: 13px;
+        line-height: 1.4; /* Improve readability */
+      }
+      .percentage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.9em;
+        color: #eaeaea;
+        pointer-events: none;
+        white-space: nowrap;
+        text-align: center;
       }
       @keyframes spin {
         0% {
@@ -51,7 +78,33 @@
       <p>
         Our website is currently undergoing maintenance. Please check back soon.
       </p>
-      <div class="spinner"></div>
+      <div class="spinner-container">
+        <div class="spinner"></div>
+        <div class="percentage" id="percentage">0%</div>
+      </div>
+      <p class="witty-message">
+        In the meantime, why not touch some grass or have a conversation with a
+        real person? We'll be back before you know it!
+      </p>
     </div>
+
+    <script>
+      const percentageElement = document.getElementById("percentage");
+      let percentage = 0;
+      const targetPercentage = 78;
+
+      const incrementPercentage = () => {
+        if (percentage < targetPercentage) {
+          percentage++;
+          percentageElement.textContent = `${percentage}%`;
+
+          // Randomize the delay, with a bias towards slower increments
+          const randomDelay = Math.random() * 150 + 50; // Random delay between 50ms and 200ms
+          setTimeout(incrementPercentage, randomDelay);
+        }
+      };
+
+      incrementPercentage();
+    </script>
   </body>
 </html>
