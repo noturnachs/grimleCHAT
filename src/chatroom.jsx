@@ -3,32 +3,115 @@ import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import socket from "./socket"; // Import the singleton socket instance
 import Chat from "./components/chat";
 import ChatInput from "./components/chatInput";
-import { lineWobble, leapfrog } from "ldrs";
+import { lineWobble, leapfrog, squircle } from "ldrs";
 import { loadingTexts } from "./loadingTexts"; // Import the loading texts
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaInfoCircle } from "react-icons/fa";
+import Sidebar from "./components/Sidebar"; // Import Sidebar from a separate file
 
 lineWobble.register();
 leapfrog.register();
+squircle.register();
 
 function ChatRoom() {
   const [messages, setMessages] = useState([]);
   const [userCount, setUserCount] = useState(0);
   const [partnerVisitorId, setPartnerVisitorId] = useState(null);
+  const [partnerUsername, setPartnerUsername] = useState(null);
   const [room, setRoom] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Start Finding a Match");
   const [loading, setLoading] = useState(false); // Loading state
   const [countdown, setCountdown] = useState(5); // Countdown for finding users with the same interest
   const { state } = useLocation();
   const navigate = useNavigate();
+
+  // Added state variables for reporting
+  const [reportReason, setReportReason] = useState("");
+  const [screenshot, setScreenshot] = useState(null);
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [reportError, setReportError] = useState("");
+  const [reportSuccess, setReportSuccess] = useState("");
+
   const username = state?.username || null;
   const interest = state?.interest || [];
   const [initialStart, setInitialStart] = useState(true);
   const [fromChat, setFromChat] = useState(false);
   const [prevUsernameLeft, setPrevUsernameLeft] = useState(""); // Track the username of the previous user who left
   const [typingStatus, setTypingStatus] = useState({}); // Track typing status
+  const sidebarRef = useRef(null); // Ref for the sidebar container
 
   const socketRef = useRef(socket);
   const chatContainerRef = useRef(null); // Ref for the chat container
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleReportSubmit = async () => {
+    setIsSubmittingReport(true); // Start loader and disable input
+    setReportError(null);
+    setReportSuccess(null);
+
+    const formData = new FormData();
+    formData.append("visitorId", partnerVisitorId);
+    formData.append("reason", reportReason);
+
+    if (screenshot) {
+      formData.append("screenshot", screenshot);
+    }
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_SERVER_ORIGIN}/api/report-user`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (response.ok) {
+        setReportSuccess(
+          "Report sent successfully. You can end the chat if you want."
+        );
+        setReportError(null);
+      } else {
+        const errorData = await response.json();
+        setReportError(errorData.message || "Failed to send report.");
+        setReportSuccess(null);
+      }
+    } catch (error) {
+      console.error("Error reporting user:", error);
+      setReportError("An error occurred while sending the report.");
+      setReportSuccess(null);
+    }
+
+    setIsSubmittingReport(false); // Stop loader
+  };
+
+  const handleScreenshotChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setScreenshot(file);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setIsSidebarOpen(false); // Close sidebar if clicked outside
+      }
+    };
+
+    if (isSidebarOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside); // Cleanup the event listener
+    };
+  }, [isSidebarOpen]);
 
   useEffect(() => {
     if (loading) {
@@ -74,7 +157,8 @@ function ChatRoom() {
       setLoadingMessage("Start Finding a Match");
       setLoading(false);
 
-      setPartnerVisitorId(partnerVisitorId); // Store the partner's visitorId
+      setPartnerVisitorId(partnerVisitorId);
+      setPartnerUsername(matchedUsername); // Store the matched user's name
 
       const newMessages = [
         {
@@ -202,6 +286,14 @@ function ChatRoom() {
     setFromChat(true);
   };
 
+  const handleCancel2 = () => {
+    setIsSidebarOpen(false);
+    setReportReason("");
+    setScreenshot(null);
+    setReportError(null);
+    setReportSuccess(null);
+  };
+
   const handleCancel = () => {
     socket.emit("leaveQueue", username);
     setTypingStatus({}); // Reset typing status when canceling
@@ -250,9 +342,32 @@ function ChatRoom() {
       ) : (
         <div className="flex flex-col h-full overflow-hidden justify-center items-center">
           <div
-            className="scrollable-chat w-full md:w-1/2 bg-[#212e3a]"
+            className="scrollable-chat w-full md:w-1/2 bg-[#212e3a] relative"
             ref={chatContainerRef}
           >
+            {/* Sidebar Toggle Button */}
+            <button
+              onClick={toggleSidebar}
+              className="absolute top-2 right-2 text-white flex items-center space-x-2"
+            >
+              <FaInfoCircle size={20} />
+            </button>
+            {isSidebarOpen && (
+              <Sidebar
+                isOpen={isSidebarOpen}
+                toggleSidebar={toggleSidebar}
+                reportReason={reportReason}
+                setReportReason={setReportReason}
+                handleReportSubmit={handleReportSubmit}
+                handleScreenshotChange={handleScreenshotChange}
+                handleCancel2={handleCancel2}
+                screenshot={screenshot}
+                reportError={reportError}
+                reportSuccess={reportSuccess}
+                isSubmittingReport={isSubmittingReport}
+                sidebarRef={sidebarRef} // Pass sidebarRef to the Sidebar
+              />
+            )}
             <Chat messages={messages} />
             {typingStatus.typing && (
               <div className="flex items-center">
@@ -269,7 +384,6 @@ function ChatRoom() {
             socket={socketRef.current}
             room={room}
             username={username}
-            partnerVisitorId={partnerVisitorId} // Pass the partner's visitorId to ChatInput
           />
         </div>
       )}
