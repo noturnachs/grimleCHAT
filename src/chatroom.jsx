@@ -13,6 +13,7 @@ leapfrog.register();
 function ChatRoom() {
   const [messages, setMessages] = useState([]);
   const [userCount, setUserCount] = useState(0);
+  const [partnerVisitorId, setPartnerVisitorId] = useState(null);
   const [room, setRoom] = useState(null);
   const [loadingMessage, setLoadingMessage] = useState("Start Finding a Match");
   const [loading, setLoading] = useState(false); // Loading state
@@ -67,12 +68,14 @@ function ChatRoom() {
       room,
       username: matchedUsername,
       interest,
+      partnerVisitorId, // Capture the partner's visitorId
     }) => {
       setRoom(room);
       setLoadingMessage("Start Finding a Match");
       setLoading(false);
 
-      // Initial system message
+      setPartnerVisitorId(partnerVisitorId); // Store the partner's visitorId
+
       const newMessages = [
         {
           username: "System",
@@ -80,7 +83,6 @@ function ChatRoom() {
         },
       ];
 
-      // Add interest message if provided
       if (interest) {
         newMessages.push({
           username: "System",
@@ -106,12 +108,18 @@ function ChatRoom() {
       navigate("/");
     };
 
+    const handleBanned = ({ message }) => {
+      alert(message); // Display an alert to the user
+      navigate("/"); // Redirect them back to the home page
+    };
+
     window.addEventListener("beforeunload", handleBeforeUnload);
     socket.on("userCountUpdate", handleUserCountUpdate);
     socket.on("typing", handleTyping);
     socket.on("message", handleMessage);
     socket.on("matchFound", handleMatchFound);
     socket.on("userLeft", handleUserLeft);
+    socket.on("banned", handleBanned); // Listen for the "banned" event
 
     const interval = setInterval(() => {
       if (
@@ -131,6 +139,7 @@ function ChatRoom() {
       socket.off("message", handleMessage);
       socket.off("matchFound", handleMatchFound);
       socket.off("userLeft", handleUserLeft);
+      socket.off("banned", handleBanned); // Cleanup the "banned" event listener
     };
   }, [loadingMessage, navigate, username]);
 
@@ -166,8 +175,10 @@ function ChatRoom() {
       setLoadingMessage("Finding people with the same interests...");
     } else {
       setLoadingMessage("Finding a random match...");
-      socket.emit("startMatch", { username, interest: [] });
     }
+
+    const visitorId = state?.visitorId; // Get the visitorId from the state
+    socket.emit("startMatch", { username, interest, visitorId });
   };
 
   const sendMessage = (messageText) => {
@@ -258,6 +269,7 @@ function ChatRoom() {
             socket={socketRef.current}
             room={room}
             username={username}
+            partnerVisitorId={partnerVisitorId} // Pass the partner's visitorId to ChatInput
           />
         </div>
       )}
