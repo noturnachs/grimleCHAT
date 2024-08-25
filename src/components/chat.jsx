@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import userStyles from "./userStyles.json";
+import { MinimalAudioPlayer } from "./CustomAudioPlayer";
 
 function Chat({ messages }) {
   const { state } = useLocation();
@@ -47,15 +48,10 @@ function Chat({ messages }) {
                 {message.username}
               </span>
 
-              {message.username === "System" ? (
-                <div
-                  className="p-2 rounded-xl max-w-xs text-sm"
-                  style={{
-                    ...getMessageStyles(message.username, isSender),
-                    wordBreak: "break-word",
-                  }}
-                  dangerouslySetInnerHTML={{ __html: message.messageText }} // Allow HTML rendering for System messages
-                />
+              {message.audio ? (
+                <div className="p-2 rounded-xl max-w-xs">
+                  <MinimalAudioPlayer src={message.audio} />
+                </div>
               ) : (
                 <div
                   className="p-2 rounded-xl max-w-xs"
@@ -66,15 +62,14 @@ function Chat({ messages }) {
                 >
                   <p
                     className="text-sm font-normal"
+                    dangerouslySetInnerHTML={{ __html: message.messageText }}
                     style={{
                       color:
                         message.username === "admin"
                           ? getMessageStyles(message.username, isSender).color
                           : getMessageStyles(message.username, isSender).color,
                     }}
-                  >
-                    {message.messageText}
-                  </p>
+                  />
                 </div>
               )}
             </div>
