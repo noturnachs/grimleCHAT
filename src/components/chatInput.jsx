@@ -100,8 +100,18 @@ function ChatInput({
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          sampleRate: 44100, // Set sample rate (44100 Hz is CD quality)
+          channelCount: 2, // Stereo recording
+          echoCancellation: true, // Optional: Reduce background noise
+        },
+      });
+
+      mediaRecorderRef.current = new MediaRecorder(stream, {
+        mimeType: "audio/webm", // You can use "audio/mp3" or others if supported
+        audioBitsPerSecond: 128000, // Set bit rate (128 kbps)
+      });
 
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) {
