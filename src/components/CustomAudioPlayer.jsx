@@ -10,7 +10,7 @@ export function CustomAudioPlayer({ src }) {
         autoplay={false}
         controls
         loop={false}
-        volume={25}
+        volume={15}
         className="audio-player"
         style={{
           width: "100%",
@@ -35,7 +35,7 @@ export function MinimalAudioPlayer({ src }) {
         autoplay={false}
         controls
         loop={false}
-        volume={25}
+        volume={15}
         className="audio-player"
         style={{
           width: "100%",
