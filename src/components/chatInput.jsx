@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
-import { FaMicrophone } from "react-icons/fa";
+import { FaMicrophone, FaExclamationTriangle } from "react-icons/fa";
 import { CustomAudioPlayer } from "./CustomAudioPlayer";
 import autosize from "autosize";
+import { squircle } from "ldrs";
+
+squircle.register();
 
 function ChatInput({
   sendMessage,
@@ -11,10 +14,18 @@ function ChatInput({
   socket,
   room,
   username,
+  partnerVisitorId, // Assume you have this from your matching logic
 }) {
   const [messageText, setMessageText] = useState("");
   const [confirmEndChat, setConfirmEndChat] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [screenshot, setScreenshot] = useState(null);
+
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [reportError, setReportError] = useState("");
+  const [reportSuccess, setReportSuccess] = useState("");
 
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -36,11 +47,21 @@ function ChatInput({
     value > 0 ? 1 + value / 10 : 1
   );
 
+  const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
+
   useEffect(() => {
     if (textareaRef.current) {
       autosize(textareaRef.current);
     }
   }, []);
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setReportReason("");
+    setScreenshot(null);
+    setReportError(null);
+    setReportSuccess(null);
+  };
 
   const handleEndChatClick = () => {
     if (confirmEndChat) {
@@ -223,6 +244,51 @@ function ChatInput({
     };
   }, [isTyping, socket, room, username]);
 
+  const handleReportSubmit = async () => {
+    setIsSubmittingReport(true); // Start loader and disable input
+    setReportError(null);
+    setReportSuccess(null);
+
+    const formData = new FormData();
+    formData.append("visitorId", partnerVisitorId);
+    formData.append("reason", reportReason);
+
+    if (screenshot) {
+      formData.append("screenshot", screenshot);
+    }
+
+    try {
+      const response = await fetch(`${SERVER_ORIGIN}/api/report-user`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        setReportSuccess(
+          "Report sent successfully. You can end the chat if you want."
+        );
+        setReportError(null);
+      } else {
+        const errorData = await response.json();
+        setReportError(errorData.message || "Failed to send report.");
+        setReportSuccess(null);
+      }
+    } catch (error) {
+      console.error("Error reporting user:", error);
+      setReportError("An error occurred while sending the report.");
+      setReportSuccess(null);
+    }
+
+    setIsSubmittingReport(false); // Stop loader
+  };
+
+  const handleScreenshotChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setScreenshot(file);
+    }
+  };
+
   return (
     <div
       className="relative p-4 bg-[#192734] w-full md:w-1/2 rounded-lg shadow-md"
@@ -314,8 +380,86 @@ function ChatInput({
         >
           Send
         </motion.button>
+        <motion.button
+          type="button"
+          onClick={() => setIsModalOpen(true)}
+          className="bg-orange-500 text-white p-2 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-600"
+        >
+          <FaExclamationTriangle size={24} />
+        </motion.button>
       </form>
       {recordingError && <p className="text-red-500">{recordingError}</p>}
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-md m-2 w-full">
+            <h2 className="text-2xl font-bold mb-4 text-white">Report User</h2>
+            {reportError && <p className="text-red-500 mb-4">{reportError}</p>}
+            {reportSuccess && (
+              <p className="text-green-500 mb-4">{reportSuccess}</p>
+            )}
+            <textarea
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              placeholder="Enter the reason for reporting"
+              className="w-full p-2 mb-4 bg-gray-700 text-white rounded-lg resize-none"
+              rows={4}
+              disabled={isSubmittingReport} // Disable when submitting
+            />
+
+            <div className="mb-4">
+              <label className="block text-white font-semibold mb-2">
+                Attach a screenshot
+              </label>
+              <div className="flex items-center">
+                <label
+                  htmlFor="file-upload"
+                  className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg"
+                >
+                  Choose File
+                </label>
+                <input
+                  id="file-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleScreenshotChange}
+                  className="hidden"
+                />
+                {screenshot && (
+                  <span className="ml-4 text-gray-300">{screenshot.name}</span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={handleCancel}
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg"
+                disabled={isSubmittingReport} // Disable when submitting
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReportSubmit}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center"
+                disabled={isSubmittingReport} // Disable when submitting
+              >
+                {isSubmittingReport ? (
+                  <l-squircle
+                    size="20"
+                    stroke="3"
+                    speed="1.5"
+                    color="white"
+                    className="mr-2"
+                  />
+                ) : (
+                  "Send Report"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
