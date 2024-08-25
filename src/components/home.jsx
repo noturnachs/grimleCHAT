@@ -120,7 +120,7 @@ function Home() {
         visitorIdRef.current = result.visitorId; // Store the visitorId in the ref
 
         // Log the fingerprint to the console
-        console.log("Generated Fingerprint:", visitorIdRef.current);
+        // console.log("Generated Fingerprint:", visitorIdRef.current);
 
         // Send the fingerprint to your backend and check the response
         const response = await fetch(`${SERVER_ORIGIN}/api/identify-user`, {
