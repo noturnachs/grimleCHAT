@@ -3,10 +3,11 @@ import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import socket from "./socket"; // Import the singleton socket instance
 import Chat from "./components/chat";
 import ChatInput from "./components/chatInput";
-import { jellyTriangle, leapfrog } from "ldrs";
+import { lineWobble, leapfrog } from "ldrs";
 import { loadingTexts } from "./loadingTexts"; // Import the loading texts
+import { FaTimes } from "react-icons/fa";
 
-jellyTriangle.register();
+lineWobble.register();
 leapfrog.register();
 
 function ChatRoom() {
@@ -15,10 +16,11 @@ function ChatRoom() {
   const [room, setRoom] = useState(null);
   const [loadingMessage, setLoadingMessage] = useState("Start Finding a Match");
   const [loading, setLoading] = useState(false); // Loading state
+  const [countdown, setCountdown] = useState(5); // Countdown for finding users with the same interest
   const { state } = useLocation();
   const navigate = useNavigate();
   const username = state?.username || null;
-  const interest = state?.interest || "";
+  const interest = state?.interest || [];
   const [initialStart, setInitialStart] = useState(true);
   const [fromChat, setFromChat] = useState(false);
   const [prevUsernameLeft, setPrevUsernameLeft] = useState(""); // Track the username of the previous user who left
@@ -132,15 +134,40 @@ function ChatRoom() {
     };
   }, [loadingMessage, navigate, username]);
 
+  useEffect(() => {
+    if (loading && countdown > 0 && interest.length > 0) {
+      setLoadingMessage("Finding people with the same interests...");
+      const countdownInterval = setInterval(() => {
+        setCountdown((prevCount) => prevCount - 1);
+      }, 1000);
+
+      const timeout = setTimeout(() => {
+        setLoadingMessage(
+          "No people with the same interest, matching you with a random person..."
+        );
+        socket.emit("startMatch", { username, interest: [] }); // Emit the startMatch event for random matching
+        setCountdown(0);
+      }, countdown * 1000);
+
+      return () => {
+        clearInterval(countdownInterval);
+        clearTimeout(timeout);
+      };
+    }
+  }, [loading, countdown, socket, username, interest]);
+
   const startMatch = () => {
-    setLoadingMessage(loadingTexts[0]);
     setInitialStart(false);
     setFromChat(false);
     setLoading(true);
     setPrevUsernameLeft("");
-
-    // Emit the startMatch event with the username and interest
-    socket.emit("startMatch", { username, interest });
+    if (interest.length > 0) {
+      setCountdown(5); // Reset countdown
+      setLoadingMessage("Finding people with the same interests...");
+    } else {
+      setLoadingMessage("Finding a random match...");
+      socket.emit("startMatch", { username, interest: [] });
+    }
   };
 
   const sendMessage = (messageText) => {
@@ -187,24 +214,26 @@ function ChatRoom() {
             onClick={startMatch}
             className={`${
               loading ? "bg-transparent mb-5" : "bg-blue-500 mb-1"
-            } text-white font-normal p-2 rounded`}
+            } text-white font-normal p-1 rounded text-md`}
             disabled={loading} // Disable button when loading
           >
-            {initialStart || fromChat ? loadingMessage : loadingMessage}
+            {loading ? loadingMessage : "Start Finding a Match"}
           </button>
           {loading && (
-            <l-jelly-triangle
-              size="50"
-              speed="1.50"
-              color="#04d9ff"
+            <l-line-wobble
+              size="80"
+              stroke="5"
+              bg-opacity="0.1"
+              speed="1.75"
+              color="green"
               className="inline-block ml-2"
-            ></l-jelly-triangle>
+            ></l-line-wobble>
           )}
           <button
             onClick={handleCancel}
-            className="mt-6 inline-flex items-center px-4 py-2 bg-red-600 transition ease-in-out delay-75 hover:bg-red-700 text-white text-sm font-medium rounded-md hover:-translate-y-1 hover:scale-110"
+            className="mt-6 inline-flex items-center p-2 text-red-600 transition ease-in-out delay-75 hover:bg-red-300 text-sm font-medium rounded-md hover:-translate-y-1 hover:scale-110"
           >
-            Cancel
+            <FaTimes size={20} /> {/* Replace text with the icon */}
           </button>
         </div>
       ) : (
@@ -216,7 +245,7 @@ function ChatRoom() {
             <Chat messages={messages} />
             {typingStatus.typing && (
               <div className="flex items-center">
-                <span className="text-gray-400 ml-2">
+                <span className="text-gray-400 ml-2 text-xs">
                   {typingStatus.username} is typing&nbsp;
                 </span>
                 <l-leapfrog size="20" speed="2.5" color="#9ca3af"></l-leapfrog>
