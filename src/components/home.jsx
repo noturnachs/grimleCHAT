@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import socket from "../socket"; // Import the singleton socket instance
 import { motion, useSpring, useTransform } from "framer-motion";
 import Announcement from "./Announcement";
+import FingerprintJS from "@fingerprintjs/fingerprintjs"; // Import FingerprintJS
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
 
@@ -22,7 +23,7 @@ function Counter({ value }) {
       <Digit place={100} value={value} />
       <Digit place={10} value={value} />
       <Digit place={1} value={value} />
-      <span className="text-[#3ba55c] font-extrabold	 flex items-center text-[20px] md:text-[25px]">
+      <span className="text-[#3ba55c] font-extrabold flex items-center text-[20px] md:text-[25px]">
         ONLINE
       </span>
     </div>
@@ -84,6 +85,7 @@ function Home() {
   const navigate = useNavigate();
 
   const socketRef = useRef();
+  const visitorIdRef = useRef(null); // Add a ref to store the visitor ID
 
   const handleRemoveInterest = (indexToRemove) => {
     setInterest(interest.filter((_, index) => index !== indexToRemove));
@@ -108,6 +110,41 @@ function Home() {
       socket.off("userCountUpdate", handleUserCountUpdate);
     };
   }, []);
+
+  // Add this useEffect for fingerprinting
+  useEffect(() => {
+    const getFingerprint = async () => {
+      try {
+        const fp = await FingerprintJS.load();
+        const result = await fp.get();
+        visitorIdRef.current = result.visitorId; // Store the visitorId in the ref
+
+        // Log the fingerprint to the console
+        console.log("Generated Fingerprint:", visitorIdRef.current);
+
+        // Send the fingerprint to your backend and check the response
+        const response = await fetch(`${SERVER_ORIGIN}/api/identify-user`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ visitorId: visitorIdRef.current }),
+        });
+
+        if (response.status === 403) {
+          // Redirect to the ban page if the user is banned
+          navigate("/banned");
+        } else {
+          const data = await response.json();
+          console.log(data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching fingerprint or identifying user:", error);
+      }
+    };
+
+    getFingerprint();
+  }, [navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -143,8 +180,15 @@ function Home() {
     }
 
     if (username.trim() !== "" && over18 && agreeTerms) {
-      socket.emit("startMatch", { username, interest }); // Ensure interest is passed here
-      navigate("/chat", { state: { username, interest } }); // Pass interest along with username
+      // Include visitorId in the socket.emit and navigate calls
+      socket.emit("startMatch", {
+        username,
+        interest,
+        visitorId: visitorIdRef.current,
+      });
+      navigate("/chat", {
+        state: { username, interest, visitorId: visitorIdRef.current },
+      });
     } else {
       setError("Please fulfill the age requirement and acknowledge the terms.");
     }
@@ -321,7 +365,7 @@ function Home() {
 
             {!showTerms && (
               <button
-                // type="submit"
+                type="submit"
                 className="overflow-hidden w-full p-2 h-12 bg-[#325E87] text-white border-none rounded-md text-md font-normal cursor-pointer relative z-10 group flex items-center justify-center"
               >
                 <span className="absolute inset-0 flex items-center justify-center bg-[#325E87] group-hover:opacity-0 transition-opacity duration-1000">
@@ -337,8 +381,6 @@ function Home() {
             )}
           </form>
         </div>
-
-        {/* <div className="bg-[#15202b]  p-3 rounded-lg shadow-lg max-w-md w-full md:p-8"> */}
       </div>
       <footer className="absolute bottom-0 w-full text-center py-4 bg-transparent text-white mt-20">
         <p>
