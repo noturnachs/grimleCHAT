@@ -143,6 +143,7 @@ function Home() {
     }
 
     if (username.trim() !== "" && over18 && agreeTerms) {
+      socket.emit("startMatch", { username, interest }); // Ensure interest is passed here
       navigate("/chat", { state: { username, interest } }); // Pass interest along with username
     } else {
       setError("Please fulfill the age requirement and acknowledge the terms.");
