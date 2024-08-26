@@ -13,6 +13,7 @@ function ChatInput({
   socket,
   room,
   username,
+  isImageEnlarged,
   // Assume you have this from your matching logic
 }) {
   const [messageText, setMessageText] = useState("");
@@ -43,6 +44,7 @@ function ChatInput({
     value > 0 ? 1 + value / 10 : 1
   );
 
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (optionsRef.current && !optionsRef.current.contains(event.target)) {
@@ -59,6 +61,8 @@ function ChatInput({
   const toggleOptions = () => {
     setShowOptions(!showOptions);
   };
+
+  
 
   const fileInputRef = useRef(null);
   useEffect(() => {
@@ -179,7 +183,10 @@ function ChatInput({
         console.error("Error compressing the image:", error);
       }
     }
-    setSelectedImages([...selectedImages, ...compressedImages]); // Add selected images
+    setSelectedImages((prevSelectedImages) => [
+      ...prevSelectedImages,
+      ...compressedImages,
+    ]); // Update state with previous selected images and new compressed ones
   };
 
   const sendImageMessage = () => {
@@ -192,16 +199,20 @@ function ChatInput({
         });
       });
 
-      Promise.all(imagePromises).then((imagesBase64) => {
-        socket.emit("sendMessage", {
-          room,
-          message: {
-            username,
-            images: imagesBase64, // Send images as an array
-          },
+      Promise.all(imagePromises)
+        .then((imagesBase64) => {
+          socket.emit("sendMessage", {
+            room,
+            message: {
+              username,
+              images: imagesBase64, // Send images as an array
+            },
+          });
+          setSelectedImages([]); // Clear selected images after sending
+        })
+        .catch((error) => {
+          console.error("Error converting images to base64:", error);
         });
-        setSelectedImages([]); // Clear selected images after sending
-      });
     }
   };
   const pauseRecording = () => {
@@ -296,7 +307,7 @@ function ChatInput({
   return (
     <div
       className="relative p-4 bg-[#192734] w-full md:w-1/2 rounded-lg shadow-md"
-      style={{ height: containerHeight }}
+      style={{ height: containerHeight, zIndex: 1 }}
     >
       {selectedImages.length > 0 && (
         <div className="flex space-x-2 mb-4">
@@ -325,7 +336,7 @@ function ChatInput({
       )}
 
       {isRecording || audioURL ? (
-        <div className="absolute inset-0 bg-[#141b22] bg-opacity-100 flex flex-col items-center justify-center z-10 p-4 rounded-lg ">
+        <div className="absolute inset-0 bg-[#141b22] bg-opacity-100 flex flex-col items-center justify-center z-20 p-4 rounded-lg ">
           {!audioURL ? (
             <>
               <div className="text-white text-lg mb-2">
@@ -372,7 +383,10 @@ function ChatInput({
         </div>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="flex items-center space-x-1">
+      <form
+        onSubmit={handleSubmit}
+        className="flex items-center space-x-1 z-10"
+      >
         <motion.button
           type="button"
           onClick={handleEndChatClick}
@@ -411,6 +425,7 @@ function ChatInput({
                 onChange={handleImageSelect}
                 ref={fileInputRef} // Attach the ref here
                 className="hidden" // Hide the input field
+                multiple // Allow multiple file selections
               />
               <motion.button
                 type="button"
