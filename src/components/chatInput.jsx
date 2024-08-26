@@ -99,15 +99,23 @@ function ChatInput({
     }
   };
 
+  const requestMicrophonePermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((track) => track.stop()); // Stop the tracks after permission is granted
+      return true;
+    } catch (error) {
+      setRecordingError(
+        "Microphone permission is required to send voice messages."
+      );
+      return false;
+    }
+  };
+
   const startRecording = async () => {
     try {
-      const hasPermissions = await navigator.permissions.query({
-        name: "microphone",
-      });
-
-      if (hasPermissions.state !== "granted") {
-        throw new Error("Microphone permission not granted");
-      }
+      const permissionGranted = await requestMicrophonePermission();
+      if (!permissionGranted) return;
 
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
