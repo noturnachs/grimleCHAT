@@ -17,6 +17,8 @@ function ChatRoom() {
   const [userCount, setUserCount] = useState(0);
   const [partnerVisitorId, setPartnerVisitorId] = useState(null);
   const [partnerUsername, setPartnerUsername] = useState(null);
+  const [isImageEnlarged, setIsImageEnlarged] = useState(false); // New state to track if an image is enlarged
+
   const [room, setRoom] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Start Finding a Match");
@@ -376,7 +378,7 @@ function ChatRoom() {
                 className="z-[9999]"
               />
             )}
-            <Chat messages={messages} />
+            <Chat messages={messages} setIsImageEnlarged={setIsImageEnlarged} />
             {typingStatus.typing && (
               <div className="flex items-center">
                 <span className="text-gray-400 ml-2 text-xs">
@@ -386,13 +388,16 @@ function ChatRoom() {
               </div>
             )}
           </div>
-          <ChatInput
-            sendMessage={sendMessage}
-            onEndChat={onEndChat}
-            socket={socketRef.current}
-            room={room}
-            username={username}
-          />
+          {!isImageEnlarged && (
+            <ChatInput
+              sendMessage={sendMessage}
+              onEndChat={onEndChat}
+              socket={socketRef.current}
+              room={room}
+              username={username}
+              isImageEnlarged={isImageEnlarged}
+            />
+          )}
         </div>
       )}
     </div>
