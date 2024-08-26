@@ -14,6 +14,7 @@ function Sidebar({
   reportSuccess,
   isSubmittingReport,
   sidebarRef,
+  className,
 }) {
   const textareaRef = useRef(null);
 
@@ -26,7 +27,7 @@ function Sidebar({
   return (
     <div
       ref={sidebarRef} // Attach ref to the sidebar
-      className={`absolute top-0 right-0 h-full bg-[#1f2e3a] shadow-lg transform transition-transform duration-300 ${
+      className={`absolute top-0 right-0 h-full bg-[#1f2e3a] shadow-lg transform transition-transform duration-300 ${className} ${
         isOpen ? "translate-x-0" : "translate-x-full"
       }`}
       style={{ width: "80%" }}
