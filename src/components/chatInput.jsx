@@ -44,7 +44,6 @@ function ChatInput({
     value > 0 ? 1 + value / 10 : 1
   );
 
-  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (optionsRef.current && !optionsRef.current.contains(event.target)) {
@@ -61,8 +60,6 @@ function ChatInput({
   const toggleOptions = () => {
     setShowOptions(!showOptions);
   };
-
-  
 
   const fileInputRef = useRef(null);
   useEffect(() => {
@@ -390,7 +387,7 @@ function ChatInput({
         <motion.button
           type="button"
           onClick={handleEndChatClick}
-          className="bg-red-500 text-white p-2 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-600 h-full"
+          className="bg-red-500 text-white p-1 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-600 h-full"
         >
           {confirmEndChat ? "Confirm" : "End"}
         </motion.button>
@@ -455,7 +452,7 @@ function ChatInput({
         <motion.button
           type="submit"
           disabled={disabled}
-          className="bg-blue-500 text-white p-2 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-blue-500 text-white p-1 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ scale: scaleTransform }}
           whileTap={{ scale: 1.1 }}
         >
