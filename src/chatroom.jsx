@@ -25,6 +25,13 @@ function ChatRoom() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
+  // Redirect to home if no username is present
+  useEffect(() => {
+    if (!state || !state.username) {
+      navigate("/", { replace: true });
+    }
+  }, [state, navigate]);
+
   // Added state variables for reporting
   const [reportReason, setReportReason] = useState("");
   const [screenshot, setScreenshot] = useState(null);
