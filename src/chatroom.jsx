@@ -349,15 +349,15 @@ function ChatRoom() {
       ) : (
         <div className="flex flex-col h-full overflow-hidden justify-center items-center">
           <div
-            className="scrollable-chat w-full md:w-1/2 bg-[#212e3a] relative"
+            className="scrollable-chat w-full md:w-1/2 bg-[#212e3a] relative z-0"
             ref={chatContainerRef}
           >
             {/* Sidebar Toggle Button */}
             <button
               onClick={toggleSidebar}
-              className="absolute top-2 right-2 text-white flex items-center space-x-2"
+              className="absolute top-2 right-2 text-white flex items-center space-x-2 z-10"
             >
-              <FaInfoCircle size={20} />
+              <FaInfoCircle size={20} color="#dc3545" />
             </button>
             {isSidebarOpen && (
               <Sidebar
@@ -373,6 +373,7 @@ function ChatRoom() {
                 reportSuccess={reportSuccess}
                 isSubmittingReport={isSubmittingReport}
                 sidebarRef={sidebarRef} // Pass sidebarRef to the Sidebar
+                className="z-[9999]"
               />
             )}
             <Chat messages={messages} />
