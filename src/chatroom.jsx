@@ -148,6 +148,9 @@ function ChatRoom() {
   }, [messages]);
 
   useEffect(() => {
+    const originalTitle = document.title;
+    let notificationInterval;
+
     const handleUserCountUpdate = (count) => {
       setUserCount(count);
     };
@@ -160,6 +163,16 @@ function ChatRoom() {
 
     const handleMessage = (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
+
+      // Only update the tab title if the message is from another user
+      if (message.username !== username) {
+        let showNewMessage = true;
+
+        notificationInterval = setInterval(() => {
+          document.title = showNewMessage ? "New Message!" : originalTitle;
+          showNewMessage = !showNewMessage;
+        }, 3000); // Toggle every second
+      }
     };
 
     const handleMatchFound = ({
@@ -212,7 +225,15 @@ function ChatRoom() {
       navigate("/"); // Redirect them back to the home page
     };
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        clearInterval(notificationInterval);
+        document.title = originalTitle;
+      }
+    };
+
     window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     socket.on("userCountUpdate", handleUserCountUpdate);
     socket.on("typing", handleTyping);
     socket.on("message", handleMessage);
@@ -232,7 +253,9 @@ function ChatRoom() {
 
     return () => {
       clearInterval(interval);
+      clearInterval(notificationInterval);
       window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       socket.off("userCountUpdate", handleUserCountUpdate);
       socket.off("typing", handleTyping);
       socket.off("message", handleMessage);
