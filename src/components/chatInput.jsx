@@ -3,6 +3,7 @@ import { motion, useSpring, useTransform } from "framer-motion";
 import { FaMicrophone } from "react-icons/fa";
 import { CustomAudioPlayer } from "./CustomAudioPlayer";
 import autosize from "autosize";
+import RecordRTC from "recordrtc";
 
 function ChatInput({
   sendMessage,
@@ -99,76 +100,39 @@ function ChatInput({
     }
   };
 
-  const requestMicrophonePermission = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach((track) => track.stop()); // Stop the tracks after permission is granted
-      return true;
-    } catch (error) {
-      setRecordingError(
-        "Microphone permission is required to send voice messages."
-      );
-      return false;
-    }
-  };
-
   const startRecording = async () => {
     try {
-      // Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          sampleRate: 44100, // Set sample rate (44100 Hz is CD quality)
-          channelCount: 2, // Stereo recording
-          echoCancellation: true, // Optional: Reduce background noise
-        },
+        audio: true,
       });
 
-      // Initialize MediaRecorder
-      mediaRecorderRef.current = new MediaRecorder(stream, {
-        mimeType: "audio/webm", // Adjust mime type based on what is supported
-        audioBitsPerSecond: 128000, // Set bit rate (128 kbps)
+      // Initialize RecordRTC
+      mediaRecorderRef.current = new RecordRTC(stream, {
+        type: "audio",
+        mimeType: "audio/webm",
+        bitsPerSecond: 128000, // Set bit rate (128 kbps)
       });
 
-      // Handle data availability
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          setRecordedAudio(event.data);
-          setAudioURL(URL.createObjectURL(event.data));
-        }
-      };
-
-      mediaRecorderRef.current.start();
+      mediaRecorderRef.current.startRecording();
       setIsRecording(true);
       setRecordingError(null);
       setRecordingTime(0);
 
-      // Start recording time counter
       recordingIntervalRef.current = setInterval(() => {
         setRecordingTime((prevTime) => prevTime + 1);
       }, 1000);
 
       setContainerHeight("400px");
     } catch (error) {
-      // Check if the error is due to lack of permissions
-      if (error.name === "NotAllowedError" || error.name === "SecurityError") {
-        setRecordingError(
-          "Microphone permission is required to send voice messages."
-        );
-      } else if (error.name === "NotFoundError") {
-        setRecordingError(
-          "No microphone found. Please ensure a microphone is connected."
-        );
-      } else {
-        setRecordingError(
-          "Unable to start recording. Please check your microphone permissions."
-        );
-      }
+      setRecordingError(
+        "Unable to start recording. Please check your microphone permissions."
+      );
     }
   };
 
   const pauseRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.pause();
+      mediaRecorderRef.current.pauseRecording();
       setIsPaused(true);
       clearInterval(recordingIntervalRef.current);
     }
@@ -176,23 +140,26 @@ function ChatInput({
 
   const resumeRecording = () => {
     if (mediaRecorderRef.current && isPaused) {
-      mediaRecorderRef.current.resume();
+      mediaRecorderRef.current.resumeRecording();
       setIsPaused(false);
       recordingIntervalRef.current = setInterval(() => {
         setRecordingTime((prevTime) => prevTime + 1);
       }, 1000);
     }
   };
-
   const stopRecording = () => {
     if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stopRecording(() => {
+        const blob = mediaRecorderRef.current.getBlob();
+        setRecordedAudio(blob);
+        setAudioURL(URL.createObjectURL(blob));
+      });
+
       clearInterval(recordingIntervalRef.current);
       setIsRecording(false);
       setIsPaused(false);
     }
   };
-
   const sendVoiceMessage = () => {
     if (recordedAudio) {
       const audioBlob = recordedAudio;
@@ -224,13 +191,10 @@ function ChatInput({
     setIsPaused(false);
 
     if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stream
-        .getTracks()
-        .forEach((track) => track.stop());
+      mediaRecorderRef.current.destroy();
       mediaRecorderRef.current = null;
     }
 
-    // Reset the container height after recording ends
     setContainerHeight("auto");
   };
 
