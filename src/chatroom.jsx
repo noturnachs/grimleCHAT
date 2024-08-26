@@ -7,6 +7,7 @@ import { lineWobble, leapfrog, squircle } from "ldrs";
 import { loadingTexts } from "./loadingTexts"; // Import the loading texts
 import { FaTimes, FaInfoCircle } from "react-icons/fa";
 import Sidebar from "./components/Sidebar"; // Import Sidebar from a separate file
+import Popup from "./components/Popup"; // Import the Popup component
 
 lineWobble.register();
 leapfrog.register();
@@ -27,12 +28,8 @@ function ChatRoom() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  // Redirect to home if no username is present
-  useEffect(() => {
-    if (!state || !state.username) {
-      navigate("/", { replace: true });
-    }
-  }, [state, navigate]);
+  const [popupMessage, setPopupMessage] = useState("");
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
 
   // Added state variables for reporting
   const [reportReason, setReportReason] = useState("");
@@ -51,6 +48,34 @@ function ChatRoom() {
 
   const socketRef = useRef(socket);
   const chatContainerRef = useRef(null); // Ref for the chat container
+
+  useEffect(() => {
+    const socketInstance = socketRef.current; // Use the socket reference
+
+    socketInstance.on("telegramMessage", (data) => {
+      showPopup(data.message);
+    });
+
+    return () => {
+      socketInstance.off("telegramMessage"); // Cleanup the event listener
+    };
+  }, []);
+  // Function to show popup with message from Telegram bot
+  const showPopup = (message) => {
+    setPopupMessage(message);
+    setIsPopupVisible(true);
+  };
+
+  // Function to close the popup
+  const closePopup = () => {
+    setIsPopupVisible(false);
+  };
+  // Redirect to home if no username is present
+  useEffect(() => {
+    if (!state || !state.username) {
+      navigate("/", { replace: true });
+    }
+  }, [state, navigate]);
 
   useEffect(() => {
     if (chatContainerRef.current && room) {
@@ -328,6 +353,7 @@ function ChatRoom() {
 
   return (
     <div className="bg-[#192734] h-screen flex flex-col">
+      {isPopupVisible && <Popup message={popupMessage} onClose={closePopup} />}
       {!room ? (
         <div className="flex flex-col items-center justify-center h-full">
           {prevUsernameLeft && (
