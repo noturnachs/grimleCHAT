@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
-import { FaMicrophone } from "react-icons/fa";
+import { FaMicrophone, FaImage, FaTimes, FaPlus } from "react-icons/fa";
 import { CustomAudioPlayer } from "./CustomAudioPlayer";
 import autosize from "autosize";
 import RecordRTC from "recordrtc";
+import imageCompression from "browser-image-compression";
 
 function ChatInput({
   sendMessage,
@@ -17,6 +18,10 @@ function ChatInput({
   const [messageText, setMessageText] = useState("");
   const [confirmEndChat, setConfirmEndChat] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+
+  const [selectedImages, setSelectedImages] = useState([]); // Updated for multiple images
+  const [showOptions, setShowOptions] = useState(false);
+  const optionsRef = useRef(null);
 
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -39,6 +44,24 @@ function ChatInput({
   );
 
   useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (optionsRef.current && !optionsRef.current.contains(event.target)) {
+        setShowOptions(false); // Close the options when clicking outside
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [optionsRef]);
+
+  const toggleOptions = () => {
+    setShowOptions(!showOptions);
+  };
+
+  const fileInputRef = useRef(null);
+  useEffect(() => {
     if (textareaRef.current) {
       autosize(textareaRef.current);
     }
@@ -59,11 +82,19 @@ function ChatInput({
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (isRecording && recordedAudio) {
+
+    // Check if there is a text message to send
+    if (messageText.trim()) {
+      sendMessage(messageText.trim());
+      setMessageText(""); // Clear the text input
+    }
+    // Check if there are images to send
+    else if (selectedImages.length > 0) {
+      sendImageMessage();
+    }
+    // Check if there is recorded audio to send
+    else if (isRecording && recordedAudio) {
       sendVoiceMessage();
-    } else {
-      sendMessage(messageText);
-      setMessageText("");
     }
 
     if (buttonRef.current) {
@@ -131,6 +162,48 @@ function ChatInput({
     }
   };
 
+  const handleImageSelect = async (e) => {
+    const files = Array.from(e.target.files);
+    const compressedImages = [];
+
+    for (let file of files) {
+      try {
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+        };
+        const compressedFile = await imageCompression(file, options);
+        compressedImages.push(compressedFile);
+      } catch (error) {
+        console.error("Error compressing the image:", error);
+      }
+    }
+    setSelectedImages([...selectedImages, ...compressedImages]); // Add selected images
+  };
+
+  const sendImageMessage = () => {
+    if (selectedImages.length > 0) {
+      const imagePromises = selectedImages.map((image) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(image);
+        });
+      });
+
+      Promise.all(imagePromises).then((imagesBase64) => {
+        socket.emit("sendMessage", {
+          room,
+          message: {
+            username,
+            images: imagesBase64, // Send images as an array
+          },
+        });
+        setSelectedImages([]); // Clear selected images after sending
+      });
+    }
+  };
   const pauseRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.pauseRecording();
@@ -194,7 +267,7 @@ function ChatInput({
     if (mediaRecorderRef.current) {
       const tracks = mediaRecorderRef.current.stream?.getTracks();
       if (tracks) {
-        tracks.forEach((track) => track.stop());
+        tracks.forEach((track) => track.stop()); // Stops the media tracks
       }
       mediaRecorderRef.current.destroy();
       mediaRecorderRef.current = null;
@@ -225,6 +298,32 @@ function ChatInput({
       className="relative p-4 bg-[#192734] w-full md:w-1/2 rounded-lg shadow-md"
       style={{ height: containerHeight }}
     >
+      {selectedImages.length > 0 && (
+        <div className="flex space-x-2 mb-4">
+          {selectedImages.map((image, index) => (
+            <div key={index} className="relative">
+              <img
+                src={URL.createObjectURL(image)}
+                alt="Selected"
+                className="w-20 h-20 object-cover rounded-lg"
+              />
+              <motion.button
+                onClick={() => {
+                  const newImages = selectedImages.filter(
+                    (_, i) => i !== index
+                  );
+                  setSelectedImages(newImages);
+                }}
+                className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full transition-transform transform hover:scale-105 focus:outline-none"
+                style={{ lineHeight: 0 }}
+              >
+                <FaTimes size={12} />
+              </motion.button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {isRecording || audioURL ? (
         <div className="absolute inset-0 bg-[#141b22] bg-opacity-100 flex flex-col items-center justify-center z-10 p-4 rounded-lg ">
           {!audioURL ? (
@@ -281,15 +380,53 @@ function ChatInput({
         >
           {confirmEndChat ? "Confirm" : "End"}
         </motion.button>
-        <motion.button
-          type="button"
-          onClick={startRecording}
-          className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
-        >
-          <div className={` w-8 h-10 flex items-center justify-center`}>
-            <FaMicrophone size={24} />
-          </div>
-        </motion.button>
+        <div className="relative " ref={optionsRef}>
+          <motion.button
+            type="button"
+            onClick={toggleOptions} // Toggle the visibility of the additional options
+            className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
+          >
+            <div className={`w-8 h-10 flex items-center justify-center`}>
+              <FaPlus size={24} /> {/* Plus Icon */}
+            </div>
+          </motion.button>
+
+          {/* Conditionally render microphone and image buttons */}
+          {showOptions && (
+            <div className="absolute flex flex-col space-y-2 bottom-12 left-0 bg-[#1a2631] rounded-lg">
+              {" "}
+              {/* Positioned above */}
+              <motion.button
+                type="button"
+                onClick={startRecording}
+                className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
+              >
+                <div className={`w-8 h-10 flex items-center justify-center`}>
+                  <FaMicrophone size={24} />
+                </div>
+              </motion.button>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                ref={fileInputRef} // Attach the ref here
+                className="hidden" // Hide the input field
+              />
+              <motion.button
+                type="button"
+                onClick={() =>
+                  fileInputRef.current && fileInputRef.current.click()
+                } // Ensure ref exists before calling click
+                className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
+              >
+                <div className={`w-8 h-10 flex items-center justify-center`}>
+                  <FaImage size={24} /> {/* Icon for image selection */}
+                </div>
+              </motion.button>
+            </div>
+          )}
+        </div>
+
         <textarea
           ref={textareaRef}
           value={messageText}
