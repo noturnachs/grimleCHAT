@@ -114,9 +114,7 @@ function ChatInput({
 
   const startRecording = async () => {
     try {
-      const permissionGranted = await requestMicrophonePermission();
-      if (!permissionGranted) return;
-
+      // Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           sampleRate: 44100, // Set sample rate (44100 Hz is CD quality)
@@ -125,11 +123,13 @@ function ChatInput({
         },
       });
 
+      // Initialize MediaRecorder
       mediaRecorderRef.current = new MediaRecorder(stream, {
-        mimeType: "audio/webm", // You can use "audio/mp3" or others if supported
+        mimeType: "audio/webm", // Adjust mime type based on what is supported
         audioBitsPerSecond: 128000, // Set bit rate (128 kbps)
       });
 
+      // Handle data availability
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) {
           setRecordedAudio(event.data);
@@ -142,15 +142,27 @@ function ChatInput({
       setRecordingError(null);
       setRecordingTime(0);
 
+      // Start recording time counter
       recordingIntervalRef.current = setInterval(() => {
         setRecordingTime((prevTime) => prevTime + 1);
       }, 1000);
 
       setContainerHeight("400px");
     } catch (error) {
-      setRecordingError(
-        "Unable to start recording. Please check your microphone permissions."
-      );
+      // Check if the error is due to lack of permissions
+      if (error.name === "NotAllowedError" || error.name === "SecurityError") {
+        setRecordingError(
+          "Microphone permission is required to send voice messages."
+        );
+      } else if (error.name === "NotFoundError") {
+        setRecordingError(
+          "No microphone found. Please ensure a microphone is connected."
+        );
+      } else {
+        setRecordingError(
+          "Unable to start recording. Please check your microphone permissions."
+        );
+      }
     }
   };
 
