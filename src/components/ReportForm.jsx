@@ -77,7 +77,7 @@ const ReportForm = () => {
   };
 
   return (
-    <div className="bg-[#15202b] p-6 rounded-lg shadow-lg max-w-md w-full mx-auto mt-20">
+    <div className="bg-[#15202b] p-6 rounded-lg shadow-lg max-w-md w-full mt-10 ">
       <button
         onClick={handleBack}
         className="flex items-center text-white mb-4 "
