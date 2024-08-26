@@ -52,6 +52,12 @@ function ChatRoom() {
   const socketRef = useRef(socket);
   const chatContainerRef = useRef(null); // Ref for the chat container
 
+  useEffect(() => {
+    if (chatContainerRef.current && room) {
+      chatContainerRef.current.scrollTop = 0; // Scroll to the top when match is found
+    }
+  }, [room]);
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
