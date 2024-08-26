@@ -110,6 +110,7 @@ function ChatInput({
       mediaRecorderRef.current = new RecordRTC(stream, {
         type: "audio",
         mimeType: "audio/webm",
+        disableLogs: true,
         bitsPerSecond: 128000, // Set bit rate (128 kbps)
       });
 
@@ -191,6 +192,10 @@ function ChatInput({
     setIsPaused(false);
 
     if (mediaRecorderRef.current) {
+      const tracks = mediaRecorderRef.current.stream?.getTracks();
+      if (tracks) {
+        tracks.forEach((track) => track.stop());
+      }
       mediaRecorderRef.current.destroy();
       mediaRecorderRef.current = null;
     }
@@ -208,10 +213,9 @@ function ChatInput({
       }
       clearInterval(recordingIntervalRef.current);
 
-      if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.stream
-          .getTracks()
-          .forEach((track) => track.stop());
+      if (mediaRecorderRef.current && mediaRecorderRef.current.stream) {
+        const tracks = mediaRecorderRef.current.stream.getTracks();
+        tracks.forEach((track) => track.stop());
       }
     };
   }, [isTyping, socket, room, username]);
