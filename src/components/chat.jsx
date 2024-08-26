@@ -4,11 +4,12 @@ import userStyles from "./userStyles.json";
 import { MinimalAudioPlayer } from "./CustomAudioPlayer";
 import { motion } from "framer-motion";
 
-function Chat({ messages }) {
+function Chat({ messages, setIsImageEnlarged }) {
   const { state } = useLocation();
   const username = state?.username || "Anonymous";
   const chatEndRef = useRef(null);
   const [enlargedImages, setEnlargedImages] = useState([]); // State to track the enlarged images
+
   const [currentIndex, setCurrentIndex] = useState(0); // State to track the current image index
 
   useEffect(() => {
@@ -18,8 +19,9 @@ function Chat({ messages }) {
   }, [messages]);
 
   const handleImageClick = (images, index) => {
-    setEnlargedImages(images); // Set all images from the chat bubble to be viewed in fullscreen
-    setCurrentIndex(index); // Start with the image that was clicked
+    setEnlargedImages(images);
+    setCurrentIndex(index);
+    setIsImageEnlarged(true); // Set image enlarged state to true
   };
 
   const handleNextImage = () => {
@@ -36,7 +38,8 @@ function Chat({ messages }) {
 
   const handleOverlayClick = (e) => {
     if (e.target.classList.contains("overlay")) {
-      setEnlargedImages([]); // Close the enlarged view if the user clicks outside the image
+      setEnlargedImages([]);
+      setIsImageEnlarged(false); // Reset image enlarged state to false
     }
   };
 
@@ -134,7 +137,7 @@ function Chat({ messages }) {
       {/* Enlarged image overlay */}
       {enlargedImages.length > 0 && (
         <div
-          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-90 m-0 p-0 overlay"
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-90 overlay"
           onClick={handleOverlayClick} // Close the enlarged image on click outside the image
         >
           <img
