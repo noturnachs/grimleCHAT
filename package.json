@@ -14,6 +14,7 @@
     "ldrs": "^1.0.2",
     "multer": "^1.4.5-lts.1",
     "node-telegram-bot-api": "^0.66.0",
+    "recordrtc": "^5.6.2",
     "react": "^18.3.1",
     "react-audio-play": "^1.0.2",
     "react-dom": "^18.3.1",
