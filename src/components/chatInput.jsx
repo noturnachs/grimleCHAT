@@ -101,6 +101,14 @@ function ChatInput({
 
   const startRecording = async () => {
     try {
+      const hasPermissions = await navigator.permissions.query({
+        name: "microphone",
+      });
+
+      if (hasPermissions.state !== "granted") {
+        throw new Error("Microphone permission not granted");
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           sampleRate: 44100, // Set sample rate (44100 Hz is CD quality)
