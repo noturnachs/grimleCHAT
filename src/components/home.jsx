@@ -4,6 +4,7 @@ import socket from "../socket"; // Import the singleton socket instance
 import { motion, useSpring, useTransform } from "framer-motion";
 import Announcement from "./Announcement";
 import FingerprintJS from "@fingerprintjs/fingerprintjs"; // Import FingerprintJS
+import FAQ from "./Faq";
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
 
@@ -382,6 +383,7 @@ function Home() {
           </form>
         </div>
       </div>
+      <FAQ />
       <footer className="absolute bottom-0 w-full text-center py-4 bg-transparent text-white mt-20">
         <p>
           For reports/suggestions, please fill out this&nbsp;
