@@ -104,6 +104,14 @@ function Chat({ messages, setIsImageEnlarged }) {
                   <div className="p-2 rounded-xl max-w-xs z-0">
                     <MinimalAudioPlayer src={message.audio} />
                   </div>
+                ) : message.gif ? ( // Check if the message contains a GIF
+                  <div className="p-2 rounded-xl max-w-xs">
+                    <img
+                      src={message.gif}
+                      alt="GIF"
+                      className="w-full h-auto rounded-lg" // Style the GIF
+                    />
+                  </div>
                 ) : (
                   <div
                     className="p-2 rounded-xl max-w-xs"
