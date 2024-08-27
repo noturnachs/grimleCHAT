@@ -6,6 +6,10 @@ import { CustomAudioPlayer } from "./CustomAudioPlayer";
 import autosize from "autosize";
 import RecordRTC from "recordrtc";
 import imageCompression from "browser-image-compression";
+import { GiphyFetch } from "@giphy/js-fetch-api";
+import { Grid } from "@giphy/react-components";
+
+const giphyFetch = new GiphyFetch("1BhL1pC32fiqXaGE9ckNqzbKYYkgPfvC"); // Replace with your Giphy API key
 
 function ChatInput({
   sendMessage,
@@ -18,13 +22,18 @@ function ChatInput({
 }) {
   const [messageText, setMessageText] = useState("");
   const [confirmEndChat, setConfirmEndChat] = useState(false);
+  const [gifs, setGifs] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [selectedImages, setSelectedImages] = useState([]); // Updated for multiple images
+  const [selectedImages, setSelectedImages] = useState([]);
   const [showOptions, setShowOptions] = useState(false);
-  const [error, setError] = useState(""); // State for error messages
+  const [error, setError] = useState("");
   const optionsRef = useRef(null);
+  const [gifError, setGifError] = useState(""); // Add this state
+  const [gifSearchQuery, setGifSearchQuery] = useState(""); // New state for GIF search query
+
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const [recordedAudio, setRecordedAudio] = useState(null);
   const [recordingError, setRecordingError] = useState(null);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -44,7 +53,8 @@ function ChatInput({
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (optionsRef.current && !optionsRef.current.contains(event.target)) {
-        setShowOptions(false); // Close the options when clicking outside
+        setShowOptions(false);
+        setShowGifPicker(false);
       }
     };
 
@@ -56,6 +66,33 @@ function ChatInput({
 
   const toggleOptions = () => {
     setShowOptions(!showOptions);
+  };
+
+  const toggleGifPicker = () => {
+    setShowGifPicker(!showGifPicker);
+    setGifSearchQuery(""); // Clear the search query when the picker is toggled
+    if (!showGifPicker) {
+      fetchGifs(); // Fetch GIFs when the picker is opened
+    }
+  };
+
+  const fetchGifs = async (query = "") => {
+    try {
+      const { data } = query
+        ? await giphyFetch.search(query, { limit: 30 }) // Search for GIFs based on the query
+        : await giphyFetch.trending({ limit: 20 }); // Fetch trending GIFs if no search query
+      setGifs(data);
+      setGifError(""); // Clear any previous error message
+    } catch (error) {
+      console.error("Error fetching GIFs:", error.message || error);
+      setGifError("Error loading GIFs. Please try again later."); // Set error message
+    }
+  };
+
+  const handleGifSelect = (gif) => {
+    // Send the GIF URL as part of the message
+    sendMessage({ username, gif: gif.images.original.url }); // Include the username and gif in the message
+    setShowGifPicker(false);
   };
 
   const fileInputRef = useRef(null);
@@ -81,17 +118,16 @@ function ChatInput({
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    // Check if there is a text message to send
-    if (messageText.trim()) {
-      sendMessage(messageText.trim());
+    // Only process messageText if it's a string
+    const trimmedMessage =
+      typeof messageText === "string" ? messageText.trim() : "";
+
+    if (trimmedMessage) {
+      sendMessage({ username, messageText: trimmedMessage }); // Send text message
       setMessageText(""); // Clear the text input
-    }
-    // Check if there are images to send
-    else if (selectedImages.length > 0) {
+    } else if (selectedImages.length > 0) {
       sendImageMessage();
-    }
-    // Check if there is recorded audio to send
-    else if (isRecording && recordedAudio) {
+    } else if (isRecording && recordedAudio) {
       sendVoiceMessage();
     }
 
@@ -426,21 +462,75 @@ function ChatInput({
                 type="file"
                 accept="image/*"
                 onChange={handleImageSelect}
-                ref={fileInputRef} // Attach the ref here
-                className="hidden" // Hide the input field
-                multiple // Allow multiple file selections
+                ref={fileInputRef}
+                className="hidden"
+                multiple
               />
               <motion.button
                 type="button"
                 onClick={() =>
                   fileInputRef.current && fileInputRef.current.click()
-                } // Ensure ref exists before calling click
+                }
                 className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
               >
                 <div className={`w-8 h-10 flex items-center justify-center`}>
-                  <FaImage size={24} /> {/* Icon for image selection */}
+                  <FaImage size={24} />
                 </div>
               </motion.button>
+              {username === "admin" && (
+                <motion.button
+                  type="button"
+                  onClick={toggleGifPicker}
+                  className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
+                >
+                  <div className={`w-8 h-10 flex items-center justify-center`}>
+                    <span>🎉</span>
+                  </div>
+                </motion.button>
+              )}
+              {showGifPicker && (
+                <div className="absolute flex flex-col bottom-12 left-0 bg-[#1a2631] rounded-lg p-2 w-[300px] scrollbar-custom">
+                  <input
+                    type="text"
+                    value={gifSearchQuery}
+                    onChange={(e) => {
+                      setGifSearchQuery(e.target.value);
+                      fetchGifs(e.target.value); // Fetch GIFs dynamically as you type
+                    }}
+                    placeholder="Search GIFs..."
+                    className="p-2 mb-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {gifError ? (
+                    <p className="text-red-500">{gifError}</p>
+                  ) : (
+                    <div
+                      className="grid grid-cols-2 gap-2 overflow-y-auto overflow-x-hidden"
+                      style={{ maxHeight: "300px" }}
+                    >
+                      {gifs.map((gif) => (
+                        <motion.button
+                          key={gif.id}
+                          onClick={() => handleGifSelect(gif)}
+                          className="transition-transform transform hover:scale-105 focus:outline-none"
+                          style={{
+                            cursor: "pointer",
+                            border: "none",
+                            background: "none",
+                            padding: 0,
+                          }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          <img
+                            src={gif.images.fixed_height.url}
+                            alt={gif.title}
+                            className="rounded-lg w-full h-auto"
+                          />
+                        </motion.button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -463,7 +553,6 @@ function ChatInput({
           whileTap={{ scale: 1.1 }}
         >
           <IoSend size={25} />
-          {/* Use the icon instead of text */}
         </motion.button>
       </form>
       {recordingError && <p className="text-red-500">{recordingError}</p>}
