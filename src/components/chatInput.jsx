@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
-import { FaMicrophone, FaImage, FaTimes, FaPlus } from "react-icons/fa";
+import { FaMicrophone, FaImage, FaTimes, FaPlus, FaStop } from "react-icons/fa";
+import { IoSend } from "react-icons/io5";
+
 import { CustomAudioPlayer } from "./CustomAudioPlayer";
 import autosize from "autosize";
 import RecordRTC from "recordrtc";
@@ -303,7 +305,7 @@ function ChatInput({
 
   return (
     <div
-      className="relative p-4 bg-[#192734] w-full md:w-1/2 rounded-lg shadow-md"
+      className="relative p-3 pl-2 pr-1 bg-[#192734] w-full md:w-1/2 rounded-lg shadow-md"
       style={{ height: containerHeight, zIndex: 1 }}
     >
       {selectedImages.length > 0 && (
@@ -382,12 +384,12 @@ function ChatInput({
 
       <form
         onSubmit={handleSubmit}
-        className="flex items-center space-x-1 z-10"
+        className="flex items-center space-x-1 z-10 "
       >
         <motion.button
           type="button"
           onClick={handleEndChatClick}
-          className="bg-red-500 text-white p-1 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-600 h-full"
+          className=" text-red-500 p-1 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-600 h-full"
         >
           {confirmEndChat ? "Confirm" : "End"}
         </motion.button>
@@ -398,7 +400,7 @@ function ChatInput({
             className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
           >
             <div className={`w-8 h-10 flex items-center justify-center`}>
-              <FaPlus size={24} /> {/* Plus Icon */}
+              <FaPlus size={20} /> {/* Plus Icon */}
             </div>
           </motion.button>
 
@@ -452,11 +454,12 @@ function ChatInput({
         <motion.button
           type="submit"
           disabled={disabled}
-          className="bg-blue-500 text-white p-1 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className=" text-blue-400 p-1 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ scale: scaleTransform }}
           whileTap={{ scale: 1.1 }}
         >
-          Send
+          <IoSend size={25} />
+          {/* Use the icon instead of text */}
         </motion.button>
       </form>
       {recordingError && <p className="text-red-500">{recordingError}</p>}
