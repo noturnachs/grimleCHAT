@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
-import { FaMicrophone, FaImage, FaTimes, FaPlus } from "react-icons/fa";
+import { FaMicrophone, FaImage, FaTimes, FaPlus, FaStar } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
 import { CustomAudioPlayer } from "./CustomAudioPlayer";
 import autosize from "autosize";
@@ -20,8 +20,11 @@ function ChatInput({
   username,
   isImageEnlarged,
 }) {
+  const [showEffects, setShowEffects] = useState(false); // State to show effects
+
   const [messageText, setMessageText] = useState("");
   const [confirmEndChat, setConfirmEndChat] = useState(false);
+
   const [gifs, setGifs] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]);
@@ -50,6 +53,18 @@ function ChatInput({
   const scaleTransform = useTransform(scaleSpring, (value) =>
     value > 0 ? 1 + value / 10 : 1
   );
+
+  const toggleEffects = () => {
+    setShowEffects(!showEffects);
+  };
+
+  const handleEffectSelect = (effect) => {
+    if (effect === "confetti") {
+      console.log("Confetti effect selected");
+      socket.emit("triggerEffect", { effect: "confetti", room });
+      setShowEffects(false); // Close effects menu
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -88,6 +103,7 @@ function ChatInput({
       }
     }
   };
+
   const fetchGifs = async (query = "") => {
     try {
       const { data } = query
@@ -544,6 +560,30 @@ function ChatInput({
                     <span>🎉</span>
                   </div>
                 </motion.button>
+              )}
+
+              {username === "admin" && (
+                <motion.button
+                  type="button"
+                  onClick={toggleEffects}
+                  className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
+                >
+                  <div className={`w-8 h-10 flex items-center justify-center`}>
+                    <FaStar size={24} /> {/* Effects Icon */}
+                  </div>
+                </motion.button>
+              )}
+              {showEffects && (
+                <div className="absolute flex flex-col bottom-12 left-0 bg-[#1a2631] rounded-lg p-2 w-[150px]">
+                  <motion.button
+                    type="button"
+                    onClick={() => handleEffectSelect("confetti")}
+                    className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
+                  >
+                    Confetti
+                  </motion.button>
+                  {/* Add more effects here if needed */}
+                </div>
               )}
               {showGifPicker && (
                 <div className="absolute flex flex-col bottom-12 left-0 bg-[#1a2631] rounded-lg p-2 w-[300px] scrollbar-custom">
