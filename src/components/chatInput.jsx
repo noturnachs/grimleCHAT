@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
-import { FaMicrophone, FaImage, FaTimes, FaPlus, FaStop } from "react-icons/fa";
+import { FaMicrophone, FaImage, FaTimes, FaPlus } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
-
 import { CustomAudioPlayer } from "./CustomAudioPlayer";
 import autosize from "autosize";
 import RecordRTC from "recordrtc";
@@ -16,16 +15,14 @@ function ChatInput({
   room,
   username,
   isImageEnlarged,
-  // Assume you have this from your matching logic
 }) {
   const [messageText, setMessageText] = useState("");
   const [confirmEndChat, setConfirmEndChat] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-
   const [selectedImages, setSelectedImages] = useState([]); // Updated for multiple images
   const [showOptions, setShowOptions] = useState(false);
+  const [error, setError] = useState(""); // State for error messages
   const optionsRef = useRef(null);
-
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [recordedAudio, setRecordedAudio] = useState(null);
@@ -35,11 +32,9 @@ function ChatInput({
   const mediaRecorderRef = useRef(null);
   const recordingIntervalRef = useRef(null);
   const [containerHeight, setContainerHeight] = useState("auto");
-
   const buttonRef = useRef(null);
   const textareaRef = useRef(null);
   const typingTimeoutRef = useRef(null);
-
   const springConfig = { stiffness: 300, damping: 20 };
   const scaleSpring = useSpring(0, springConfig);
   const scaleTransform = useTransform(scaleSpring, (value) =>
@@ -169,6 +164,14 @@ function ChatInput({
     const files = Array.from(e.target.files);
     const compressedImages = [];
 
+    // Check if the total number of selected images exceeds 3
+    if (selectedImages.length + files.length > 3) {
+      setError("You can only upload a maximum of 3 images.");
+      return;
+    } else {
+      setError(""); // Clear error message if within limit
+    }
+
     for (let file of files) {
       try {
         const options = {
@@ -214,6 +217,7 @@ function ChatInput({
         });
     }
   };
+
   const pauseRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.pauseRecording();
@@ -231,6 +235,7 @@ function ChatInput({
       }, 1000);
     }
   };
+
   const stopRecording = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stopRecording(() => {
@@ -244,6 +249,7 @@ function ChatInput({
       setIsPaused(false);
     }
   };
+
   const sendVoiceMessage = () => {
     if (recordedAudio) {
       const audioBlob = recordedAudio;
@@ -333,7 +339,8 @@ function ChatInput({
           ))}
         </div>
       )}
-
+      {error && <p className="text-red-500">{error}</p>}{" "}
+      {/* Display error message */}
       {isRecording || audioURL ? (
         <div className="absolute inset-0 bg-[#141b22] bg-opacity-100 flex flex-col items-center justify-center z-20 p-4 rounded-lg ">
           {!audioURL ? (
@@ -381,7 +388,6 @@ function ChatInput({
           )}
         </div>
       ) : null}
-
       <form
         onSubmit={handleSubmit}
         className="flex items-center space-x-1 z-10 "
@@ -407,8 +413,6 @@ function ChatInput({
           {/* Conditionally render microphone and image buttons */}
           {showOptions && (
             <div className="absolute flex flex-col space-y-2 bottom-12 left-0 bg-[#1a2631] rounded-lg">
-              {" "}
-              {/* Positioned above */}
               <motion.button
                 type="button"
                 onClick={startRecording}
