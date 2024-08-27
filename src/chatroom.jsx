@@ -314,14 +314,15 @@ function ChatRoom() {
 
   const sendMessage = (message) => {
     if (room) {
-      // Check if the message has text or a GIF
-      const { messageText, gif } = message;
+      // Destructure message properties
+      const { messageText, gif, sticker } = message; // Include sticker
       const messageData = {
         room,
         message: {
           username,
           messageText: messageText || "", // Default to empty string if not provided
           gif: gif || null, // Include gif if it exists
+          sticker: sticker || null, // Include sticker if it exists
         },
       };
 
@@ -329,7 +330,6 @@ function ChatRoom() {
       socket.emit("sendMessage", messageData);
     }
   };
-
   const onEndChat = () => {
     if (room) {
       socket.emit("leaveRoom");
