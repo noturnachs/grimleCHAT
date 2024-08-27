@@ -312,12 +312,21 @@ function ChatRoom() {
     socket.emit("startMatch", { username, interest, visitorId });
   };
 
-  const sendMessage = (messageText) => {
-    if (messageText.trim() !== "" && room) {
-      socket.emit("sendMessage", {
+  const sendMessage = (message) => {
+    if (room) {
+      // Check if the message has text or a GIF
+      const { messageText, gif } = message;
+      const messageData = {
         room,
-        message: { username, messageText },
-      });
+        message: {
+          username,
+          messageText: messageText || "", // Default to empty string if not provided
+          gif: gif || null, // Include gif if it exists
+        },
+      };
+
+      // Emit the message to the server
+      socket.emit("sendMessage", messageData);
     }
   };
 
