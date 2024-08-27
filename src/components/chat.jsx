@@ -112,6 +112,14 @@ function Chat({ messages, setIsImageEnlarged }) {
                       className="w-full h-auto rounded-lg" // Style the GIF
                     />
                   </div>
+                ) : message.sticker ? ( // Check if the message contains a sticker
+                  <div className="p-2 rounded-xl max-w-xs">
+                    <img
+                      src={message.sticker}
+                      alt="Sticker"
+                      className="w-full h-auto rounded-lg" // Style the sticker
+                    />
+                  </div>
                 ) : (
                   <div
                     className="p-2 rounded-xl max-w-xs"
