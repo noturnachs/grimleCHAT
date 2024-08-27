@@ -8,6 +8,7 @@ import { loadingTexts } from "./loadingTexts"; // Import the loading texts
 import { FaTimes, FaInfoCircle } from "react-icons/fa";
 import Sidebar from "./components/Sidebar"; // Import Sidebar from a separate file
 import Popup from "./components/Popup"; // Import the Popup component
+import Confetti from "react-confetti"; // Import Confetti
 
 lineWobble.register();
 leapfrog.register();
@@ -19,7 +20,7 @@ function ChatRoom() {
   const [partnerVisitorId, setPartnerVisitorId] = useState(null);
   const [partnerUsername, setPartnerUsername] = useState(null);
   const [isImageEnlarged, setIsImageEnlarged] = useState(false); // New state to track if an image is enlarged
-
+  const [showConfetti, setShowConfetti] = useState(false); // State to control confetti display
   const [room, setRoom] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Start Finding a Match");
@@ -48,6 +49,35 @@ function ChatRoom() {
 
   const socketRef = useRef(socket);
   const chatContainerRef = useRef(null); // Ref for the chat container
+
+  useEffect(() => {
+    const handleTriggerEffect = ({ effect }) => {
+      console.log("Effect triggered:", effect);
+      if (effect === "confetti") {
+        socket.emit("confettiTriggered", { room });
+      }
+    };
+
+    socket.on("triggerEffect", handleTriggerEffect);
+
+    return () => {
+      socket.off("triggerEffect", handleTriggerEffect);
+    };
+  }, [socket, room]);
+
+  useEffect(() => {
+    socket.on("confettiTriggered", () => {
+      console.log("Confetti effect received");
+      setShowConfetti(true);
+      setTimeout(() => {
+        setShowConfetti(false);
+      }, 5000); // Show confetti for 5 seconds
+    });
+
+    return () => {
+      socket.off("confettiTriggered");
+    };
+  }, [socket]);
 
   useEffect(() => {
     const socketInstance = socketRef.current; // Use the socket reference
@@ -362,6 +392,7 @@ function ChatRoom() {
 
   return (
     <div className="bg-[#192734] h-screen flex flex-col">
+      {showConfetti && <Confetti />}
       {isPopupVisible && <Popup message={popupMessage} onClose={closePopup} />}
       {!room ? (
         <div className="flex flex-col items-center justify-center h-full">
