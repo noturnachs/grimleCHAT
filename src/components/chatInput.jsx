@@ -9,7 +9,7 @@ import imageCompression from "browser-image-compression";
 import { GiphyFetch } from "@giphy/js-fetch-api";
 import { Grid } from "@giphy/react-components";
 
-const giphyFetch = new GiphyFetch("1BhL1pC32fiqXaGE9ckNqzbKYYkgPfvC"); // Replace with your Giphy API key
+const giphyFetch = new GiphyFetch("1BhL1pC32fiqXaGE9ckNqzbKYYkgPf3vC"); // Replace with your Giphy API key
 
 function ChatInput({
   sendMessage,
@@ -46,6 +46,10 @@ function ChatInput({
   const typingTimeoutRef = useRef(null);
   const springConfig = { stiffness: 300, damping: 20 };
   const scaleSpring = useSpring(0, springConfig);
+  const [preSavedStickers, setPreSavedStickers] = useState([
+    "https://media.tenor.com/wrMDu29fA-YAAAAi/hasher-happy-sticker.gif",
+    // Other default stickers
+  ]);
   const scaleTransform = useTransform(scaleSpring, (value) =>
     value > 0 ? 1 + value / 10 : 1
   );
@@ -76,16 +80,43 @@ function ChatInput({
     }
   };
 
+  const customFetch = async (fetchFunction) => {
+    try {
+      return await fetchFunction();
+    } catch (error) {
+      if (error.message.includes("API rate limit exceeded")) {
+        throw new Error("API rate limit exceeded"); // Throw the same error to be caught later
+      } else {
+        throw error; // Re-throw other errors
+      }
+    }
+  };
   const fetchGifs = async (query = "") => {
     try {
       const { data } = query
-        ? await giphyFetch.search(query, { limit: 30 }) // Search for GIFs based on the query
-        : await giphyFetch.trending({ limit: 20 }); // Fetch trending GIFs if no search query
+        ? await customFetch(() => giphyFetch.search(query, { limit: 10 }))
+        : await customFetch(() => giphyFetch.trending({ limit: 10 }));
       setGifs(data);
       setGifError(""); // Clear any previous error message
     } catch (error) {
-      console.error("Error fetching GIFs:", error.message || error);
-      setGifError("Error loading GIFs. Please try again later."); // Set error message
+      if (
+        error.message.includes("API rate limit exceeded") ||
+        error.message.includes("Unauthorized")
+      ) {
+        console.log("Giphy broke 😂");
+        // Use pre-saved stickers if the API rate limit is exceeded or unauthorized
+        const fallbackGifs = preSavedStickers.map((url, index) => ({
+          id: `fallback-${index}`,
+          images: {
+            original: { url },
+            fixed_height: { url },
+          },
+          title: "Fallback Sticker",
+        }));
+        setGifs(fallbackGifs);
+      } else {
+        setGifError("Error loading GIFs. Please try again later.");
+      }
     }
   };
 
@@ -195,6 +226,22 @@ function ChatInput({
       );
     }
   };
+
+  useEffect(() => {
+    socket.on("new-sticker", (newStickerUrl) => {
+      setPreSavedStickers((prevStickers) => {
+        // Ensure the sticker isn't duplicated
+        if (!prevStickers.includes(newStickerUrl)) {
+          return [...prevStickers, newStickerUrl];
+        }
+        return prevStickers;
+      });
+    });
+
+    return () => {
+      socket.off("new-sticker");
+    };
+  }, [socket]);
 
   const handleImageSelect = async (e) => {
     const files = Array.from(e.target.files);
