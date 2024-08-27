@@ -396,7 +396,7 @@ function ChatRoom() {
             {/* Sidebar Toggle Button */}
             <button
               onClick={toggleSidebar}
-              className="absolute top-2 right-2 text-white flex items-center space-x-2 z-10"
+              className="fixed top-4 right-4 text-white flex items-center space-x-2 z-10"
             >
               <FaInfoCircle size={20} color="#dc3545" />
             </button>
