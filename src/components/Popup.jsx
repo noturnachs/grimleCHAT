@@ -9,7 +9,7 @@ const Popup = ({ message, onClose }) => {
       >
         &times;
       </button>
-      <h1 className="font-extrabold text-[#ff9927]">Admin</h1>
+      <h1 className="font-extrabold text-[#ff9927] text-sm">Admin</h1>
       <p className="whitespace-pre-wrap break-words font-bold text-white text-sm">
         {message}
       </p>
