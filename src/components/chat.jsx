@@ -9,7 +9,6 @@ function Chat({ messages, setIsImageEnlarged }) {
   const username = state?.username || "Anonymous";
   const chatEndRef = useRef(null);
   const [enlargedImages, setEnlargedImages] = useState([]); // State to track the enlarged images
-
   const [currentIndex, setCurrentIndex] = useState(0); // State to track the current image index
 
   useEffect(() => {
@@ -79,8 +78,6 @@ function Chat({ messages, setIsImageEnlarged }) {
                 </span>
                 {message.images && message.images.length > 0 ? (
                   <div className="relative p-2 rounded-xl max-w-xs z-0">
-                    {" "}
-                    {/* Adjusted z-index */}
                     <div className="flex items-center space-x-[-12px]">
                       {message.images.map((image, imgIndex) => (
                         <motion.div
@@ -105,8 +102,6 @@ function Chat({ messages, setIsImageEnlarged }) {
                   </div>
                 ) : message.audio ? (
                   <div className="p-2 rounded-xl max-w-xs z-0">
-                    {" "}
-                    {/* Adjusted z-index */}
                     <MinimalAudioPlayer src={message.audio} />
                   </div>
                 ) : (
@@ -143,7 +138,7 @@ function Chat({ messages, setIsImageEnlarged }) {
           <img
             src={enlargedImages[currentIndex]}
             alt="Enlarged"
-            className="max-w-full max-h-full rounded-lg"
+            className="max-w-[90%] max-h-[90%] rounded-lg" // Set max width and height
           />
           <button
             onClick={handlePreviousImage}
