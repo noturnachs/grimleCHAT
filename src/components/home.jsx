@@ -405,18 +405,7 @@ function Home() {
       <footer className="w-full text-center py-4 bg-transparent text-white mt-4 mb-0 md:mt-20">
         {" "}
         {/* Removed absolute positioning */}
-        <p className="text-sm md:text-base">
-          For reports/suggestions, please fill out this&nbsp;
-          <a
-            href="https://forms.gle/ybVxyE4H9Fz5Lygr9"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline text-blue-400"
-          >
-            form
-          </a>
-          .
-        </p>
+        <p className="text-xs font-bold">Leeyos.com 2024</p>
       </footer>
     </div>
   );
