@@ -46,10 +46,7 @@ function ChatInput({
   const typingTimeoutRef = useRef(null);
   const springConfig = { stiffness: 300, damping: 20 };
   const scaleSpring = useSpring(0, springConfig);
-  const [preSavedStickers, setPreSavedStickers] = useState([
-    "https://media.tenor.com/wrMDu29fA-YAAAAi/hasher-happy-sticker.gif",
-    // Other default stickers
-  ]);
+  const [preSavedStickers, setPreSavedStickers] = useState([]);
   const scaleTransform = useTransform(scaleSpring, (value) =>
     value > 0 ? 1 + value / 10 : 1
   );
@@ -96,6 +93,7 @@ function ChatInput({
       const { data } = query
         ? await customFetch(() => giphyFetch.search(query, { limit: 10 }))
         : await customFetch(() => giphyFetch.trending({ limit: 10 }));
+
       setGifs(data);
       setGifError(""); // Clear any previous error message
     } catch (error) {
@@ -104,19 +102,31 @@ function ChatInput({
         error.message.includes("Unauthorized")
       ) {
         console.log("Giphy broke 😂");
-        // Use pre-saved stickers if the API rate limit is exceeded or unauthorized
-        const fallbackGifs = preSavedStickers.map((url, index) => ({
-          id: `fallback-${index}`,
-          images: {
-            original: { url },
-            fixed_height: { url },
-          },
-          title: "Fallback Sticker",
-        }));
-        setGifs(fallbackGifs);
+        // Fallback to fetching stickers if GIF fetch fails
+        fetchStickers(); // Call the fetchStickers function to get stickers
       } else {
         setGifError("Error loading GIFs. Please try again later.");
       }
+    }
+  };
+
+  const fetchStickers = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_SERVER_ORIGIN}/api/stickers`
+      ); // Use the environment variable
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      if (data.success) {
+        setPreSavedStickers(data.stickers); // Set the stickers from the response
+      } else {
+        console.error("Failed to fetch stickers:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching stickers:", error);
+      setError("Error loading stickers. Please try again later.");
     }
   };
 
@@ -576,6 +586,20 @@ function ChatInput({
                       ))}
                     </div>
                   )}
+
+                  {/* Display pre-saved stickers */}
+                  <h3 className="text-white mt-2">Stickers:</h3>
+                  <div className="flex space-x-2 overflow-x-auto">
+                    {preSavedStickers.map((sticker, index) => (
+                      <img
+                        key={index}
+                        src={sticker}
+                        alt={`Sticker ${index + 1}`}
+                        className="min-w-10 max-w-md h-10 cursor-pointer"
+                        onClick={() => sendMessage({ username, sticker })} // Send sticker on click
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
