@@ -11,4 +11,29 @@ const socket = io(SERVER_ORIGIN, {
   timeout: 20000, // 20 seconds
 });
 
+// Handle connection events
+socket.on("connect", () => {
+  console.log("Socket connected:", socket.id);
+});
+
+socket.on("disconnect", (reason) => {
+  console.log("Socket disconnected:", reason);
+  if (reason === "io server disconnect") {
+    // The disconnection was initiated by the server, reconnect manually
+    socket.connect();
+  }
+});
+
+socket.on("reconnect_attempt", (attempt) => {
+  console.log(`Reconnecting... Attempt #${attempt}`);
+});
+
+socket.on("reconnect", (attempt) => {
+  console.log(`Reconnected on attempt #${attempt}`);
+});
+
+socket.on("reconnect_failed", () => {
+  console.error("Reconnection failed");
+});
+
 export default socket;
