@@ -46,9 +46,41 @@ function ChatRoom() {
   const [prevUsernameLeft, setPrevUsernameLeft] = useState(""); // Track the username of the previous user who left
   const [typingStatus, setTypingStatus] = useState({}); // Track typing status
   const sidebarRef = useRef(null); // Ref for the sidebar container
+  const [isConnected, setIsConnected] = useState(socket.connected);
 
   const socketRef = useRef(socket);
   const chatContainerRef = useRef(null); // Ref for the chat container
+
+  useEffect(() => {
+    const handleReconnectAttempt = (attempt) => {
+      console.log(`Reconnecting... Attempt #${attempt}`);
+      // Optionally, you can show a message or a loading spinner here
+    };
+
+    socket.on("reconnect_attempt", handleReconnectAttempt);
+
+    return () => {
+      socket.off("reconnect_attempt", handleReconnectAttempt);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleConnect = () => {
+      setIsConnected(true);
+    };
+
+    const handleDisconnect = () => {
+      setIsConnected(false);
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+    };
+  }, []);
 
   useEffect(() => {
     const handleTriggerEffect = ({ effect }) => {
@@ -394,6 +426,11 @@ function ChatRoom() {
     <div className="bg-[#192734] h-screen flex flex-col">
       {showConfetti && <Confetti />}
       {isPopupVisible && <Popup message={popupMessage} onClose={closePopup} />}
+      {!isConnected && (
+        <div className="text-red-500 text-center">
+          Disconnected from the server. Attempting to reconnect...
+        </div>
+      )}
       {!room ? (
         <div className="flex flex-col items-center justify-center h-full">
           {prevUsernameLeft && (
