@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
-import socket, { setCurrentRoom } from "./socket"; // Import the singleton socket instance
+import socket from "./socket"; // Import the singleton socket instance
 import Chat from "./components/chat";
 import ChatInput from "./components/chatInput";
 import { lineWobble, leapfrog, squircle } from "ldrs";
@@ -46,86 +46,9 @@ function ChatRoom() {
   const [prevUsernameLeft, setPrevUsernameLeft] = useState(""); // Track the username of the previous user who left
   const [typingStatus, setTypingStatus] = useState({}); // Track typing status
   const sidebarRef = useRef(null); // Ref for the sidebar container
-  const [isConnected, setIsConnected] = useState(socket.connected);
 
   const socketRef = useRef(socket);
   const chatContainerRef = useRef(null); // Ref for the chat container
-
-  useEffect(() => {
-    const handleMessages = (fetchedMessages) => {
-      setMessages(fetchedMessages);
-      if (chatContainerRef.current) {
-        chatContainerRef.current.scrollTop =
-          chatContainerRef.current.scrollHeight; // Scroll to the bottom
-      }
-    };
-
-    socket.on("messages", handleMessages);
-
-    return () => {
-      socket.off("messages", handleMessages);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleReconnectAttempt = (attempt) => {
-      console.log(`Reconnecting... Attempt #${attempt}`);
-      // Optionally, you can show a message or a loading spinner here
-    };
-
-    socket.on("reconnect_attempt", handleReconnectAttempt);
-
-    return () => {
-      socket.off("reconnect_attempt", handleReconnectAttempt);
-    };
-  }, []);
-
-  useEffect(() => {
-    const socketInstance = socketRef.current; // Use the socket reference
-    const handleConnect = () => {
-      setIsConnected(true);
-      console.log("Socket connected:", socketInstance.id);
-      // Re-fetch messages or reset states after reconnecting
-      if (room) {
-        socketInstance.emit("getMessages", { room });
-      }
-
-      setLoadingMessage("Reconnected! Fetching latest messages...");
-    };
-
-    const handleDisconnect = (reason) => {
-      setIsConnected(false);
-      console.log("Socket disconnected:", reason);
-    };
-
-    const handleReconnectAttempt = (attempt) => {
-      console.log(`Reconnecting... Attempt #${attempt}`);
-      // Optionally show a message or spinner here
-      setLoadingMessage(`Reconnecting... Attempt #${attempt}`);
-      setLoading(true); // Optionally, set loading to true to show a spinner
-    };
-
-    const handleReconnect = () => {
-      console.log("Reconnected to the server");
-      setLoadingMessage("Reconnected! Fetching latest messages...");
-      setLoading(false); // Stop the spinner once reconnected
-      if (room) {
-        socketInstance.emit("getMessages", { room });
-      }
-    };
-
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
-    socketInstance.on("reconnect_attempt", handleReconnectAttempt);
-    socketInstance.on("reconnect", handleReconnect);
-
-    return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
-      socketInstance.off("reconnect_attempt", handleReconnectAttempt);
-      socketInstance.off("reconnect", handleReconnect);
-    };
-  }, [room]);
 
   useEffect(() => {
     const handleTriggerEffect = ({ effect }) => {
@@ -185,40 +108,10 @@ function ChatRoom() {
   }, [state, navigate]);
 
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        if (!socket.connected) {
-          socket.connect();
-        }
-        // Re-fetch messages when the app is visible
-        socket.emit("getMessages", { room });
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
+    if (chatContainerRef.current && room) {
+      chatContainerRef.current.scrollTop = 0; // Scroll to the top when match is found
+    }
   }, [room]);
-
-  useEffect(() => {
-    const handleTransportError = (error) => {
-      console.error("Transport error:", error);
-      if (socket.disconnected) {
-        socket.connect();
-      }
-    };
-
-    socket.on("connect_error", handleTransportError);
-    socket.on("reconnect_error", handleTransportError);
-    socket.on("reconnect_failed", handleTransportError);
-
-    return () => {
-      socket.off("connect_error", handleTransportError);
-      socket.off("reconnect_error", handleTransportError);
-      socket.off("reconnect_failed", handleTransportError);
-    };
-  }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -322,11 +215,7 @@ function ChatRoom() {
 
     const handleMessage = (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
-      // Scroll to the bottom when a new message is received
-      if (chatContainerRef.current) {
-        chatContainerRef.current.scrollTop =
-          chatContainerRef.current.scrollHeight;
-      }
+      // Removed title change logic
     };
 
     const handleMatchFound = ({
@@ -341,8 +230,6 @@ function ChatRoom() {
 
       setPartnerVisitorId(partnerVisitorId);
       setPartnerUsername(matchedUsername); // Store the matched user's name
-
-      setCurrentRoom(room); // Set the current room in socket.js
 
       const newMessages = [
         {
@@ -381,7 +268,12 @@ function ChatRoom() {
       navigate("/"); // Redirect them back to the home page
     };
 
+    const handleVisibilityChange = () => {
+      // Removed title reset logic
+    };
+
     window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     socket.on("userCountUpdate", handleUserCountUpdate);
     socket.on("typing", handleTyping);
     socket.on("message", handleMessage);
@@ -402,6 +294,7 @@ function ChatRoom() {
     return () => {
       clearInterval(interval);
       window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       socket.off("userCountUpdate", handleUserCountUpdate);
       socket.off("typing", handleTyping);
       socket.off("message", handleMessage);
@@ -501,11 +394,6 @@ function ChatRoom() {
     <div className="bg-[#192734] h-screen flex flex-col">
       {showConfetti && <Confetti />}
       {isPopupVisible && <Popup message={popupMessage} onClose={closePopup} />}
-      {!isConnected && (
-        <div className="text-red-500 text-center">
-          Disconnected from the server. Attempting to reconnect...
-        </div>
-      )}
       {!room ? (
         <div className="flex flex-col items-center justify-center h-full">
           {prevUsernameLeft && (
@@ -523,17 +411,14 @@ function ChatRoom() {
             {loading ? loadingMessage : "Start Finding a Match"}
           </button>
           {loading && (
-            <div className="flex flex-col items-center justify-center h-full">
-              <p className="text-white">{loadingMessage}</p>
-              <l-line-wobble
-                size="80"
-                stroke="5"
-                bg-opacity="0.1"
-                speed="1.75"
-                color="green"
-                className="inline-block ml-2"
-              ></l-line-wobble>
-            </div>
+            <l-line-wobble
+              size="80"
+              stroke="5"
+              bg-opacity="0.1"
+              speed="1.75"
+              color="green"
+              className="inline-block ml-2"
+            ></l-line-wobble>
           )}
           <button
             onClick={handleCancel}
