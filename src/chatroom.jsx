@@ -81,9 +81,16 @@ function ChatRoom() {
   }, []);
 
   useEffect(() => {
+    const socketInstance = socketRef.current; // Use the socket reference
     const handleConnect = () => {
       setIsConnected(true);
-      console.log("Socket connected:", socket.id);
+      console.log("Socket connected:", socketInstance.id);
+      // Re-fetch messages or reset states after reconnecting
+      if (room) {
+        socketInstance.emit("getMessages", { room });
+      }
+
+      setLoadingMessage("Reconnected! Fetching latest messages...");
     };
 
     const handleDisconnect = (reason) => {
@@ -91,14 +98,34 @@ function ChatRoom() {
       console.log("Socket disconnected:", reason);
     };
 
+    const handleReconnectAttempt = (attempt) => {
+      console.log(`Reconnecting... Attempt #${attempt}`);
+      // Optionally show a message or spinner here
+      setLoadingMessage(`Reconnecting... Attempt #${attempt}`);
+      setLoading(true); // Optionally, set loading to true to show a spinner
+    };
+
+    const handleReconnect = () => {
+      console.log("Reconnected to the server");
+      setLoadingMessage("Reconnected! Fetching latest messages...");
+      setLoading(false); // Stop the spinner once reconnected
+      if (room) {
+        socketInstance.emit("getMessages", { room });
+      }
+    };
+
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
+    socketInstance.on("reconnect_attempt", handleReconnectAttempt);
+    socketInstance.on("reconnect", handleReconnect);
 
     return () => {
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
+      socketInstance.off("reconnect_attempt", handleReconnectAttempt);
+      socketInstance.off("reconnect", handleReconnect);
     };
-  }, []);
+  }, [room]);
 
   useEffect(() => {
     const handleTriggerEffect = ({ effect }) => {
@@ -158,10 +185,6 @@ function ChatRoom() {
   }, [state, navigate]);
 
   useEffect(() => {
-    if (chatContainerRef.current && room) {
-      chatContainerRef.current.scrollTop = 0; // Scroll to the top when match is found
-    }
-
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         // Re-fetch messages when the app is visible
@@ -478,14 +501,17 @@ function ChatRoom() {
             {loading ? loadingMessage : "Start Finding a Match"}
           </button>
           {loading && (
-            <l-line-wobble
-              size="80"
-              stroke="5"
-              bg-opacity="0.1"
-              speed="1.75"
-              color="green"
-              className="inline-block ml-2"
-            ></l-line-wobble>
+            <div className="flex flex-col items-center justify-center h-full">
+              <p className="text-white">{loadingMessage}</p>
+              <l-line-wobble
+                size="80"
+                stroke="5"
+                bg-opacity="0.1"
+                speed="1.75"
+                color="green"
+                className="inline-block ml-2"
+              ></l-line-wobble>
+            </div>
           )}
           <button
             onClick={handleCancel}
