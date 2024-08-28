@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
-import socket from "./socket"; // Import the singleton socket instance
+import socket, { setCurrentRoom } from "./socket"; // Import the singleton socket instance
 import Chat from "./components/chat";
 import ChatInput from "./components/chatInput";
 import { lineWobble, leapfrog, squircle } from "ldrs";
@@ -83,10 +83,12 @@ function ChatRoom() {
   useEffect(() => {
     const handleConnect = () => {
       setIsConnected(true);
+      console.log("Socket connected:", socket.id);
     };
 
-    const handleDisconnect = () => {
+    const handleDisconnect = (reason) => {
       setIsConnected(false);
+      console.log("Socket disconnected:", reason);
     };
 
     socket.on("connect", handleConnect);
@@ -162,13 +164,12 @@ function ChatRoom() {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        // Re-fetch messages or re-establish socket connection
-        socket.emit("getMessages", { room }); // Example of fetching messages
+        // Re-fetch messages when the app is visible
+        socket.emit("getMessages", { room });
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
@@ -295,6 +296,8 @@ function ChatRoom() {
 
       setPartnerVisitorId(partnerVisitorId);
       setPartnerUsername(matchedUsername); // Store the matched user's name
+
+      setCurrentRoom(room); // Set the current room in socket.js
 
       const newMessages = [
         {
