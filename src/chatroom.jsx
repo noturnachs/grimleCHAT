@@ -52,6 +52,22 @@ function ChatRoom() {
   const chatContainerRef = useRef(null); // Ref for the chat container
 
   useEffect(() => {
+    const handleMessages = (fetchedMessages) => {
+      setMessages(fetchedMessages);
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop =
+          chatContainerRef.current.scrollHeight; // Scroll to the bottom
+      }
+    };
+
+    socket.on("messages", handleMessages);
+
+    return () => {
+      socket.off("messages", handleMessages);
+    };
+  }, []);
+
+  useEffect(() => {
     const handleReconnectAttempt = (attempt) => {
       console.log(`Reconnecting... Attempt #${attempt}`);
       // Optionally, you can show a message or a loading spinner here
