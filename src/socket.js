@@ -30,10 +30,11 @@ socket.on("reconnect_attempt", (attempt) => {
 
 socket.on("reconnect", (attempt) => {
   console.log(`Reconnected on attempt #${attempt}`);
-  // Fetch messages after reconnecting
-  // Ensure you have the current room context available
+  // Fetch messages or rejoin room after reconnecting
   if (socket.currentRoom) {
     socket.emit("getMessages", { room: socket.currentRoom });
+    // Optionally, emit an event to rejoin the room
+    socket.emit("joinRoom", { room: socket.currentRoom });
   }
 });
 
