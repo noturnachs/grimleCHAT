@@ -114,14 +114,15 @@ function Home() {
   }, []);
 
   // Add this useEffect for fingerprinting
-  useEffect(() => {
+   useEffect(() => {
     const getFingerprint = async () => {
       try {
+        // Load FingerprintJS
         const fp = await FingerprintJS.load();
         const result = await fp.get();
         visitorIdRef.current = result.visitorId; // Store the visitorId in the ref
 
-        // Emit the fingerprint to the server
+        // Emit the fingerprint to the server (if needed)
         socket.emit("fingerprintGenerated", visitorIdRef.current);
 
         // Send the fingerprint to your backend and check the response
@@ -136,9 +137,11 @@ function Home() {
         if (response.status === 403) {
           // Redirect to the ban page if the user is banned
           navigate("/banned");
-        } else {
+        } else if (response.ok) {
           const data = await response.json();
-          console.log(data.message);
+          console.log(data.message); // Handle successful identification
+        } else {
+          console.error("Unexpected response:", response);
         }
       } catch (error) {
         console.error("Error fetching fingerprint or identifying user:", error);
