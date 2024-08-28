@@ -8,6 +8,7 @@ const socket = io(SERVER_ORIGIN, {
   reconnectionAttempts: Infinity,
   reconnectionDelay: 1000,
   reconnectionDelayMax: 5000,
+  randomizationFactor: 0.5, // Randomize the delay for reconnection
   timeout: 20000, // 20 seconds
 });
 
