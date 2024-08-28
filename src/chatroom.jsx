@@ -187,6 +187,9 @@ function ChatRoom() {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
+        if (!socket.connected) {
+          socket.connect();
+        }
         // Re-fetch messages when the app is visible
         socket.emit("getMessages", { room });
       }
@@ -197,6 +200,25 @@ function ChatRoom() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [room]);
+
+  useEffect(() => {
+    const handleTransportError = (error) => {
+      console.error("Transport error:", error);
+      if (socket.disconnected) {
+        socket.connect();
+      }
+    };
+
+    socket.on("connect_error", handleTransportError);
+    socket.on("reconnect_error", handleTransportError);
+    socket.on("reconnect_failed", handleTransportError);
+
+    return () => {
+      socket.off("connect_error", handleTransportError);
+      socket.off("reconnect_error", handleTransportError);
+      socket.off("reconnect_failed", handleTransportError);
+    };
+  }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
