@@ -30,8 +30,11 @@ socket.on("reconnect_attempt", (attempt) => {
 
 socket.on("reconnect", (attempt) => {
   console.log(`Reconnected on attempt #${attempt}`);
-  // Optionally, fetch messages after reconnecting
-  // socket.emit("getMessages", { room: currentRoom }); // Ensure you have the current room context
+  // Fetch messages after reconnecting
+  // Ensure you have the current room context available
+  if (socket.currentRoom) {
+    socket.emit("getMessages", { room: socket.currentRoom });
+  }
 });
 
 socket.on("reconnect_failed", () => {
@@ -46,5 +49,10 @@ socket.on("connect_error", (error) => {
 socket.on("error", (error) => {
   console.error("Socket error:", error);
 });
+
+// Function to set the current room context
+export const setCurrentRoom = (room) => {
+  socket.currentRoom = room;
+};
 
 export default socket;
