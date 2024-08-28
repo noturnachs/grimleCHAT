@@ -143,6 +143,19 @@ function ChatRoom() {
     if (chatContainerRef.current && room) {
       chatContainerRef.current.scrollTop = 0; // Scroll to the top when match is found
     }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        // Re-fetch messages or re-establish socket connection
+        socket.emit("getMessages", { room }); // Example of fetching messages
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [room]);
 
   const toggleSidebar = () => {
@@ -247,7 +260,11 @@ function ChatRoom() {
 
     const handleMessage = (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
-      // Removed title change logic
+      // Scroll to the bottom when a new message is received
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop =
+          chatContainerRef.current.scrollHeight;
+      }
     };
 
     const handleMatchFound = ({
@@ -300,12 +317,7 @@ function ChatRoom() {
       navigate("/"); // Redirect them back to the home page
     };
 
-    const handleVisibilityChange = () => {
-      // Removed title reset logic
-    };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
     socket.on("userCountUpdate", handleUserCountUpdate);
     socket.on("typing", handleTyping);
     socket.on("message", handleMessage);
@@ -326,7 +338,6 @@ function ChatRoom() {
     return () => {
       clearInterval(interval);
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
       socket.off("userCountUpdate", handleUserCountUpdate);
       socket.off("typing", handleTyping);
       socket.off("message", handleMessage);
