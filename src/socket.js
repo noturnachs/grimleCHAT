@@ -30,10 +30,21 @@ socket.on("reconnect_attempt", (attempt) => {
 
 socket.on("reconnect", (attempt) => {
   console.log(`Reconnected on attempt #${attempt}`);
+  // Optionally, fetch messages after reconnecting
+  // socket.emit("getMessages", { room: currentRoom }); // Ensure you have the current room context
 });
 
 socket.on("reconnect_failed", () => {
   console.error("Reconnection failed");
+});
+
+// Handle error events
+socket.on("connect_error", (error) => {
+  console.error("Connection error:", error);
+});
+
+socket.on("error", (error) => {
+  console.error("Socket error:", error);
 });
 
 export default socket;
