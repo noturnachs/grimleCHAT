@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import socket from "../socket"; // Import the singleton socket instance
@@ -115,7 +114,7 @@ function Home() {
   }, []);
 
   // Add this useEffect for fingerprinting
-   useEffect(() => {
+  useEffect(() => {
     const getFingerprint = async () => {
       try {
         // Load FingerprintJS
@@ -399,9 +398,7 @@ function Home() {
       </div>
 
       <FAQ />
-      <p className="text-sm text-gray-300 text-center mt-4">
-        We do not store any chat information on our server, and because of that, once you switch to another page and go back or even refresh, you won't be able to see your chats anymore. It is expected that when you leave the website, you are leaving the chat. That is most likely the reason why you are not able to see your messages or communicate with your match.
-      </p>
+
       <button
         onClick={handleReportClick}
         className="flex items-center text-white mt-4 rounded bg-[#d6663a] p-2 md:p-3 md:mt-6" // Adjust padding and margin for larger screens
