@@ -15,6 +15,8 @@ leapfrog.register();
 squircle.register();
 
 function ChatRoom() {
+  const [isDisconnected, setIsDisconnected] = useState(false);
+
   const [messages, setMessages] = useState([]);
   const [userCount, setUserCount] = useState(0);
   const [partnerVisitorId, setPartnerVisitorId] = useState(null);
@@ -49,6 +51,23 @@ function ChatRoom() {
 
   const socketRef = useRef(socket);
   const chatContainerRef = useRef(null); // Ref for the chat container
+
+  useEffect(() => {
+    socket.on("disconnect", (reason) => {
+      console.log("Socket disconnected:", reason);
+      setIsDisconnected(true); // Set disconnected state
+    });
+
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+      setIsDisconnected(false); // Reset disconnected state
+    });
+
+    return () => {
+      socket.off("disconnect");
+      socket.off("connect");
+    };
+  }, []);
 
   useEffect(() => {
     const handleTriggerEffect = ({ effect }) => {
@@ -157,6 +176,24 @@ function ChatRoom() {
 
     setIsSubmittingReport(false); // Stop loader
   };
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        // Check if the socket is connected
+        if (!socket.connected) {
+          console.log("Reconnecting socket...");
+          socket.connect(); // Reconnect the socket
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   const handleScreenshotChange = (event) => {
     const file = event.target.files[0];
@@ -268,12 +305,7 @@ function ChatRoom() {
       navigate("/"); // Redirect them back to the home page
     };
 
-    const handleVisibilityChange = () => {
-      // Removed title reset logic
-    };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
     socket.on("userCountUpdate", handleUserCountUpdate);
     socket.on("typing", handleTyping);
     socket.on("message", handleMessage);
@@ -294,7 +326,6 @@ function ChatRoom() {
     return () => {
       clearInterval(interval);
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
       socket.off("userCountUpdate", handleUserCountUpdate);
       socket.off("typing", handleTyping);
       socket.off("message", handleMessage);
@@ -344,6 +375,10 @@ function ChatRoom() {
 
   const sendMessage = (message) => {
     if (room) {
+      if (!socket.connected) {
+        alert("You are disconnected. Please reconnect to send messages.");
+        return; // Prevent sending message if disconnected
+      }
       // Destructure message properties
       const { messageText, gif, sticker } = message; // Include sticker
       const messageData = {
