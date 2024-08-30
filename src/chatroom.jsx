@@ -15,8 +15,6 @@ leapfrog.register();
 squircle.register();
 
 function ChatRoom() {
-  const [isDisconnected, setIsDisconnected] = useState(false);
-
   const [messages, setMessages] = useState([]);
   const [userCount, setUserCount] = useState(0);
   const [partnerVisitorId, setPartnerVisitorId] = useState(null);
@@ -66,11 +64,6 @@ function ChatRoom() {
       socket.off("triggerEffect", handleTriggerEffect);
     };
   }, [socket, room]);
-
-  useEffect(() => {
-    console.log("Current room:", room);
-    console.log("Messages:", messages);
-  }, [room, messages]);
 
   useEffect(() => {
     socket.on("confettiTriggered", () => {
@@ -243,29 +236,6 @@ function ChatRoom() {
       // Removed title change logic
     };
 
-    const setupSocketListeners = () => {
-      socket.on("disconnect", (reason) => {
-        console.log("Socket disconnected:", reason);
-        setIsDisconnected(true); // Set disconnected state
-      });
-
-      socket.on("connect", () => {
-        console.log("Socket connected:", socket.id);
-        setIsDisconnected(false); // Reset disconnected state
-        // Optionally, you can rejoin the room or fetch previous messages here
-
-        if (room) {
-          socket.emit("joinRoom", { room, username }); // Emit an event to join the room
-        }
-      });
-
-      socket.on("message", handleMessage);
-      socket.on("matchFound", handleMatchFound);
-      socket.on("userLeft", handleUserLeft);
-      socket.on("banned", handleBanned);
-      // Add other event listeners as needed
-    };
-
     const handleMatchFound = ({
       room,
       username: matchedUsername,
@@ -323,7 +293,7 @@ function ChatRoom() {
     socket.on("matchFound", handleMatchFound);
     socket.on("userLeft", handleUserLeft);
     socket.on("banned", handleBanned); // Listen for the "banned" event
-    setupSocketListeners(); // Set up listeners on mount
+
     const interval = setInterval(() => {
       if (
         loadingMessage !== "Start Finding a Match" &&
@@ -386,10 +356,6 @@ function ChatRoom() {
 
   const sendMessage = (message) => {
     if (room) {
-      if (!socket.connected) {
-        alert("You are disconnected. Please reconnect to send messages.");
-        return; // Prevent sending message if disconnected
-      }
       // Destructure message properties
       const { messageText, gif, sticker } = message; // Include sticker
       const messageData = {
