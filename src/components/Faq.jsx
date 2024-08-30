@@ -56,7 +56,7 @@ function FAQ() {
             }`}
           >
             <p className="text-sm text-justify">
-              The everything send during the chat are not stored in anyway, so
+              Everything send during the chat are not stored in anyway, so
               whenever you leave the website everything is gone. That is why you
               are unable to send or read new messages already. Just find another
               match.
