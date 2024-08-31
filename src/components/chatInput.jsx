@@ -196,6 +196,10 @@ function ChatInput({
   const handleTyping = (e) => {
     setMessageText(e.target.value);
 
+    if (confirmEndChat) {
+      setConfirmEndChat(false); // Reset confirmation state
+    }
+
     if (socket) {
       if (!isTyping) {
         setIsTyping(true);
