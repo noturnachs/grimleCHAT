@@ -207,7 +207,7 @@ function Home() {
     <div className="h-screen flex flex-col justify-center items-center bg-[#192734] p-4">
       <Announcement />
       <div className="flex flex-col space-y-10 justify-center items-center md:flex-row md:space-x-5 md:space-y-0 ">
-        <div className="mt-[40vh] md:mt-[20vh] lg:mt-[25vh] xl:mt-[30vh] 2xl:mt-[1vh] z-10">
+        <div className="mt-[50vh] md:mt-[20vh] lg:mt-[10vh] xl:mt-[30vh] 2xl:mt-[30vh] z-10">
           <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-full md:p-8">
             <h1 className="text-2xl font-normal mb-6 text-white text-center ">
               Welcome to LeeyosChat
