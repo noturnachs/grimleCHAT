@@ -217,6 +217,10 @@ function Home() {
               Talk with random strangers anywhere and everywhere.
             </p>
 
+            <p className="text-sm text-gray-300 mb-4 text-center">
+        Unregulated Version: <a href="https://adult.leeyos.com" className="text-blue-400">adult.leeyos.com</a>
+    </p>
+
             {/* Display user count */}
             <div className="text-sm text-gray-300 mb-4 text-center">
               <Counter value={userCount} />
