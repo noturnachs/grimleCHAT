@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 
 const Ads = ({ isModalOpen, onClose }) => {
   const [copySuccess, setCopySuccess] = useState(false);
   const shareLink = `https://leeyos.com/#announcements`;
+  const [showMetaTags, setShowMetaTags] = useState(false);
 
   const handleShare = () => {
     if (navigator.share) {
@@ -29,24 +30,39 @@ const Ads = ({ isModalOpen, onClose }) => {
     }
   };
 
+  // Check if the URL contains #announcements
+  const isAnnouncementsPage = window.location.hash === "#announcements";
+
+  useEffect(() => {
+    // Show meta tags when the modal is open
+    if (isModalOpen) {
+      setShowMetaTags(true);
+    } else {
+      setShowMetaTags(false);
+    }
+  }, [isModalOpen]);
+
   return (
     <>
-      <Helmet>
-        <title>
-          We would greatly appreciate your participation in our brief survey for
-          our Probability and Statistics project
-        </title>
-        <meta
-          property="og:title"
-          content="We would greatly appreciate your participation in our brief survey for our Probability and Statistics project"
-        />
-        <meta
-          property="og:description"
-          content="Your insights are essential to our research. Participate in our brief survey!"
-        />
-        <meta property="og:url" content={shareLink} />
-        {/* Optional: Add an image URL for the preview */}
-      </Helmet>
+      {isAnnouncementsPage && showMetaTags && (
+        <Helmet>
+          <title>
+            We would greatly appreciate your participation in our brief survey
+            for our Probability and Statistics project
+          </title>
+          <meta
+            property="og:title"
+            content="We would greatly appreciate your participation in our brief survey for our Probability and Statistics project"
+          />
+          <meta
+            property="og:description"
+            content="Your insights are essential to our research. Participate in our brief survey!"
+          />
+          <meta property="og:url" content={shareLink} />
+          <meta property="og:image" content="URL_to_an_image" />{" "}
+          {/* Optional: Add an image URL for the preview */}
+        </Helmet>
+      )}
 
       {/* Permanent Announcement Content */}
       <div className="bg-[#fbbf16] p-3 rounded-lg mt-10 shadow-lg max-w-md w-full">
@@ -90,7 +106,10 @@ const Ads = ({ isModalOpen, onClose }) => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
           <div className="bg-[#fbbf16] p-6 rounded-lg shadow-lg max-w-md w-full relative z-60">
             <button
-              onClick={onClose}
+              onClick={() => {
+                onClose();
+                setShowMetaTags(false); // Remove meta tags when modal is closed
+              }}
               className="absolute top-2 right-2 text-gray-500"
             >
               &times;
