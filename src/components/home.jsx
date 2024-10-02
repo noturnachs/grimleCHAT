@@ -86,9 +86,23 @@ function Home() {
   const [password, setPassword] = useState(""); // State to store password
   const [showPasswordInput, setShowPasswordInput] = useState(false); // State to show password input
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const socketRef = useRef();
   const visitorIdRef = useRef(null); // Add a ref to store the visitor ID
+
+  useEffect(() => {
+    // Check if the URL contains "#announcement"
+    if (window.location.hash === "#announcements") {
+      setIsModalOpen(true);
+    }
+  }, []);
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    // Optionally, remove the hash from the URL after closing the modal
+    window.history.pushState("", document.title, window.location.pathname);
+  };
 
   const handleRemoveInterest = (indexToRemove) => {
     setInterest(interest.filter((_, index) => index !== indexToRemove));
@@ -397,7 +411,22 @@ function Home() {
           </div>
         </div>
       </div>
+
       <Ads />
+      {/* Conditional Modal Popup */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-10 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full relative">
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-2 right-2 text-gray-500"
+            >
+              &times;
+            </button>
+            <Ads isModalOpen={isModalOpen} onClose={handleCloseModal} />
+          </div>
+        </div>
+      )}
       <FAQ />
 
       <button
