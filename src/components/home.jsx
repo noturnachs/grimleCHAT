@@ -6,6 +6,7 @@ import Announcement from "./Announcement";
 import FingerprintJS from "@fingerprintjs/fingerprintjs"; // Import FingerprintJS
 import FAQ from "./Faq";
 import { FaFlag } from "react-icons/fa";
+import Ads from "./ads";
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
 
@@ -217,8 +218,6 @@ function Home() {
               Talk with random strangers anywhere and everywhere.
             </p>
 
-           
-
             {/* Display user count */}
             <div className="text-sm text-gray-300 mb-4 text-center">
               <Counter value={userCount} />
@@ -398,7 +397,7 @@ function Home() {
           </div>
         </div>
       </div>
-
+      <Ads />
       <FAQ />
 
       <button
