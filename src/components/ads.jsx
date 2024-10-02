@@ -45,7 +45,6 @@ const Ads = ({ isModalOpen, onClose }) => {
           content="Your insights are essential to our research. Participate in our brief survey!"
         />
         <meta property="og:url" content={shareLink} />
-        <meta property="og:image" content="URL_to_an_image" />{" "}
         {/* Optional: Add an image URL for the preview */}
       </Helmet>
 
