@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from "react-helmet";
 
 const Ads = ({ isModalOpen, onClose }) => {
   const [copySuccess, setCopySuccess] = useState(false);
@@ -8,7 +9,8 @@ const Ads = ({ isModalOpen, onClose }) => {
     if (navigator.share) {
       navigator
         .share({
-          title: "LeeyosChat Announcement",
+          title:
+            "We would greatly appreciate your participation in our brief survey for our Probability and Statistics project",
           text: "Check out this announcement on LeeyosChat!",
           url: shareLink,
         })
@@ -29,6 +31,24 @@ const Ads = ({ isModalOpen, onClose }) => {
 
   return (
     <>
+      <Helmet>
+        <title>
+          We would greatly appreciate your participation in our brief survey for
+          our Probability and Statistics project
+        </title>
+        <meta
+          property="og:title"
+          content="We would greatly appreciate your participation in our brief survey for our Probability and Statistics project"
+        />
+        <meta
+          property="og:description"
+          content="Your insights are essential to our research. Participate in our brief survey!"
+        />
+        <meta property="og:url" content={shareLink} />
+        <meta property="og:image" content="URL_to_an_image" />{" "}
+        {/* Optional: Add an image URL for the preview */}
+      </Helmet>
+
       {/* Permanent Announcement Content */}
       <div className="bg-[#fbbf16] p-3 rounded-lg mt-10 shadow-lg max-w-md w-full">
         <div className="bg-white p-4 rounded-lg mt-4 border-l-4 border-[#10ae4d] shadow-lg">
