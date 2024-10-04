@@ -7,7 +7,7 @@ import FingerprintJS from "@fingerprintjs/fingerprintjs"; // Import FingerprintJ
 import FAQ from "./Faq";
 import { FaFlag } from "react-icons/fa";
 import Ads from "./ads";
-
+import Song from "./song";
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
 
 const fontSize = 30;
@@ -87,6 +87,20 @@ function Home() {
   const [showPasswordInput, setShowPasswordInput] = useState(false); // State to show password input
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [youtubeLink, setYoutubeLink] = useState(
+    "https://www.youtube.com/watch?v=GemKqzILV4w"
+  ); // Default link
+
+  useEffect(() => {
+    // Listen for the updateYouTubeLink event
+    socket.on("updateYouTubeLink", (newLink) => {
+      setYoutubeLink(newLink); // Update the YouTube link state
+    });
+
+    return () => {
+      socket.off("updateYouTubeLink"); // Clean up the event listener
+    };
+  }, []);
 
   const socketRef = useRef();
   const visitorIdRef = useRef(null); // Add a ref to store the visitor ID
@@ -223,6 +237,7 @@ function Home() {
       <Announcement />
       <div className="flex flex-col space-y-10 justify-center items-center md:flex-row md:space-x-5 md:space-y-0 ">
         <div className="mt-[15vh] md:mt-[20vh]  z-10">
+          <Song ytLink={youtubeLink} />
           <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-full md:p-8">
             <h1 className="text-2xl font-normal mb-6 text-white text-center ">
               Welcome to LeeyosChat
