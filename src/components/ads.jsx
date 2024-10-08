@@ -64,7 +64,7 @@ const Ads = ({ isModalOpen, onClose }) => {
       )}
 
       {/* Permanent Announcement Content */}
-      <div className="bg-[#fbbf16] p-3 rounded-lg mt-10 shadow-lg max-w-md w-full">
+      {/* <div className="bg-[#fbbf16] p-3 rounded-lg mt-10 shadow-lg max-w-md w-full">
         <div className="bg-white p-4 rounded-lg mt-4 border-l-4 border-[#10ae4d] shadow-lg">
           <h2 className="text-xl font-bold text-[#11a7e0]">
             To: <span className="text-[#ff0d00]">All Carolinians</span>
@@ -98,10 +98,10 @@ const Ads = ({ isModalOpen, onClose }) => {
             )}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Modal Popup (only when isModalOpen is true) */}
-      {isModalOpen && (
+      {/* {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
           <div className="bg-[#fbbf16] p-6 rounded-lg shadow-lg max-w-md w-full relative z-60">
             <button
@@ -150,7 +150,7 @@ const Ads = ({ isModalOpen, onClose }) => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </>
   );
 };
