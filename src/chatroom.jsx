@@ -374,6 +374,15 @@ function ChatRoom() {
       ]);
     };
 
+    const handleAdminMessage = (message) => {
+      setPopupMessage(message);
+      setIsPopupVisible(true);
+      // Automatically hide the popup after 10 seconds
+      setTimeout(() => {
+        setIsPopupVisible(false);
+      }, 10000);
+    };
+
     window.addEventListener("beforeunload", handleBeforeUnload);
     socket.on("userCountUpdate", handleUserCountUpdate);
     socket.on("typing", handleTyping);
@@ -383,6 +392,7 @@ function ChatRoom() {
     socket.on("banned", handleBanned); // Listen for the "banned" event
     socket.on("roomClosed", handleRoomClosed);
     socket.on("inactivityWarning", handleInactivityWarning);
+    socket.on("adminMessage", handleAdminMessage);
 
     const interval = setInterval(() => {
       if (
@@ -405,6 +415,7 @@ function ChatRoom() {
       socket.off("banned", handleBanned); // Cleanup the "banned" event listener
       socket.off("roomClosed", handleRoomClosed);
       socket.off("inactivityWarning", handleInactivityWarning);
+      socket.off("adminMessage", handleAdminMessage);
     };
   }, [loadingMessage, navigate, username]);
 
