@@ -354,6 +354,26 @@ function ChatRoom() {
       navigate("/"); // Redirect them back to the home page
     };
 
+    const handleRoomClosed = ({ message }) => {
+      setRoom(null);
+      setMessages([]);
+      setLoadingMessage("Room closed: " + message);
+      setLoading(false);
+      setFromChat(true);
+      setTypingStatus({});
+    };
+
+    const handleInactivityWarning = ({ message }) => {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          username: "System",
+          messageText: message,
+          timestamp: Date.now(),
+        },
+      ]);
+    };
+
     window.addEventListener("beforeunload", handleBeforeUnload);
     socket.on("userCountUpdate", handleUserCountUpdate);
     socket.on("typing", handleTyping);
@@ -361,6 +381,8 @@ function ChatRoom() {
     socket.on("matchFound", handleMatchFound);
     socket.on("userLeft", handleUserLeft);
     socket.on("banned", handleBanned); // Listen for the "banned" event
+    socket.on("roomClosed", handleRoomClosed);
+    socket.on("inactivityWarning", handleInactivityWarning);
 
     const interval = setInterval(() => {
       if (
@@ -381,6 +403,8 @@ function ChatRoom() {
       socket.off("matchFound", handleMatchFound);
       socket.off("userLeft", handleUserLeft);
       socket.off("banned", handleBanned); // Cleanup the "banned" event listener
+      socket.off("roomClosed", handleRoomClosed);
+      socket.off("inactivityWarning", handleInactivityWarning);
     };
   }, [loadingMessage, navigate, username]);
 
