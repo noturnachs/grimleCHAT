@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
-import socket from "./socket"; // Import the singleton socket instance
+import { socket, setUserInfo, clearUserInfo } from "./socket"; // Import the singleton socket instance and new functions
 import Chat from "./components/chat";
 import ChatInput from "./components/chatInput";
 import { lineWobble, leapfrog, squircle } from "ldrs";
@@ -50,6 +50,35 @@ function ChatRoom() {
   const socketRef = useRef(socket);
   const chatContainerRef = useRef(null); // Ref for the chat container
 
+  const [reconnectionAttempts, setReconnectionAttempts] = useState(0);
+
+  useEffect(() => {
+    const handleReconnect = (attempt) => {
+      console.log(`Reconnected on attempt #${attempt}`);
+      setReconnectionAttempts(0);
+      if (room) {
+        socket.emit("rejoinRoom", {
+          room,
+          username,
+          visitorId: state?.visitorId,
+        });
+      }
+    };
+
+    const handleReconnectAttempt = (attempt) => {
+      console.log(`Reconnection attempt #${attempt}`);
+      setReconnectionAttempts(attempt);
+    };
+
+    socket.on("reconnect", handleReconnect);
+    socket.on("reconnect_attempt", handleReconnectAttempt);
+
+    return () => {
+      socket.off("reconnect", handleReconnect);
+      socket.off("reconnect_attempt", handleReconnectAttempt);
+    };
+  }, [room, username, state?.visitorId]);
+
   useEffect(() => {
     const handleTriggerEffect = ({ effect }) => {
       console.log("Effect triggered:", effect);
@@ -80,14 +109,16 @@ function ChatRoom() {
   }, [socket]);
 
   useEffect(() => {
-    const socketInstance = socketRef.current; // Use the socket reference
+    const socketInstance = socketRef.current;
 
-    socketInstance.on("telegramMessage", (data) => {
-      showPopup(data.message);
-    });
+    // Connect to the socket if not already connected
+    if (!socketInstance.connected) {
+      socketInstance.connect();
+    }
 
+    // Cleanup on unmount
     return () => {
-      socketInstance.off("telegramMessage"); // Cleanup the event listener
+      socketInstance.disconnect();
     };
   }, []);
   // Function to show popup with message from Telegram bot
@@ -157,24 +188,50 @@ function ChatRoom() {
 
     setIsSubmittingReport(false); // Stop loader
   };
+  const fetchMissedMessages = () => {
+    if (room) {
+      socket.emit("fetchMissedMessages", {
+        room,
+        lastMessageTimestamp: getLastMessageTimestamp(),
+      });
+    }
+  };
+
+  const getLastMessageTimestamp = () => {
+    if (messages.length > 0) {
+      return messages[messages.length - 1].timestamp;
+    }
+    return 0;
+  };
 
   useEffect(() => {
+    socket.on("missedMessages", (newMessages) => {
+      setMessages((prevMessages) => {
+        const lastTimestamp = getLastMessageTimestamp();
+        const uniqueNewMessages = newMessages.filter(
+          (msg) => msg.timestamp > lastTimestamp
+        );
+        return [...prevMessages, ...uniqueNewMessages];
+      });
+    });
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        // Check if the socket is connected
         if (!socket.connected) {
           console.log("Reconnecting socket...");
-          socket.connect(); // Reconnect the socket
+          socket.connect();
         }
+        fetchMissedMessages();
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
+      socket.off("missedMessages");
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []);
+  }, [room]);
 
   const handleScreenshotChange = (event) => {
     const file = event.target.files[0];
@@ -240,14 +297,14 @@ function ChatRoom() {
       room,
       username: matchedUsername,
       interest,
-      partnerVisitorId, // Capture the partner's visitorId
+      partnerVisitorId,
     }) => {
       setRoom(room);
       setLoadingMessage("Start Finding a Match");
       setLoading(false);
 
       setPartnerVisitorId(partnerVisitorId);
-      setPartnerUsername(matchedUsername); // Store the matched user's name
+      setPartnerUsername(matchedUsername);
 
       const newMessages = [
         {
@@ -377,7 +434,9 @@ function ChatRoom() {
       socket.emit("leaveRoom");
       setRoom(null);
       setMessages([]);
-      setTypingStatus({}); // Reset typing status when chat ends
+      setTypingStatus({});
+      setPartnerUsername(null);
+      setPartnerVisitorId(null);
     }
     setLoadingMessage("Find Again?");
     setLoading(false);
@@ -397,6 +456,30 @@ function ChatRoom() {
     setTypingStatus({}); // Reset typing status when canceling
     navigate("/");
   };
+
+  useEffect(() => {
+    // Set user info when entering a room
+    if (room && username && state?.visitorId) {
+      setUserInfo(room, username, state.visitorId);
+    }
+
+    // Handle reconnection messages
+    const handleReconnectionMessages = (event) => {
+      const messages = event.detail;
+      setMessages((prevMessages) => [...prevMessages, ...messages]);
+    };
+
+    window.addEventListener("reconnectionMessages", handleReconnectionMessages);
+
+    // Clear user info when leaving the room
+    return () => {
+      clearUserInfo();
+      window.removeEventListener(
+        "reconnectionMessages",
+        handleReconnectionMessages
+      );
+    };
+  }, [room, username, state?.visitorId]);
 
   if (!username) {
     return <Navigate to="/" />;
