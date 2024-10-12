@@ -50,7 +50,13 @@ function ChatRoom() {
   const socketRef = useRef(socket);
   const chatContainerRef = useRef(null); // Ref for the chat container
 
+  const [replyTo, setReplyTo] = useState(null);
+
   const [reconnectionAttempts, setReconnectionAttempts] = useState(0);
+
+  const handleReply = (replyData) => {
+    setReplyTo(replyData);
+  };
 
   useEffect(() => {
     const handleReconnect = (attempt) => {
@@ -470,19 +476,21 @@ function ChatRoom() {
 
   const sendMessage = (message) => {
     if (room) {
-      // Destructure message properties
-      const { messageText, gif, sticker } = message; // Include sticker
+      const { messageText, gif, sticker, replyTo, images, audio } = message;
+      const messageId = Date.now().toString(); // Generate a unique ID for the message
       const messageData = {
         room,
         message: {
+          id: messageId,
           username,
-          messageText: messageText || "", // Default to empty string if not provided
-          gif: gif || null, // Include gif if it exists
-          sticker: sticker || null, // Include sticker if it exists
+          messageText: messageText || "",
+          gif: gif || null,
+          sticker: sticker || null,
+          replyTo: replyTo || null,
+          images: images || null,
+          audio: audio || null,
         },
       };
-
-      // Emit the message to the server
       socket.emit("sendMessage", messageData);
     }
   };
@@ -610,15 +618,12 @@ function ChatRoom() {
                 className="z-[9999]"
               />
             )}
-            <Chat messages={messages} setIsImageEnlarged={setIsImageEnlarged} />
-            {typingStatus.typing && (
-              <div className="flex items-center">
-                <span className="text-gray-400 ml-2 text-xs">
-                  {typingStatus.username} is typing&nbsp;
-                </span>
-                <l-leapfrog size="20" speed="2.5" color="#9ca3af"></l-leapfrog>
-              </div>
-            )}
+            <Chat
+              messages={messages}
+              setIsImageEnlarged={setIsImageEnlarged}
+              onReply={handleReply}
+              typingStatus={typingStatus}
+            />
           </div>
           {!isImageEnlarged && (
             <ChatInput
@@ -628,6 +633,8 @@ function ChatRoom() {
               room={room}
               username={username}
               isImageEnlarged={isImageEnlarged}
+              replyTo={replyTo}
+              setReplyTo={setReplyTo}
             />
           )}
         </div>
