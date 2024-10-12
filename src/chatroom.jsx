@@ -116,11 +116,20 @@ function ChatRoom() {
       socketInstance.connect();
     }
 
+    const handleTelegramMessage = (data) => {
+      console.log("Telegram message received:", data);
+      showPopup(data.message);
+    };
+
+    socket.on("telegramMessage", handleTelegramMessage);
+
     // Cleanup on unmount
     return () => {
       socketInstance.disconnect();
+      socket.off("telegramMessage", handleTelegramMessage);
     };
   }, []);
+
   // Function to show popup with message from Telegram bot
   const showPopup = (message) => {
     setPopupMessage(message);
@@ -131,6 +140,7 @@ function ChatRoom() {
   const closePopup = () => {
     setIsPopupVisible(false);
   };
+
   // Redirect to home if no username is present
   useEffect(() => {
     if (!state || !state.username) {
@@ -188,6 +198,7 @@ function ChatRoom() {
 
     setIsSubmittingReport(false); // Stop loader
   };
+
   const fetchMissedMessages = () => {
     if (room) {
       socket.emit("fetchMissedMessages", {
@@ -475,6 +486,7 @@ function ChatRoom() {
       socket.emit("sendMessage", messageData);
     }
   };
+
   const onEndChat = () => {
     if (room) {
       socket.emit("leaveRoom");
