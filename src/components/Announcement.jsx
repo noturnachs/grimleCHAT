@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import socket from "../socket"; // Import the singleton socket instance
+import { socket } from "../socket"; // Import the singleton socket instance
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
 
