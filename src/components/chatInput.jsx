@@ -8,6 +8,7 @@ import RecordRTC from "recordrtc";
 import imageCompression from "browser-image-compression";
 import { GiphyFetch } from "@giphy/js-fetch-api";
 import { Grid } from "@giphy/react-components";
+import { FaReply } from "react-icons/fa"; // Add FaImage import if not already present
 
 const giphyFetch = new GiphyFetch("1BhL1pC32fiqXaGE9ckNqzbKYYkgPf3vC"); // Replace with your Giphy API key
 
@@ -19,6 +20,8 @@ function ChatInput({
   room,
   username,
   isImageEnlarged,
+  replyTo,
+  setReplyTo,
 }) {
   const [showEffects, setShowEffects] = useState(false); // State to show effects
 
@@ -53,9 +56,65 @@ function ChatInput({
   const scaleTransform = useTransform(scaleSpring, (value) =>
     value > 0 ? 1 + value / 10 : 1
   );
+  const replyToRef = useRef(replyTo);
+  const [replyPreviewSrc, setReplyPreviewSrc] = useState(null);
+
+  useEffect(() => {
+    if (replyTo && replyTo.type === "image" && replyTo.preview) {
+      if (replyTo.preview instanceof ArrayBuffer) {
+        const blob = new Blob([replyTo.preview], { type: "image/jpeg" });
+        const url = URL.createObjectURL(blob);
+        setReplyPreviewSrc(url);
+        return () => URL.revokeObjectURL(url);
+      } else if (typeof replyTo.preview === "string") {
+        setReplyPreviewSrc(replyTo.preview);
+      }
+    }
+  }, [replyTo]);
+
+  useEffect(() => {
+    replyToRef.current = replyTo;
+  }, [replyTo]);
 
   const toggleEffects = () => {
     setShowEffects(!showEffects);
+  };
+
+  const renderReplyPreview = () => {
+    if (!replyTo) return null;
+
+    return (
+      <div className="bg-gray-700 p-2 rounded-lg mb-2 text-sm flex items-center">
+        {replyTo.type === "image" && replyPreviewSrc && (
+          <div className="mr-2 relative">
+            <img
+              src={replyPreviewSrc}
+              alt="Reply preview"
+              className="w-16 h-16 object-cover rounded"
+            />
+            <FaImage
+              className="absolute bottom-0 right-0 text-white bg-gray-800 rounded-full p-1"
+              size={16}
+            />
+          </div>
+        )}
+        <div className="flex-grow">
+          <p className="text-gray-400">Replying to {replyTo.username}</p>
+          {replyTo.type !== "image" && (
+            <p className="text-white">{replyTo.content}</p>
+          )}
+        </div>
+        <button
+          onClick={() => {
+            setReplyTo(null);
+            setReplyPreviewSrc(null);
+          }}
+          className="text-red-500 ml-2"
+        >
+          <FaTimes size={16} />
+        </button>
+      </div>
+    );
   };
 
   const handleEffectSelect = (effect) => {
@@ -172,20 +231,33 @@ function ChatInput({
     }
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (messageText.trim() || selectedImages.length > 0 || recordedAudio) {
+      const replyData = replyTo
+        ? {
+            id: replyTo.id,
+            username: replyTo.username,
+            content: replyTo.content,
+            type: replyTo.type,
+            preview: replyTo.preview,
+          }
+        : null;
 
-    // Only process messageText if it's a string
-    const trimmedMessage =
-      typeof messageText === "string" ? messageText.trim() : "";
+      const newMessage = {
+        id: Date.now().toString(), // Generate a unique ID for the message
+        username,
+        messageText: messageText.trim(),
+        images: selectedImages,
+        audio: recordedAudio,
+        replyTo: replyData,
+      };
 
-    if (trimmedMessage) {
-      sendMessage({ username, messageText: trimmedMessage }); // Send text message
-      setMessageText(""); // Clear the text input
-    } else if (selectedImages.length > 0) {
-      sendImageMessage();
-    } else if (isRecording && recordedAudio) {
-      sendVoiceMessage();
+      sendMessage(newMessage);
+      setMessageText("");
+      setSelectedImages([]);
+      setRecordedAudio(null);
+      setReplyTo(null);
     }
 
     if (buttonRef.current) {
@@ -424,9 +496,10 @@ function ChatInput({
 
   return (
     <div
-      className="relative p-3 pl-2 pr-1 bg-[#192734] w-full md:w-1/2 rounded-lg shadow-md"
+      className="relative p-3 pl-2 pr-1 bg-[#192734] w-full md:w-1/2 rounded-lg shadow-md "
       style={{ height: containerHeight, zIndex: 1 }}
     >
+      {renderReplyPreview()}{" "}
       {selectedImages.length > 0 && (
         <div className="flex space-x-2 mb-4">
           {selectedImages.map((image, index) => (
