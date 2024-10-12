@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import socket from "../socket"; // Import the singleton socket instance
+import { socket } from "../socket"; // Import the singleton socket instance
 import { motion, useSpring, useTransform } from "framer-motion";
 import Announcement from "./Announcement";
 import FingerprintJS from "@fingerprintjs/fingerprintjs"; // Import FingerprintJS
