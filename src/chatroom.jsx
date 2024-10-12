@@ -211,7 +211,7 @@ function ChatRoom() {
         const uniqueNewMessages = newMessages.filter(
           (msg) => msg.timestamp > lastTimestamp
         );
-        return [...prevMessages, ...uniqueNewMessages];
+        return [...prevMessages, ...uniqueNewMessages.map(formatMessage)];
       });
     });
 
@@ -232,6 +232,17 @@ function ChatRoom() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [room]);
+
+  const formatMessage = (msg) => {
+    return {
+      ...msg,
+      gif: msg.gif || null,
+      audio: msg.audio || null,
+      images: msg.images || null,
+      sticker: msg.sticker || null, // Include sticker if it exists
+      // Add any other message types you want to support
+    };
+  };
 
   const handleScreenshotChange = (event) => {
     const file = event.target.files[0];
