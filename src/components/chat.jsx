@@ -333,7 +333,7 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
           );
         })}
         {typingStatus.typing && (
-          <div className={`flex justify-start relative w-full `}>
+          <div className="flex justify-start relative w-full">
             <div className="flex-col max-w-[70%]">
               <span
                 className="font-normal"
@@ -341,7 +341,10 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
               >
                 {typingStatus.username}
               </span>
-              <div className="bg-gray-700 p-2 rounded-xl mb-2 text-sm">
+              <div
+                className="bg-gray-700 p-2 rounded-xl mb-2 text-sm flex items-center justify-center"
+                style={{ minHeight: "40px", minWidth: "60px" }}
+              >
                 <l-leapfrog size="20" speed="2.5" color="#9ca3af"></l-leapfrog>
               </div>
             </div>
