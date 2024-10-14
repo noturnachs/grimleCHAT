@@ -55,6 +55,8 @@ function ChatRoom() {
 
   const [reconnectionAttempts, setReconnectionAttempts] = useState(0);
 
+  const [adminPresent, setAdminPresent] = useState(false);
+
   const handleReply = (replyData) => {
     setReplyTo(replyData);
   };
@@ -144,8 +146,8 @@ function ChatRoom() {
   }, []);
 
   // Function to show popup with message from Telegram bot
-  const showPopup = (message, isHtml = false) => {
-    setPopupMessage({ content: message, isHtml });
+  const showPopup = (content, isHtml = false) => {
+    setPopupMessage({ content: content || "", isHtml });
     setIsPopupVisible(true);
   };
 
@@ -398,15 +400,6 @@ function ChatRoom() {
       ]);
     };
 
-    const handleAdminMessage = (message) => {
-      setPopupMessage(message);
-      setIsPopupVisible(true);
-      // Automatically hide the popup after 10 seconds
-      setTimeout(() => {
-        setIsPopupVisible(false);
-      }, 10000);
-    };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
     socket.on("userCountUpdate", handleUserCountUpdate);
     socket.on("typing", handleTyping);
@@ -416,7 +409,6 @@ function ChatRoom() {
     socket.on("banned", handleBanned); // Listen for the "banned" event
     socket.on("roomClosed", handleRoomClosed);
     socket.on("inactivityWarning", handleInactivityWarning);
-    socket.on("adminMessage", handleAdminMessage);
 
     const interval = setInterval(() => {
       if (
@@ -439,9 +431,58 @@ function ChatRoom() {
       socket.off("banned", handleBanned); // Cleanup the "banned" event listener
       socket.off("roomClosed", handleRoomClosed);
       socket.off("inactivityWarning", handleInactivityWarning);
-      socket.off("adminMessage", handleAdminMessage);
     };
   }, [loadingMessage, navigate, username]);
+
+  useEffect(() => {
+    const handleAdminMessage = (message) => {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { ...message, isAdmin: true },
+      ]);
+      // setPopupMessage(message);
+      // setIsPopupVisible(true);
+      // setTimeout(() => {
+      //   setIsPopupVisible(false);
+      // }, 10000);
+    };
+
+    const handleAdminJoined = () => {
+      setAdminPresent(true);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          id: Date.now().toString(),
+          username: "System",
+          messageText: "An admin has joined the room.",
+          isAdmin: true,
+        },
+      ]);
+    };
+
+    const handleAdminLeft = () => {
+      setAdminPresent(false);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          id: Date.now().toString(),
+          username: "System",
+          messageText: "The admin has left the room.",
+          isAdmin: true,
+        },
+      ]);
+    };
+
+    socket.on("adminMessage", handleAdminMessage);
+    socket.on("adminJoined", handleAdminJoined);
+    socket.on("adminLeft", handleAdminLeft);
+
+    return () => {
+      socket.off("adminMessage", handleAdminMessage);
+      socket.off("adminJoined", handleAdminJoined);
+      socket.off("adminLeft", handleAdminLeft);
+    };
+  }, [socket]);
 
   useEffect(() => {
     if (loading && countdown > 0 && interest.length > 0) {
@@ -466,6 +507,7 @@ function ChatRoom() {
   }, [loading, countdown, socket, username, interest]);
 
   const startMatch = () => {
+    setAdminPresent(false);
     setInitialStart(false);
     setFromChat(false);
     setLoading(true);
@@ -568,6 +610,11 @@ function ChatRoom() {
           isHtml={popupMessage.isHtml}
         />
       )}{" "}
+      {adminPresent && (
+        <div className="bg-red-500 text-white p-2 text-center">
+          An admin is present in this room
+        </div>
+      )}
       {!room ? (
         <div className="flex flex-col items-center justify-center h-full">
           {prevUsernameLeft && (
