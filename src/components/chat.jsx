@@ -225,6 +225,7 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
       <div ref={chatContainerRef} className="flex flex-col space-y-4  h-full ">
         {messages.map((message, index) => {
           const isSender = message.username === username;
+          const isAdmin = message.isAdmin; // Add this line
           return (
             <div
               key={message.id}
@@ -246,7 +247,7 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
                     ...getUsernameStyles(message.username),
                   }}
                 >
-                  {message.username}
+                  {isAdmin ? "Admin" : message.username}{" "}
                 </span>
 
                 {message.replyTo && (
@@ -301,9 +302,13 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
                   </div>
                 ) : (
                   <div
-                    className="p-2 rounded-xl max-w-xs"
+                    className={`p-2 rounded-xl max-w-xs ${
+                      isAdmin ? "bg-red-500 text-white" : ""
+                    }`} // Add admin styling
                     style={{
-                      ...getMessageStyles(message.username, isSender),
+                      ...(!isAdmin
+                        ? getMessageStyles(message.username, isSender)
+                        : {}),
                       wordBreak: "break-word",
                     }}
                   >
@@ -311,8 +316,9 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
                       className="text-sm font-normal"
                       dangerouslySetInnerHTML={{ __html: message.messageText }}
                       style={{
-                        color: getMessageStyles(message.username, isSender)
-                          .color,
+                        color: isAdmin
+                          ? "white"
+                          : getMessageStyles(message.username, isSender).color,
                       }}
                     />
                   </div>
