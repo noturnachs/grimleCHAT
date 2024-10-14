@@ -60,6 +60,12 @@ function ChatInput({
   const [replyPreviewSrc, setReplyPreviewSrc] = useState(null);
 
   useEffect(() => {
+    if (replyTo && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [replyTo]);
+
+  useEffect(() => {
     if (replyTo && replyTo.type === "image" && replyTo.preview) {
       if (replyTo.preview instanceof ArrayBuffer) {
         const blob = new Blob([replyTo.preview], { type: "image/jpeg" });
