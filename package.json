@@ -11,6 +11,7 @@
     "autosize": "^6.0.1",
     "browser-image-compression": "^2.0.2",
     "cors": "^2.8.5",
+    "dompurify": "^3.1.7",
     "dotenv": "^16.4.5",
     "ffmpeg-static": "^5.2.0",
     "fluent-ffmpeg": "^2.1.3",
