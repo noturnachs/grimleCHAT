@@ -9,6 +9,7 @@ import { FaTimes, FaInfoCircle } from "react-icons/fa";
 import Sidebar from "./components/Sidebar"; // Import Sidebar from a separate file
 import Popup from "./components/Popup"; // Import the Popup component
 import Confetti from "react-confetti"; // Import Confetti
+import DOMPurify from "dompurify";
 
 lineWobble.register();
 leapfrog.register();
@@ -124,7 +125,13 @@ function ChatRoom() {
 
     const handleTelegramMessage = (data) => {
       console.log("Telegram message received:", data);
-      showPopup(data.message);
+      if (data.isHtml) {
+        // Sanitize the HTML to prevent XSS attacks
+        const sanitizedMessage = DOMPurify.sanitize(data.message);
+        showPopup(sanitizedMessage, true);
+      } else {
+        showPopup(data.message);
+      }
     };
 
     socket.on("telegramMessage", handleTelegramMessage);
@@ -137,8 +144,8 @@ function ChatRoom() {
   }, []);
 
   // Function to show popup with message from Telegram bot
-  const showPopup = (message) => {
-    setPopupMessage(message);
+  const showPopup = (message, isHtml = false) => {
+    setPopupMessage({ content: message, isHtml });
     setIsPopupVisible(true);
   };
 
@@ -554,7 +561,13 @@ function ChatRoom() {
   return (
     <div className="bg-[#192734] h-screen flex flex-col">
       {showConfetti && <Confetti />}
-      {isPopupVisible && <Popup message={popupMessage} onClose={closePopup} />}
+      {isPopupVisible && (
+        <Popup
+          message={popupMessage.content}
+          onClose={closePopup}
+          isHtml={popupMessage.isHtml}
+        />
+      )}{" "}
       {!room ? (
         <div className="flex flex-col items-center justify-center h-full">
           {prevUsernameLeft && (
