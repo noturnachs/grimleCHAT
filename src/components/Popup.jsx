@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import DOMPurify from "dompurify";
 
-const Popup = ({ message, onClose }) => {
+const Popup = ({ message, onClose, isHtml }) => {
   const [isVisible, setIsVisible] = useState(true);
   const messageRef = useRef(null);
 
@@ -23,18 +23,20 @@ const Popup = ({ message, onClose }) => {
 
   if (!isVisible) return null;
 
-  const createMarkup = (htmlContent) => {
-    // Replace newline characters with <br> tags
-    const contentWithLineBreaks = htmlContent.replace(/\\n/g, "<br>");
-    return {
-      __html: DOMPurify.sanitize(contentWithLineBreaks, {
-        ADD_ATTR: ["style"],
-      }),
-    };
+  const createMarkup = (content) => {
+    if (!content) return { __html: "" }; // Handle undefined or null content
+    const contentWithLineBreaks = content.replace(/\\n/g, "<br>");
+    return isHtml
+      ? {
+          __html: DOMPurify.sanitize(contentWithLineBreaks, {
+            ADD_ATTR: ["style"],
+          }),
+        }
+      : { __html: contentWithLineBreaks };
   };
 
   return (
-    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden z-50 transition-all duration-300 ease-in-out border border-gray-300 ">
+    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden z-50 transition-all duration-300 ease-in-out border border-gray-300">
       <div className="bg-indigo-600 px-4 py-2 flex justify-between items-center">
         <h1 className="text-white font-semibold text-sm">Admin Message</h1>
         <button
@@ -62,10 +64,14 @@ const Popup = ({ message, onClose }) => {
         className="px-4 py-3 overflow-y-auto"
         style={{ maxHeight: "200px", overflowY: "auto" }}
       >
-        <div
-          className="text-gray-800 text-sm break-words"
-          dangerouslySetInnerHTML={createMarkup(message)}
-        />
+        {message ? (
+          <div
+            className="text-gray-800 text-sm break-words"
+            dangerouslySetInnerHTML={createMarkup(message)}
+          />
+        ) : (
+          <p className="text-gray-800 text-sm">No message to display</p>
+        )}
       </div>
     </div>
   );
