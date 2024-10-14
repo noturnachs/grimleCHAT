@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import DOMPurify from "dompurify";
 
 const Popup = ({ message, onClose }) => {
   const [isVisible, setIsVisible] = useState(true);
@@ -22,8 +23,15 @@ const Popup = ({ message, onClose }) => {
 
   if (!isVisible) return null;
 
-  // Process the message to replace \n with <br> tags
-  const processedMessage = message.replace(/\\n/g, "<br>");
+  const createMarkup = (htmlContent) => {
+    // Replace newline characters with <br> tags
+    const contentWithLineBreaks = htmlContent.replace(/\\n/g, "<br>");
+    return {
+      __html: DOMPurify.sanitize(contentWithLineBreaks, {
+        ADD_ATTR: ["style"],
+      }),
+    };
+  };
 
   return (
     <div className="fixed top-4 left-1/2 transform -translate-x-1/2 max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden z-50 transition-all duration-300 ease-in-out border border-gray-300 ">
@@ -54,10 +62,10 @@ const Popup = ({ message, onClose }) => {
         className="px-4 py-3 overflow-y-auto"
         style={{ maxHeight: "200px", overflowY: "auto" }}
       >
-        <p
+        <div
           className="text-gray-800 text-sm break-words"
-          dangerouslySetInnerHTML={{ __html: processedMessage }}
-        ></p>
+          dangerouslySetInnerHTML={createMarkup(message)}
+        />
       </div>
     </div>
   );
