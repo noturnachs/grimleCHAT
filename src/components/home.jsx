@@ -87,18 +87,26 @@ function Home() {
   const [showPasswordInput, setShowPasswordInput] = useState(false); // State to show password input
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [youtubeLink, setYoutubeLink] = useState(
-    "https://www.youtube.com/watch?v=GemKqzILV4w"
-  ); // Default link
+  // const [youtubeLink, setYoutubeLink] = useState(
+  //   "https://www.youtube.com/watch?v=GemKqzILV4w"
+  // ); // Default link
+  const [visitorIdGenerated, setVisitorIdGenerated] = useState(false);
 
   useEffect(() => {
     // Listen for the updateYouTubeLink event
-    socket.on("updateYouTubeLink", (newLink) => {
-      setYoutubeLink(newLink); // Update the YouTube link state
+    // socket.on("updateYouTubeLink", (newLink) => {
+    //   setYoutubeLink(newLink); // Update the YouTube link state
+    // });
+
+    // Listen for visitorId generation
+    socket.on("visitorIdGenerated", (generatedVisitorId) => {
+      visitorIdRef.current = generatedVisitorId;
+      setVisitorIdGenerated(true);
     });
 
     return () => {
-      socket.off("updateYouTubeLink"); // Clean up the event listener
+      // socket.off("updateYouTubeLink"); // Clean up the event listener
+      socket.off("visitorIdGenerated");
     };
   }, []);
 
@@ -169,6 +177,7 @@ function Home() {
         } else if (response.ok) {
           const data = await response.json();
           console.log(data.message); // Handle successful identification
+          setVisitorIdGenerated(true); // Set the state to true when visitorId is generated
         } else {
           console.error("Unexpected response:", response);
         }
@@ -187,6 +196,11 @@ function Home() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
+
+    if (!visitorIdGenerated) {
+      setError("Please refresh to get your VisitorID");
+      return;
+    }
 
     if (username.toLowerCase().includes("admin")) {
       if (username.toLowerCase() === "admin" && !showPasswordInput) {
@@ -237,7 +251,7 @@ function Home() {
       <Announcement />
       <div className="flex flex-col space-y-10 justify-center items-center md:flex-row md:space-x-5 md:space-y-0 ">
         <div className="mt-[15vh] md:mt-[20vh]  z-10">
-          <Song ytLink={youtubeLink} />
+          {/* <Song ytLink={youtubeLink} /> */}
           <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-full md:p-8">
             <h1 className="text-2xl font-normal mb-6 text-white text-center ">
               Welcome to LeeyosChat
@@ -409,17 +423,28 @@ function Home() {
               {!showTerms && (
                 <button
                   type="submit"
-                  className="overflow-hidden w-full p-2 h-12 bg-[#325E87] text-white border-none rounded-md text-md font-normal cursor-pointer relative z-10 group flex items-center justify-center"
+                  className={`overflow-hidden w-full p-2 h-12 ${
+                    visitorIdGenerated
+                      ? "bg-[#325E87]"
+                      : "bg-gray-500 cursor-not-allowed"
+                  } text-white border-none rounded-md text-md font-normal relative z-10 group flex items-center justify-center`}
+                  disabled={!visitorIdGenerated}
                 >
-                  <span className="absolute inset-0 flex items-center justify-center bg-[#325E87] group-hover:opacity-0 transition-opacity duration-1000">
-                    Are you ready?
-                  </span>
-                  <span className="absolute w-[200%] h-32 -top-8 -left-1/2 bg-green-200 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-500 duration-1000 origin-bottom"></span>
-                  <span className="absolute w-[200%] h-32 -top-8 -left-1/2 bg-green-400 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-700 duration-700 origin-bottom"></span>
-                  <span className="absolute w-[200%] h-32 -top-8 -left-1/2 bg-green-600 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-1000 duration-500 origin-bottom"></span>
-                  <span className="group-hover:opacity-100 group-hover:duration-1000 duration-100 opacity-0 absolute inset-0 flex items-center justify-center z-10">
-                    Continue
-                  </span>
+                  {visitorIdGenerated ? (
+                    <>
+                      <span className="absolute inset-0 flex items-center justify-center bg-[#325E87] group-hover:opacity-0 transition-opacity duration-1000">
+                        Are you ready?
+                      </span>
+                      <span className="absolute w-[200%] h-32 -top-8 -left-1/2 bg-green-200 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-500 duration-1000 origin-bottom"></span>
+                      <span className="absolute w-[200%] h-32 -top-8 -left-1/2 bg-green-400 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-700 duration-700 origin-bottom"></span>
+                      <span className="absolute w-[200%] h-32 -top-8 -left-1/2 bg-green-600 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-1000 duration-500 origin-bottom"></span>
+                      <span className="group-hover:opacity-100 group-hover:duration-1000 duration-100 opacity-0 absolute inset-0 flex items-center justify-center z-10">
+                        Continue
+                      </span>
+                    </>
+                  ) : (
+                    "Generating Visitor ID..."
+                  )}
                 </button>
               )}
             </form>
