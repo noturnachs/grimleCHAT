@@ -22,6 +22,9 @@ const Popup = ({ message, onClose }) => {
 
   if (!isVisible) return null;
 
+  // Process the message to replace \n with <br> tags
+  const processedMessage = message.replace(/\\n/g, "<br>");
+
   return (
     <div className="fixed top-4 left-1/2 transform -translate-x-1/2 max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden z-50 transition-all duration-300 ease-in-out border border-gray-300 ">
       <div className="bg-indigo-600 px-4 py-2 flex justify-between items-center">
@@ -51,9 +54,10 @@ const Popup = ({ message, onClose }) => {
         className="px-4 py-3 overflow-y-auto"
         style={{ maxHeight: "200px", overflowY: "auto" }}
       >
-        <p className="text-gray-800 text-sm whitespace-pre-wrap break-words">
-          {message}
-        </p>
+        <p
+          className="text-gray-800 text-sm break-words"
+          dangerouslySetInnerHTML={{ __html: processedMessage }}
+        ></p>
       </div>
     </div>
   );
