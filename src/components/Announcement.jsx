@@ -32,7 +32,11 @@ function Announcement() {
   const createMarkup = (htmlContent) => {
     // Replace newline characters with <br> tags
     const contentWithLineBreaks = htmlContent.replace(/\n/g, "<br>");
-    return { __html: DOMPurify.sanitize(contentWithLineBreaks) };
+    return {
+      __html: DOMPurify.sanitize(contentWithLineBreaks, {
+        ADD_ATTR: ["style"],
+      }),
+    };
   };
 
   return (
