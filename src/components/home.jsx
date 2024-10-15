@@ -7,7 +7,6 @@ import FingerprintJS from "@fingerprintjs/fingerprintjs"; // Import FingerprintJ
 import FAQ from "./Faq";
 import { FaFlag } from "react-icons/fa";
 import Ads from "./ads";
-import Song from "./song";
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
 
 const fontSize = 30;
@@ -91,6 +90,34 @@ function Home() {
   //   "https://www.youtube.com/watch?v=GemKqzILV4w"
   // ); // Default link
   const [visitorIdGenerated, setVisitorIdGenerated] = useState(false);
+  const [visitorId, setVisitorId] = useState(null);
+
+  useEffect(() => {
+    async function generateFingerprint() {
+      try {
+        const fp = await FingerprintJS.load();
+        const result = await fp.get();
+        const generatedVisitorId = result.visitorId;
+        setVisitorId(generatedVisitorId);
+        localStorage.setItem('visitorId', generatedVisitorId);
+        setVisitorIdGenerated(true);
+        console.log("Generated Visitor ID:", generatedVisitorId);
+      } catch (error) {
+        console.error("Error generating fingerprint:", error);
+        setVisitorIdGenerated(false);
+      }
+    }
+
+    const storedVisitorId = localStorage.getItem('visitorId');
+    if (storedVisitorId) {
+      setVisitorId(storedVisitorId);
+      setVisitorIdGenerated(true);
+      console.log("Retrieved Visitor ID from storage:", storedVisitorId);
+    } else {
+      generateFingerprint();
+    }
+  }, []);
+
 
   useEffect(() => {
     // Listen for the updateYouTubeLink event
@@ -197,8 +224,8 @@ function Home() {
     event.preventDefault();
     setError("");
 
-    if (!visitorIdGenerated) {
-      setError("Please refresh to get your VisitorID");
+    if (!visitorIdGenerated || !visitorIdRef.current) {
+      setError("Please wait for your VisitorID to be generated or refresh the page.");
       return;
     }
 
@@ -233,13 +260,21 @@ function Home() {
 
     if (username.trim() !== "" && over18 && agreeTerms) {
       // Include visitorId in the socket.emit and navigate calls
+      const currentVisitorId = visitorIdRef.current;
+
+       // Double-check that visitorId is available
+    if (!currentVisitorId) {
+      setError("VisitorID is not available. Please refresh the page.");
+      return;
+    }
+
       socket.emit("startMatch", {
         username,
         interest,
-        visitorId: visitorIdRef.current,
+        visitorId: currentVisitorId,
       });
       navigate("/chat", {
-        state: { username, interest, visitorId: visitorIdRef.current },
+        state: { username, interest, visitorId: currentVisitorId },
       });
     } else {
       setError("Please fulfill the age requirement and acknowledge the terms.");
