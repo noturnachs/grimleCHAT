@@ -63,10 +63,12 @@ function ChatRoom() {
   };
 
   useEffect(() => {
-    const visitorId = state?.visitorId || localStorage.getItem('visitorId');
+    const visitorId = state?.visitorId || localStorage.getItem("visitorId");
     if (!visitorId) {
-      console.error('VisitorId is undefined on component mount');
-      setError("VisitorID is missing. Please return to the home page and try again.");
+      console.error("VisitorId is undefined on component mount");
+      setError(
+        "VisitorID is missing. Please return to the home page and try again."
+      );
     }
   }, []);
 
@@ -344,6 +346,7 @@ function ChatRoom() {
       username: matchedUsername,
       interest,
       partnerVisitorId,
+      matchType,
     }) => {
       setRoom(room);
       setLoadingMessage("Start Finding a Match");
@@ -358,6 +361,18 @@ function ChatRoom() {
           messageText: `Connected with <strong>${matchedUsername}</strong>`,
         },
       ];
+
+      if (
+        matchType === "random" &&
+        state.interest &&
+        state.interest.length > 0
+      ) {
+        newMessages.push({
+          username: "System",
+          messageText:
+            "<strong>Cannot find people with the same interests. You are matched with a stranger.</strong>",
+        });
+      }
 
       if (interest) {
         newMessages.push({
