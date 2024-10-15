@@ -56,10 +56,57 @@ function FAQ() {
             }`}
           >
             <p className="text-sm text-justify">
-              Everything users send during the chat are not stored in anyway, so
-              whenever you leave the website everything is gone. That is why you
+              Everything sent during the chat is not stored in any way, so
+              whenever you leave the website, everything is gone. That is why you
               are unable to send or read new messages already. Just find another
               match.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="text-sm text-gray-300">
+        <div className="mb-4">
+          {/* Clickable question */}
+          <h2
+            className="font-bold text-white text-md mb-3 cursor-pointer bg-[#121b22] rounded p-2"
+            onClick={() => toggleAnswerVisibility(2)} // Pass the index of the question
+          >
+            What happens to inactive rooms after 5 minutes?
+          </h2>
+          {/* Conditionally render the answer with smooth transition */}
+          <div
+            className={`transition-max-height duration-500 ease-in-out overflow-hidden ${
+              openQuestion === 2 ? "max-h-40" : "max-h-0"
+            }`}
+          >
+            <p className="text-sm text-justify">
+              Rooms that are inactive for 5 minutes will be destroyed to ensure
+              optimal performance and resource management on our platform.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="text-sm text-gray-300">
+        <div className="mb-4">
+          {/* Clickable question */}
+          <h2
+            className="font-bold text-white text-md mb-3 cursor-pointer bg-[#121b22] rounded p-2"
+            onClick={() => toggleAnswerVisibility(3)} // Pass the index of the question
+          >
+            Why do I randomly match with users who don't reply?
+          </h2>
+          {/* Conditionally render the answer with smooth transition */}
+          <div
+            className={`transition-max-height duration-500 ease-in-out overflow-hidden ${
+              openQuestion === 3 ? "max-h-40" : "max-h-0"
+            }`}
+          >
+            <p className="text-sm text-justify">
+              It could be due to many reasons. One reason is that the user may
+              have accidentally performed a "back" action without opting to end
+              the chat or stop finding a match.
             </p>
           </div>
         </div>
