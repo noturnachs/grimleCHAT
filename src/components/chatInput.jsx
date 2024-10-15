@@ -1,14 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
-import { FaMicrophone, FaImage, FaTimes, FaPlus, FaStar } from "react-icons/fa";
+import {
+  FaMicrophone,
+  FaImage,
+  FaTimes,
+  FaPlus,
+  FaStar,
+  FaSmile,
+} from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
 import { CustomAudioPlayer } from "./CustomAudioPlayer";
 import autosize from "autosize";
 import RecordRTC from "recordrtc";
 import imageCompression from "browser-image-compression";
 import { GiphyFetch } from "@giphy/js-fetch-api";
-import { Grid } from "@giphy/react-components";
-import { FaReply } from "react-icons/fa"; // Add FaImage import if not already present
+import EmojiPicker from "emoji-picker-react";
 
 const giphyFetch = new GiphyFetch("1BhL1pC32fiqXaGE9ckNqzbKYYkgPf3vC"); // Replace with your Giphy API key
 
@@ -58,6 +64,53 @@ function ChatInput({
   );
   const replyToRef = useRef(replyTo);
   const [replyPreviewSrc, setReplyPreviewSrc] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [emojiPickerLoaded, setEmojiPickerLoaded] = useState(false);
+  const emojiPickerRef = useRef(null);
+  const [emojiData, setEmojiData] = useState(null);
+
+  useEffect(() => {
+    // Check if emoji data is in local storage
+    const cachedEmojiData = localStorage.getItem("emojiData");
+    if (cachedEmojiData) {
+      setEmojiData(JSON.parse(cachedEmojiData));
+      setEmojiPickerLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target)
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleEmojiData = (data) => {
+    // Save emoji data to local storage
+    localStorage.setItem("emojiData", JSON.stringify(data));
+    setEmojiData(data);
+  };
+
+  const toggleEmojiPicker = () => {
+    setShowEmojiPicker(!showEmojiPicker);
+    if (!emojiPickerLoaded) {
+      setEmojiPickerLoaded(true);
+    }
+  };
+
+  const onEmojiClick = (emojiObject) => {
+    // Ensure the emoji is inserted as a Unicode character
+    setMessageText((prevText) => prevText + emojiObject.emoji);
+  };
 
   useEffect(() => {
     if (replyTo && textareaRef.current) {
@@ -729,16 +782,46 @@ function ChatInput({
           )}
         </div>
 
-        <textarea
-          ref={textareaRef}
-          value={messageText}
-          onChange={handleTyping}
-          onKeyDown={handleKeyDown}
-          disabled={disabled}
-          className="flex-grow px-4 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow shadow-sm resize-none"
-          placeholder="Type your message..."
-          rows={1}
-        />
+        <div className="relative flex-grow">
+          <div className="relative">
+            <textarea
+              ref={textareaRef}
+              value={messageText}
+              onChange={handleTyping}
+              onKeyDown={handleKeyDown}
+              disabled={disabled}
+              className="w-full px-4 py-2 pr-10 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow shadow-sm resize-none"
+              placeholder="Type your message..."
+              rows={1}
+            />
+            <button
+              type="button"
+              onClick={toggleEmojiPicker}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 focus:outline-none"
+            >
+              <FaSmile size={20} />
+            </button>
+          </div>
+          {emojiPickerLoaded && (
+            <div
+              ref={emojiPickerRef}
+              className={`absolute bottom-full right-0 mb-2 z-50 ${
+                showEmojiPicker ? "" : "hidden"
+              }`}
+            >
+              <EmojiPicker
+                onEmojiClick={onEmojiClick}
+                lazyLoadEmojis={true}
+                emojiStyle="apple"
+                autoFocusSearch={false}
+                theme="dark"
+                preload={true}
+                emojiData={emojiData}
+                onEmojiDataFetch={handleEmojiData}
+              />
+            </div>
+          )}
+        </div>
         <motion.button
           type="submit"
           disabled={disabled}
