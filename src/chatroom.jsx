@@ -54,12 +54,21 @@ function ChatRoom() {
   const [replyTo, setReplyTo] = useState(null);
 
   const [reconnectionAttempts, setReconnectionAttempts] = useState(0);
+  const [error, setError] = useState(null);
 
   const [adminPresent, setAdminPresent] = useState(false);
 
   const handleReply = (replyData) => {
     setReplyTo(replyData);
   };
+
+  useEffect(() => {
+    const visitorId = state?.visitorId || localStorage.getItem('visitorId');
+    if (!visitorId) {
+      console.error('VisitorId is undefined on component mount');
+      setError("VisitorID is missing. Please return to the home page and try again.");
+    }
+  }, []);
 
   useEffect(() => {
     const handleReconnect = (attempt) => {
@@ -519,8 +528,15 @@ function ChatRoom() {
       setLoadingMessage("Finding a random match...");
     }
 
-    const visitorId = state?.visitorId; // Get the visitorId from the state
-    socket.emit("startMatch", { username, interest, visitorId });
+    const visitorId = state?.visitorId || localStorage.getItem("visitorId");
+    if (!visitorId) {
+      console.error("VisitorId is undefined");
+      setError("Unable to start match. Please refresh the page and try again.");
+      setLoading(false);
+      return;
+    } else {
+      socket.emit("startMatch", { username, interest, visitorId });
+    }
   };
 
   const sendMessage = (message) => {
@@ -617,6 +633,7 @@ function ChatRoom() {
       )}
       {!room ? (
         <div className="flex flex-col items-center justify-center h-full">
+          {error && <div className="text-red-500 mb-4">{error}</div>}
           {prevUsernameLeft && (
             <div className="text-white mb-4">
               {prevUsernameLeft} left the chat.
