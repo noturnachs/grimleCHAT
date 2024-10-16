@@ -100,24 +100,43 @@ function Home() {
         const fp = await FingerprintJS.load();
         const result = await fp.get();
         const generatedVisitorId = result.visitorId;
-        setVisitorId(generatedVisitorId);
-        localStorage.setItem("visitorId", generatedVisitorId);
-        setVisitorIdGenerated(true);
-        console.log("Generated Visitor ID:", generatedVisitorId);
+        return generatedVisitorId;
       } catch (error) {
         console.error("Error generating fingerprint:", error);
-        setVisitorIdGenerated(false);
+        return null;
       }
     }
 
-    const storedVisitorId = localStorage.getItem("visitorId");
-    if (storedVisitorId) {
-      setVisitorId(storedVisitorId);
-      setVisitorIdGenerated(true);
-      console.log("Retrieved Visitor ID from storage:", storedVisitorId);
-    } else {
-      generateFingerprint();
+    async function checkAndUpdateVisitorId() {
+      const storedVisitorId = localStorage.getItem("visitorId");
+      const newGeneratedId = await generateFingerprint();
+
+      if (newGeneratedId) {
+        if (!storedVisitorId || storedVisitorId !== newGeneratedId) {
+          // If there's no stored ID or the stored ID is different from the new one
+          localStorage.setItem("visitorId", newGeneratedId);
+          setVisitorId(newGeneratedId);
+          console.log("New Visitor ID generated and saved:", newGeneratedId);
+        } else {
+          // If the stored ID is the same as the new one, just use the stored ID
+          setVisitorId(storedVisitorId);
+          console.log("Using stored Visitor ID:", storedVisitorId);
+        }
+        setVisitorIdGenerated(true);
+      } else {
+        // If we couldn't generate a new ID, use the stored one if available
+        if (storedVisitorId) {
+          setVisitorId(storedVisitorId);
+          setVisitorIdGenerated(true);
+          console.log("Using stored Visitor ID:", storedVisitorId);
+        } else {
+          setVisitorIdGenerated(false);
+          console.error("Failed to generate or retrieve Visitor ID");
+        }
+      }
     }
+
+    checkAndUpdateVisitorId();
   }, []);
 
   useEffect(() => {
