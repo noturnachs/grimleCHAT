@@ -7,6 +7,8 @@ import FingerprintJS from "@fingerprintjs/fingerprintjs"; // Import FingerprintJ
 import FAQ from "./Faq";
 import { FaFlag } from "react-icons/fa";
 import Ads from "./ads";
+import Warning from "./warning"; // Import the Warning component
+
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
 
 const fontSize = 30;
@@ -99,7 +101,7 @@ function Home() {
         const result = await fp.get();
         const generatedVisitorId = result.visitorId;
         setVisitorId(generatedVisitorId);
-        localStorage.setItem('visitorId', generatedVisitorId);
+        localStorage.setItem("visitorId", generatedVisitorId);
         setVisitorIdGenerated(true);
         console.log("Generated Visitor ID:", generatedVisitorId);
       } catch (error) {
@@ -108,7 +110,7 @@ function Home() {
       }
     }
 
-    const storedVisitorId = localStorage.getItem('visitorId');
+    const storedVisitorId = localStorage.getItem("visitorId");
     if (storedVisitorId) {
       setVisitorId(storedVisitorId);
       setVisitorIdGenerated(true);
@@ -117,7 +119,6 @@ function Home() {
       generateFingerprint();
     }
   }, []);
-
 
   useEffect(() => {
     // Listen for the updateYouTubeLink event
@@ -225,7 +226,9 @@ function Home() {
     setError("");
 
     if (!visitorIdGenerated || !visitorIdRef.current) {
-      setError("Please wait for your VisitorID to be generated or refresh the page.");
+      setError(
+        "Please wait for your VisitorID to be generated or refresh the page."
+      );
       return;
     }
 
@@ -262,11 +265,11 @@ function Home() {
       // Include visitorId in the socket.emit and navigate calls
       const currentVisitorId = visitorIdRef.current;
 
-       // Double-check that visitorId is available
-    if (!currentVisitorId) {
-      setError("VisitorID is not available. Please refresh the page.");
-      return;
-    }
+      // Double-check that visitorId is available
+      if (!currentVisitorId) {
+        setError("VisitorID is not available. Please refresh the page.");
+        return;
+      }
 
       socket.emit("startMatch", {
         username,
@@ -288,6 +291,7 @@ function Home() {
         <div className="mt-[15vh] md:mt-[20vh]  z-10">
           {/* <Song ytLink={youtubeLink} /> */}
           <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-full md:p-8">
+            <Warning />
             <h1 className="text-2xl font-normal mb-6 text-white text-center ">
               Welcome to LeeyosChat
             </h1>
