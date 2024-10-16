@@ -384,7 +384,18 @@ function Home() {
                   id="username"
                   value={username}
                   placeholder="What should we call you?"
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    // Get the input value
+                    const inputValue = e.target.value;
+
+                    // Remove spaces and limit to 10 characters
+                    const filteredValue = inputValue
+                      .replace(/\s+/g, "")
+                      .slice(0, 20);
+
+                    // Update the state with the filtered value
+                    setUsername(filteredValue);
+                  }}
                   required
                   className="bg-[#192734] border-2 border-[#3e3e3e] rounded-lg text-white px-6 py-3 text-base hover:border-[#fff] cursor-pointer transition w-full"
                   type="text"
