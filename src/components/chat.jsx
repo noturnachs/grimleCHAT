@@ -181,11 +181,32 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
   }, [messages]);
 
   const handleImageClick = (images, index) => {
-    setEnlargedImages(images);
-    setCurrentIndex(index);
-    setIsImageEnlarged(true); // Set image enlarged state to true
-  };
+    // Convert images to an array of URLs if they're not already
+    const imageUrls = images
+      .map((image) => {
+        if (typeof image === "string") return image;
+        if (image instanceof Blob) return URL.createObjectURL(image);
+        if (image instanceof ArrayBuffer) {
+          const blob = new Blob([image], { type: "image/jpeg" });
+          return URL.createObjectURL(blob);
+        }
+        if (typeof image === "object") {
+          if (image.data) return `data:image/jpeg;base64,${image.data}`;
+          if (image.url) return image.url;
+          if (image.buffer)
+            return `data:image/jpeg;base64,${Buffer.from(image.buffer).toString(
+              "base64"
+            )}`;
+        }
+        console.error("Unsupported image format:", image);
+        return null;
+      })
+      .filter((url) => url !== null);
 
+    setEnlargedImages(imageUrls);
+    setCurrentIndex(index);
+    setIsImageEnlarged(true);
+  };
   const handleNextImage = () => {
     setCurrentIndex((prevIndex) =>
       prevIndex === enlargedImages.length - 1 ? 0 : prevIndex + 1
