@@ -1,146 +1,33 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { FaTimes } from "react-icons/fa";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 function Sidebar({
   isOpen,
   toggleSidebar,
   reportReason,
   setReportReason,
+  handleReportSubmit,
+  handleScreenshotChange,
   handleCancel2,
+  screenshot,
   reportError,
   reportSuccess,
   isSubmittingReport,
   sidebarRef,
   className,
-  conversationRef,
-  partnerVisitorId,
-  setReportError,
-  setReportSuccess,
-  setIsSubmittingReport,
 }) {
   const textareaRef = useRef(null);
 
   useEffect(() => {
     if (isOpen && textareaRef.current) {
-      textareaRef.current.focus();
+      textareaRef.current.focus(); // Focus the textarea when the sidebar is open
     }
   }, [isOpen]);
 
-  const captureConversationAsPDF = async () => {
-    const chatElement = conversationRef.current;
-    if (!chatElement) {
-      console.error("Chat element not found");
-      return null;
-    }
-
-    // Create a clone of the chat element
-    const clone = chatElement.cloneNode(true);
-
-    // Remove the sidebar from the clone
-    const sidebarElement = clone.querySelector(".sidebar");
-    if (sidebarElement) {
-      sidebarElement.remove();
-    }
-
-    // Remove any other elements you don't want in the PDF
-    // For example, if you have a report button:
-    const reportButton = clone.querySelector(".report-button");
-    if (reportButton) {
-      reportButton.remove();
-    }
-
-    // Apply styles to make sure the clone renders correctly
-    clone.style.position = "absolute";
-    clone.style.left = "-9999px";
-    clone.style.top = "0";
-    clone.style.width = `${chatElement.offsetWidth}px`;
-    clone.style.height = "auto";
-    clone.style.overflow = "visible";
-
-    // Append the clone to the body
-    document.body.appendChild(clone);
-
-    try {
-      // Use html2canvas on the clone
-      const canvas = await html2canvas(clone, {
-        logging: false,
-        useCORS: true,
-        scale: 2,
-        windowWidth: chatElement.scrollWidth,
-        windowHeight: clone.scrollHeight,
-      });
-
-      // Create PDF
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "px",
-        format: [canvas.width / 2, canvas.height / 2],
-      });
-
-      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
-      return pdf.output("blob");
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      throw error;
-    } finally {
-      // Remove the clone from the document
-      document.body.removeChild(clone);
-    }
-  };
-
-  const handleSubmit = async () => {
-    setIsSubmittingReport(true);
-    setReportError(null);
-    setReportSuccess(null);
-
-    try {
-      setReportError("Capturing conversation... This may take a moment.");
-      const pdfBlob = await captureConversationAsPDF();
-      if (!pdfBlob) {
-        throw new Error("Failed to create PDF");
-      }
-      setReportError("Conversation captured. Sending report...");
-
-      const formData = new FormData();
-      formData.append("visitorId", partnerVisitorId);
-      formData.append("reason", reportReason);
-      formData.append("pdfReport", pdfBlob, "conversation.pdf");
-
-      const response = await fetch(
-        `${process.env.REACT_APP_SERVER_ORIGIN}/api/report-user`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (response.ok) {
-        setReportSuccess(
-          "Report sent successfully. You can end the chat if you want."
-        );
-        setReportError(null); // Clear the "Sending report..." message
-        setReportReason(""); // Clear the textarea
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to send report.");
-      }
-    } catch (error) {
-      console.error("Error reporting user:", error);
-      setReportError(
-        `An error occurred: ${error.message}. Please try again or contact support if the issue persists.`
-      );
-    } finally {
-      setIsSubmittingReport(false);
-    }
-  };
-
   return (
     <div
-      ref={sidebarRef}
-      className={`sidebar absolute top-0 right-0 h-full bg-[#1f2e3a] shadow-lg transform transition-transform duration-300 ${className} ${
+      ref={sidebarRef} // Attach ref to the sidebar
+      className={`absolute top-0 right-0 h-full bg-[#1f2e3a] shadow-lg transform transition-transform duration-300 ${className} ${
         isOpen ? "translate-x-0" : "translate-x-full"
       }`}
       style={{ width: "80%" }}
@@ -165,6 +52,30 @@ function Sidebar({
           disabled={isSubmittingReport}
         />
 
+        <div className="mb-4">
+          <label className="block text-white font-semibold mb-2">
+            Attach a screenshot
+          </label>
+          <div className="flex items-center">
+            <label
+              htmlFor="file-upload"
+              className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Choose File
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleScreenshotChange}
+              className="hidden"
+            />
+            {screenshot && (
+              <span className="ml-4 text-gray-300">{screenshot.name}</span>
+            )}
+          </div>
+        </div>
+
         <div className="flex justify-end space-x-4">
           <button
             onClick={handleCancel2}
@@ -174,7 +85,7 @@ function Sidebar({
             Cancel
           </button>
           <button
-            onClick={handleSubmit}
+            onClick={handleReportSubmit}
             className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center"
             disabled={isSubmittingReport}
           >
