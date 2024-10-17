@@ -592,7 +592,6 @@ function ChatRoom() {
   const handleCancel2 = () => {
     setIsSidebarOpen(false);
     setReportReason("");
-    setScreenshot(null);
     setReportError(null);
     setReportSuccess(null);
   };
@@ -699,15 +698,17 @@ function ChatRoom() {
                 toggleSidebar={toggleSidebar}
                 reportReason={reportReason}
                 setReportReason={setReportReason}
-                handleReportSubmit={handleReportSubmit}
-                handleScreenshotChange={handleScreenshotChange}
                 handleCancel2={handleCancel2}
-                screenshot={screenshot}
                 reportError={reportError}
                 reportSuccess={reportSuccess}
                 isSubmittingReport={isSubmittingReport}
-                sidebarRef={sidebarRef} // Pass sidebarRef to the Sidebar
+                setIsSubmittingReport={setIsSubmittingReport}
+                sidebarRef={sidebarRef}
                 className="z-[9999]"
+                conversationRef={chatContainerRef}
+                partnerVisitorId={partnerVisitorId}
+                setReportError={setReportError}
+                setReportSuccess={setReportSuccess}
               />
             )}
             <Chat
