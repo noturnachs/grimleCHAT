@@ -7,7 +7,7 @@ import FingerprintJS from "@fingerprintjs/fingerprintjs"; // Import FingerprintJ
 import FAQ from "./Faq";
 import { FaFlag } from "react-icons/fa";
 import Ads from "./ads";
-import Warning from "./warning"; // Import the Warning component
+// import Warning from "./warning"; // Import the Warning component
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
 
@@ -310,7 +310,7 @@ function Home() {
         <div className="mt-[15vh] md:mt-[20vh]  z-10">
           {/* <Song ytLink={youtubeLink} /> */}
           <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-full md:p-8">
-            <Warning />
+            {/* <Warning /> */}
             <h1 className="text-2xl font-normal mb-6 text-white text-center ">
               Welcome to LeeyosChat
             </h1>
