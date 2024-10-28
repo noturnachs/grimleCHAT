@@ -21,6 +21,143 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
   const [showLinkConfirm, setShowLinkConfirm] = useState(false);
   const [pendingLink, setPendingLink] = useState(null);
 
+  const sparkleGlowAnimation = `
+  @keyframes shine {
+    0% {
+      background-position: -100%;
+    }
+    100% {
+      background-position: 200%;
+    }
+  }
+  
+  @keyframes glowGold {
+    0%, 100% { 
+      text-shadow: 0 0 4px #ffd700, 0 0 11px #ffd700, 0 0 19px #ffd700;
+    }
+    50% { 
+      text-shadow: 0 0 4px #ffd700, 0 0 15px #ffd700, 0 0 25px #ffd700;
+    }
+  }
+
+  @keyframes glowPurple {
+    0%, 100% { 
+      text-shadow: 0 0 4px #c27eff, 0 0 11px #c27eff, 0 0 19px #c27eff;
+    }
+    50% { 
+      text-shadow: 0 0 4px #c27eff, 0 0 15px #c27eff, 0 0 25px #c27eff;
+    }
+  }
+
+  @keyframes sparkleStars {
+    0%, 100% { 
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% { 
+      opacity: 0.4;
+      transform: scale(0.8);
+    }
+  }
+`;
+
+  const getSpecialStyle = (style) => {
+    const styles = {
+      gold: {
+        gradient: "linear-gradient(90deg, #ffd700, #fff6a9, #ffd700)",
+        sparkleColor: "#ffd700",
+        glowAnimation:
+          "shine 3s linear infinite, glowGold 2s ease-in-out infinite",
+      },
+      purple: {
+        gradient: "linear-gradient(90deg, #c27eff, #e2bdff, #c27eff)",
+        sparkleColor: "#ffd700", // Changed to gold for the stars
+        glowAnimation:
+          "shine 3s linear infinite, glowPurple 2s ease-in-out infinite",
+      },
+    };
+    return styles[style];
+  };
+
+  const renderUsername = (messageUsername, isAdmin) => {
+    // Define username styles
+    const specialStyles = {
+      slin: "purple",
+      admin: "gold", // This will now have purple text with gold stars
+    };
+
+    const style = specialStyles[messageUsername];
+    if (style) {
+      const styleConfig = getSpecialStyle(style);
+      return (
+        <>
+          <style>{sparkleGlowAnimation}</style>
+          <span className="relative inline-block">
+            {/* Sparkle elements - now using ✯ for a more ornate star */}
+            <span
+              style={{
+                position: "absolute",
+                top: "-4px",
+                left: "-4px",
+                content: "✯",
+                color: styleConfig.sparkleColor,
+                animation: "sparkleStars 1.5s ease-in-out infinite",
+                fontSize: "0.8em",
+              }}
+            >
+              ✯
+            </span>
+            <span
+              style={{
+                position: "absolute",
+                top: "-4px",
+                right: "-4px",
+                content: "✯",
+                color: styleConfig.sparkleColor,
+                animation: "sparkleStars 1.5s ease-in-out infinite 0.2s",
+                fontSize: "0.8em",
+              }}
+            >
+              ✯
+            </span>
+            {/* Main username text */}
+            <span
+              style={{
+                background: styleConfig.gradient,
+                backgroundSize: "200% auto",
+                color: "transparent",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                animation: styleConfig.glowAnimation,
+                fontWeight: "bold",
+                padding: "0 4px",
+                display: "inline-block",
+              }}
+            >
+              {messageUsername}
+            </span>
+            {/* Bottom sparkle */}
+            <span
+              style={{
+                position: "absolute",
+                bottom: "-4px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                content: "✯",
+                color: styleConfig.sparkleColor,
+                animation: "sparkleStars 1.5s ease-in-out infinite 0.4s",
+                fontSize: "0.8em",
+              }}
+            >
+              ✯
+            </span>
+          </span>
+        </>
+      );
+    }
+    return messageUsername;
+  };
+
   // Add this function to handle link clicks
   const handleLinkClick = (e, link) => {
     e.preventDefault();
@@ -305,7 +442,7 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
                     ...getUsernameStyles(message.username),
                   }}
                 >
-                  {isAdmin ? "Admin" : message.username}{" "}
+                  {renderUsername(message.username, isAdmin)}{" "}
                 </span>
 
                 {message.replyTo && (
