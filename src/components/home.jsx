@@ -7,6 +7,7 @@ import FingerprintJS from "@fingerprintjs/fingerprintjs"; // Import FingerprintJ
 import FAQ from "./Faq";
 import { FaFlag } from "react-icons/fa";
 import Ads from "./ads";
+import { FaFacebook } from "react-icons/fa";
 // import Warning from "./warning"; // Import the Warning component
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
@@ -545,10 +546,22 @@ function Home() {
         <FaFlag className="mr-2" /> Report an Issue
       </button>
 
-      <footer className="w-full text-center py-4 bg-transparent text-white mt-4 mb-0 md:mt-20">
-        {" "}
-        {/* Removed absolute positioning */}
-        <p className="text-xs font-bold">Leeyos.com 2024</p>
+      <footer className="w-full py-6 bg-transparent text-white">
+        <div className="max-w-screen-sm mx-auto px-4">
+          <div className="flex items-center justify-center space-x-6 border-t border-gray-700 pt-6">
+            <a
+              href="https://www.facebook.com/profile.php?id=61560553714601"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-[#1877F2] transition-colors duration-300"
+              aria-label="Facebook"
+            >
+              <FaFacebook size={18} />
+            </a>
+            <span className="text-xs text-gray-400">|</span>
+            <p className="text-xs text-gray-400">© 2024 Leeyos.com</p>
+          </div>
+        </div>
       </footer>
     </div>
   );
