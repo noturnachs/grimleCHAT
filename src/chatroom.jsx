@@ -138,8 +138,22 @@ function ChatRoom() {
 
     const handleTelegramMessage = (data) => {
       console.log("Telegram message received:", data);
+
+      // Add message to chat history as an admin message
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          id: Date.now().toString(),
+          username: "System",
+          messageText: data.message,
+          isHtml: data.isHtml,
+          isAdmin: true,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+
+      // Show popup notification
       if (data.isHtml) {
-        // Sanitize the HTML to prevent XSS attacks
         const sanitizedMessage = DOMPurify.sanitize(data.message);
         showPopup(sanitizedMessage, true);
       } else {
