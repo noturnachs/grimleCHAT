@@ -1,0 +1,22 @@
+# robots.txt for LeeyosChat
+
+# Allow all robots to access the site
+User-agent: *
+Allow: /
+Allow: /chat
+Allow: /report-problems
+
+# Disallow access to any potential sensitive routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /backend/
+Disallow: /private/
+
+# Prevent caching of chat pages
+Disallow: /chat?*
+
+# Specify the sitemap location
+Sitemap: https://leeyos.com/sitemap.xml
+
+# Crawl-delay to prevent server overload
+Crawl-delay: 1
