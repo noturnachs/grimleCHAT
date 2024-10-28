@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import userStyles from "./userStyles.json";
 import { MinimalAudioPlayer } from "./CustomAudioPlayer";
 import { motion } from "framer-motion";
-import { FaReply, FaImage } from "react-icons/fa";
+import { FaReply } from "react-icons/fa";
 
 function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
   const { state } = useLocation();
@@ -17,6 +17,43 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
   const [showReplyButton, setShowReplyButton] = useState(null);
   const [longPressTimer, setLongPressTimer] = useState(null);
   const [replyPreviews, setReplyPreviews] = useState({});
+
+  const [showLinkConfirm, setShowLinkConfirm] = useState(false);
+  const [pendingLink, setPendingLink] = useState(null);
+
+  // Add this function to handle link clicks
+  const handleLinkClick = (e, link) => {
+    e.preventDefault();
+    setPendingLink(link);
+    setShowLinkConfirm(true);
+  };
+
+  // Add this function to handle link confirmation
+  const handleLinkConfirm = () => {
+    if (pendingLink) {
+      window.open(pendingLink, "_blank", "noopener,noreferrer");
+    }
+    setShowLinkConfirm(false);
+    setPendingLink(null);
+  };
+
+  // Add this function to process text and convert links to clickable elements
+  const processMessageText = (text) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+
+    return parts
+      .map((part, index) => {
+        if (part.match(urlRegex)) {
+          return `<a href="${part}" class="text-blue-400 hover:text-blue-300 underline inline-flex items-center gap-1" onclick="return false;">
+          ${part}
+          <span class="inline-block"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></svg></span>
+        </a>`;
+        }
+        return part;
+      })
+      .join("");
+  };
 
   useEffect(() => {
     messages.forEach((message) => {
@@ -335,7 +372,15 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
                   >
                     <p
                       className="text-sm font-normal"
-                      dangerouslySetInnerHTML={{ __html: message.messageText }}
+                      dangerouslySetInnerHTML={{
+                        __html: processMessageText(message.messageText), // Update this line
+                      }}
+                      onClick={(e) => {
+                        const clickedLink = e.target.closest("a");
+                        if (clickedLink) {
+                          handleLinkClick(e, clickedLink.href);
+                        }
+                      }}
                       style={{
                         color: isAdmin
                           ? "white"
@@ -403,6 +448,35 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
           >
             &#8250;
           </button>
+        </div>
+      )}
+
+      {showLinkConfirm && (
+        <div className="fixed inset-0 z-[1001] bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-sm w-full">
+            <h3 className="text-white text-lg font-semibold mb-4">
+              External Link
+            </h3>
+            <p className="text-gray-300 mb-4">
+              You will be redirected to:
+              <br />
+              <span className="text-blue-400 break-all">{pendingLink}</span>
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowLinkConfirm(false)}
+                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLinkConfirm}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>
