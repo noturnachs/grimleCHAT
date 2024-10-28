@@ -7,6 +7,9 @@ import FingerprintJS from "@fingerprintjs/fingerprintjs"; // Import FingerprintJ
 import FAQ from "./Faq";
 import { FaFlag } from "react-icons/fa";
 import Ads from "./ads";
+
+import batFly from "./GIFS/flyingbat.gif";
+import ghostsfly from "./GIFS/white ghost.gif";
 // import Warning from "./warning"; // Import the Warning component
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
@@ -303,6 +306,24 @@ function Home() {
     }
   };
 
+  // Add these functions at the top of your component
+  const getRandomPoint = () => ({
+    x: Math.random() * (window.innerWidth - 200), // Wider range
+    y: Math.random() * (window.innerHeight - 200), // Wider range
+  });
+
+  // Create longer, more scattered paths for each bat
+  const createBatPath = () => {
+    // Increase number of points for longer paths
+    const points = Array(8)
+      .fill(0)
+      .map(() => getRandomPoint());
+    return {
+      x: points.map((p) => p.x),
+      y: points.map((p) => p.y),
+    };
+  };
+
   return (
     <div className="h-screen flex flex-col justify-start items-center bg-[#192734] p-4">
       <Announcement />
@@ -310,8 +331,52 @@ function Home() {
         <div className="mt-[15vh] md:mt-[20vh]  z-10">
           {/* <Song ytLink={youtubeLink} /> */}
           <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-full md:p-8">
+            {[...Array(5)].map((_, index) => {
+              // Increased number of bats to 5
+              const path = createBatPath();
+              return (
+                <motion.img
+                  key={index}
+                  src={batFly}
+                  alt="Flying bat"
+                  className="fixed w-20 h-20 z-[9999] pointer-events-none"
+                  animate={{
+                    x: path.x,
+                    y: path.y,
+                  }}
+                  transition={{
+                    duration: 20, // Increased duration for longer paths
+                    times: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1], // More timing points
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                />
+              );
+            })}
+            {[...Array(3)].map((_, index) => {
+              // Increased number of bats to 5
+              const path = createBatPath();
+              return (
+                <motion.img
+                  key={index}
+                  src={ghostsfly}
+                  alt="Flying ghosts"
+                  className="fixed w-20 h-20 z-[9999] pointer-events-none"
+                  animate={{
+                    x: path.x,
+                    y: path.y,
+                  }}
+                  transition={{
+                    duration: 20, // Increased duration for longer paths
+                    times: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1], // More timing points
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                />
+              );
+            })}
             {/* <Warning /> */}
-            <h1 className="text-2xl font-normal mb-6 text-white text-center ">
+            <h1 className="text-2xl font-normal mb-6 text-white text-center">
               Welcome to LeeyosChat
             </h1>
 
