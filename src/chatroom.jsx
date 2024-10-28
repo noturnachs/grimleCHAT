@@ -411,6 +411,7 @@ function ChatRoom() {
       setLoading(false);
       setFromChat(true);
       setTypingStatus({});
+      setAdminPresent(false);
     };
 
     const handleInactivityWarning = ({ message }) => {
