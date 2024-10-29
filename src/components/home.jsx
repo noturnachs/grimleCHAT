@@ -96,6 +96,7 @@ function Home() {
   const [visitorId, setVisitorId] = useState(null);
   const [isSpecialUsername, setIsSpecialUsername] = useState(false);
   const [specialToken, setSpecialToken] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     async function generateFingerprint() {
@@ -246,11 +247,13 @@ function Home() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
+    setIsLoading(true); // Set loading to true when starting validation
 
     if (!visitorIdGenerated || !visitorIdRef.current) {
       setError(
         "Please wait for your VisitorID to be generated or refresh the page."
       );
+      setIsLoading(false);
       return;
     }
 
@@ -278,6 +281,7 @@ function Home() {
         !showPasswordInput
       ) {
         setShowPasswordInput(true);
+        setIsLoading(false);
         setError("This username requires a token. Please enter it.");
         return;
       }
@@ -285,6 +289,7 @@ function Home() {
       // If token was provided but invalid
       if (!data.success && showPasswordInput) {
         setError(data.message || "Invalid token for this username.");
+        setIsLoading(false);
         return;
       }
 
@@ -294,6 +299,7 @@ function Home() {
 
         if (!currentVisitorId) {
           setError("VisitorID is not available. Please refresh the page.");
+          setIsLoading(false);
           return;
         }
 
@@ -309,10 +315,12 @@ function Home() {
         setError(
           "Please fulfill the age requirement and acknowledge the terms."
         );
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("Error validating username:", error);
       setError("Server error. Please try again later.");
+      setIsLoading(false);
       return;
     }
   };
@@ -514,13 +522,17 @@ function Home() {
                 <button
                   type="submit"
                   className={`overflow-hidden w-full p-2 h-12 ${
-                    visitorIdGenerated
+                    visitorIdGenerated && !isLoading
                       ? "bg-[#325E87]"
                       : "bg-gray-500 cursor-not-allowed"
                   } text-white border-none rounded-md text-md font-normal relative z-10 group flex items-center justify-center`}
-                  disabled={!visitorIdGenerated}
+                  disabled={!visitorIdGenerated || isLoading}
                 >
-                  {visitorIdGenerated ? (
+                  {!visitorIdGenerated ? (
+                    "Generating Visitor ID..."
+                  ) : isLoading ? (
+                    "Loading..."
+                  ) : (
                     <>
                       <span className="absolute inset-0 flex items-center justify-center bg-[#325E87] group-hover:opacity-0 transition-opacity duration-1000">
                         Are you ready?
@@ -532,8 +544,6 @@ function Home() {
                         Continue
                       </span>
                     </>
-                  ) : (
-                    "Generating Visitor ID..."
                   )}
                 </button>
               )}
