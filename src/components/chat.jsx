@@ -21,6 +21,26 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
   const [showLinkConfirm, setShowLinkConfirm] = useState(false);
   const [pendingLink, setPendingLink] = useState(null);
 
+  const [userEffects, setUserEffects] = useState({});
+
+  const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
+
+  useEffect(() => {
+    const fetchUserEffects = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_SERVER_ORIGIN}/api/user-effects`
+        );
+        const data = await response.json();
+        setUserEffects(data.styles.usernames);
+      } catch (error) {
+        console.error("Error fetching user effects:", error);
+      }
+    };
+
+    fetchUserEffects();
+  }, []);
+
   const sparkleGlowAnimation = `
   @keyframes shine {
     0% {
@@ -62,6 +82,7 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
 `;
 
   const getSpecialStyle = (style) => {
+    // Define the styles object
     const styles = {
       gold: {
         gradient: "linear-gradient(90deg, #ffd700, #fff6a9, #ffd700)",
@@ -71,29 +92,27 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
       },
       purple: {
         gradient: "linear-gradient(90deg, #c27eff, #e2bdff, #c27eff)",
-        sparkleColor: "#ffd700", // Changed to gold for the stars
+        sparkleColor: "#ffd700", // Gold stars for purple style
         glowAnimation:
           "shine 3s linear infinite, glowPurple 2s ease-in-out infinite",
       },
     };
-    return styles[style];
+
+    // Return the style or a default style if not found
+    return styles[style] || styles.gold;
   };
 
   const renderUsername = (messageUsername, isAdmin) => {
-    // Define username styles
-    const specialStyles = {
-      slin: "purple",
-      admin: "gold", // This will now have purple text with gold stars
-    };
+    // Get the style from the database-populated userStyles
+    const style = userEffects[messageUsername.toLowerCase()];
 
-    const style = specialStyles[messageUsername];
     if (style) {
       const styleConfig = getSpecialStyle(style);
       return (
         <>
           <style>{sparkleGlowAnimation}</style>
           <span className="relative inline-block">
-            {/* Sparkle elements - now using ✯ for a more ornate star */}
+            {/* Sparkle elements */}
             <span
               style={{
                 position: "absolute",
