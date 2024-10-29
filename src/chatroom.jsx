@@ -742,6 +742,7 @@ function ChatRoom() {
               isImageEnlarged={isImageEnlarged}
               replyTo={replyTo}
               setReplyTo={setReplyTo}
+              isReportSidebarOpen={isSidebarOpen}
             />
           )}
         </div>
