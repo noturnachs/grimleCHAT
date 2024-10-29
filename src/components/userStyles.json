@@ -23,11 +23,11 @@
         "color": "#FFFFFF"
       },
       "sender": {
-        "background": "linear-gradient(to right, #1e3c72, #2a5298)",
+        "background": "#2563eb",
         "color": "#FFFFFF"
       },
       "receiver": {
-        "backgroundColor": "#2c2c2e",
+        "backgroundColor": "#374151",
         "color": "#FFFFFF"
       }
     }
