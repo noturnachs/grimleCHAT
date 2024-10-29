@@ -544,9 +544,13 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
                   </div>
                 ) : (
                   <div
-                    className={`p-2 rounded-xl max-w-xs ${
-                      isAdmin ? "bg-red-500 text-white" : ""
-                    }`} // Add admin styling
+                    className={`p-2 max-w-xs ${
+                      isAdmin
+                        ? "bg-red-500 text-white rounded-xl"
+                        : isSender
+                        ? "rounded-[20px] rounded-br-[4px]" // Sender message
+                        : "rounded-[20px] rounded-bl-[4px]" // Receiver message
+                    }`}
                     style={{
                       ...(!isAdmin
                         ? getMessageStyles(message.username, isSender)
