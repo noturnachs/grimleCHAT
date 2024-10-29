@@ -23,8 +23,6 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
 
   const [userEffects, setUserEffects] = useState({});
 
-  const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
-
   useEffect(() => {
     const fetchUserEffects = async () => {
       try {
@@ -79,6 +77,24 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
       transform: scale(0.8);
     }
   }
+
+  @keyframes glowPink {
+    0%, 100% { 
+      text-shadow: 0 0 4px #ff69b4, 0 0 11px #ff69b4, 0 0 19px #ff69b4;
+    }
+    50% { 
+      text-shadow: 0 0 4px #ff69b4, 0 0 15px #ff69b4, 0 0 25px #ff69b4;
+    }
+  }
+
+  @keyframes glowLightBlue {
+    0%, 100% { 
+      text-shadow: 0 0 4px #87CEEB, 0 0 11px #87CEEB, 0 0 19px #87CEEB;
+    }
+    50% { 
+      text-shadow: 0 0 4px #87CEEB, 0 0 15px #87CEEB, 0 0 25px #87CEEB;
+    }
+  }
 `;
 
   const getSpecialStyle = (style) => {
@@ -95,6 +111,18 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
         sparkleColor: "#ffd700", // Gold stars for purple style
         glowAnimation:
           "shine 3s linear infinite, glowPurple 2s ease-in-out infinite",
+      },
+      pink: {
+        gradient: "linear-gradient(90deg, #ff69b4, #ffb6c1, #ff69b4)",
+        sparkleColor: "#ffd700", // Yellow stars
+        glowAnimation:
+          "shine 3s linear infinite, glowPink 2s ease-in-out infinite",
+      },
+      lightblue: {
+        gradient: "linear-gradient(90deg, #87CEEB, #B0E2FF, #87CEEB)",
+        sparkleColor: "#ffd700", // Yellow stars
+        glowAnimation:
+          "shine 3s linear infinite, glowLightBlue 2s ease-in-out infinite",
       },
     };
 
