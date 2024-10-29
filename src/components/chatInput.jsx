@@ -28,6 +28,7 @@ function ChatInput({
   isImageEnlarged,
   replyTo,
   setReplyTo,
+  isReportSidebarOpen,
 }) {
   const [showEffects, setShowEffects] = useState(false); // State to show effects
 
@@ -435,33 +436,6 @@ function ChatInput({
     ]); // Update state with previous selected images and new compressed ones
   };
 
-  const sendImageMessage = () => {
-    if (selectedImages.length > 0) {
-      const imagePromises = selectedImages.map((image) => {
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(image);
-        });
-      });
-
-      Promise.all(imagePromises)
-        .then((imagesBase64) => {
-          socket.emit("sendMessage", {
-            room,
-            message: {
-              username,
-              images: imagesBase64, // Send images as an array
-            },
-          });
-          setSelectedImages([]); // Clear selected images after sending
-        })
-        .catch((error) => {
-          console.error("Error converting images to base64:", error);
-        });
-    }
-  };
-
   const pauseRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.pauseRecording();
@@ -555,7 +529,9 @@ function ChatInput({
 
   return (
     <div
-      className="relative p-3 pl-2 pr-1 bg-[#192734] w-full md:w-1/2 rounded-lg shadow-md "
+      className={`relative p-3 pl-2 pr-1 bg-[#192734] w-full md:w-1/2 rounded-lg shadow-md transition-opacity duration-300 ${
+        isReportSidebarOpen ? "opacity-0 pointer-events-none" : "opacity-100"
+      }`}
       style={{ height: containerHeight, zIndex: 1 }}
     >
       {renderReplyPreview()}{" "}
