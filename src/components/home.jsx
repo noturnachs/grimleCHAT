@@ -94,6 +94,8 @@ function Home() {
   // ); // Default link
   const [visitorIdGenerated, setVisitorIdGenerated] = useState(false);
   const [visitorId, setVisitorId] = useState(null);
+  const [isSpecialUsername, setIsSpecialUsername] = useState(false);
+  const [specialToken, setSpecialToken] = useState("");
 
   useEffect(() => {
     async function generateFingerprint() {
@@ -252,55 +254,66 @@ function Home() {
       return;
     }
 
-    if (username.toLowerCase().includes("admin")) {
-      if (username.toLowerCase() === "admin" && !showPasswordInput) {
-        setShowPasswordInput(true);
-        return;
-      } else if (username.toLowerCase() === "admin" && showPasswordInput) {
-        try {
-          const response = await fetch(`${SERVER_ORIGIN}/validate-admin`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ password }),
-          });
+    // First, check if the username is special
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_SERVER_ORIGIN}/api/validate-special-username`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: username.toLowerCase(),
+            token: specialToken,
+          }),
+        }
+      );
 
-          const result = await response.json();
-          if (!result.success) {
-            setError("Incorrect admin password.");
-            return;
-          }
-        } catch (error) {
-          setError("Server error. Please try again later.");
+      const data = await response.json();
+
+      // If it's a special username and no token provided yet
+      if (
+        data.message === "Invalid token for this special username." &&
+        !showPasswordInput
+      ) {
+        setShowPasswordInput(true);
+        setError("This username requires a token. Please enter it.");
+        return;
+      }
+
+      // If token was provided but invalid
+      if (!data.success && showPasswordInput) {
+        setError(data.message || "Invalid token for this username.");
+        return;
+      }
+
+      // If validation passed or username is not special, continue with normal flow
+      if (username.trim() !== "" && over18 && agreeTerms) {
+        const currentVisitorId = visitorIdRef.current;
+
+        if (!currentVisitorId) {
+          setError("VisitorID is not available. Please refresh the page.");
           return;
         }
+
+        socket.emit("startMatch", {
+          username,
+          interest,
+          visitorId: currentVisitorId,
+        });
+        navigate("/chat", {
+          state: { username, interest, visitorId: currentVisitorId },
+        });
       } else {
-        setError("Username cannot contain the word 'admin'.");
-        return;
+        setError(
+          "Please fulfill the age requirement and acknowledge the terms."
+        );
       }
-    }
-
-    if (username.trim() !== "" && over18 && agreeTerms) {
-      // Include visitorId in the socket.emit and navigate calls
-      const currentVisitorId = visitorIdRef.current;
-
-      // Double-check that visitorId is available
-      if (!currentVisitorId) {
-        setError("VisitorID is not available. Please refresh the page.");
-        return;
-      }
-
-      socket.emit("startMatch", {
-        username,
-        interest,
-        visitorId: currentVisitorId,
-      });
-      navigate("/chat", {
-        state: { username, interest, visitorId: currentVisitorId },
-      });
-    } else {
-      setError("Please fulfill the age requirement and acknowledge the terms.");
+    } catch (error) {
+      console.error("Error validating username:", error);
+      setError("Server error. Please try again later.");
+      return;
     }
   };
 
@@ -441,8 +454,15 @@ function Home() {
                   <input
                     id="password"
                     value={password}
-                    placeholder="Enter admin password"
-                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={
+                      username.toLowerCase() === "admin"
+                        ? "Enter admin password"
+                        : "Enter special username token"
+                    }
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setSpecialToken(e.target.value); // Set both password and special token
+                    }}
                     required
                     className="bg-[#192734] border-2 border-[#3e3e3e] rounded-lg text-white px-6 py-3 text-base hover:border-[#fff] cursor-pointer transition w-full"
                     type="password"
