@@ -26,8 +26,8 @@ function Sidebar({
 
   return (
     <div
-      ref={sidebarRef} // Attach ref to the sidebar
-      className={`absolute top-0 right-0 h-full bg-[#1f2e3a] shadow-lg transform transition-transform duration-300 ${className} ${
+      ref={sidebarRef}
+      className={`fixed top-0 right-0 h-full bg-[#1f2e3a] shadow-lg transform transition-transform duration-300 z-9999 ${className} ${
         isOpen ? "translate-x-0" : "translate-x-full"
       }`}
       style={{ width: "80%" }}
@@ -46,7 +46,7 @@ function Sidebar({
           ref={textareaRef}
           value={reportReason}
           onChange={(e) => setReportReason(e.target.value)}
-          placeholder="Enter the reason for reporting"
+          placeholder="Enter the reason for reporting (required)"
           className="w-full p-2 mb-4 bg-gray-700 text-white rounded-lg resize-none"
           rows={4}
           disabled={isSubmittingReport}
@@ -54,7 +54,7 @@ function Sidebar({
 
         <div className="mb-4">
           <label className="block text-white font-semibold mb-2">
-            Attach a screenshot
+            Attach a screenshot (optional)
           </label>
           <div className="flex items-center">
             <label
