@@ -54,7 +54,8 @@ function Sidebar({
 
         <div className="mb-4">
           <label className="block text-white font-semibold mb-2">
-            Attach a screenshot (optional)
+            Attach a screenshot{" "}
+            <span className="text-gray-400 text-[10px]">optional</span>
           </label>
           <div className="flex items-center">
             <label
