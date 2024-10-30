@@ -4,8 +4,17 @@ import userStyles from "./userStyles.json";
 import { MinimalAudioPlayer } from "./CustomAudioPlayer";
 import { motion } from "framer-motion";
 import { FaReply } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
 
-function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
+function Chat({
+  messages,
+  setIsImageEnlarged,
+  onReply,
+  typingStatus,
+  socket,
+  room,
+  setMessages,
+}) {
   const { state } = useLocation();
   const username = state?.username || "Anonymous";
   const chatEndRef = useRef(null);
@@ -22,6 +31,31 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
   const [pendingLink, setPendingLink] = useState(null);
 
   const [userEffects, setUserEffects] = useState({});
+
+  const handleUnsendMessage = (messageId) => {
+    if (socket && room) {
+      socket.emit("unsendMessage", { room, messageId });
+      // console.log("Unsending message:", messageId); // For debugging
+    }
+  };
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("messageUnsent", ({ messageId }) => {
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === messageId
+              ? { ...msg, unsent: true, messageText: "Message unsent" }
+              : msg
+          )
+        );
+      });
+
+      return () => {
+        socket.off("messageUnsent");
+      };
+    }
+  }, [socket]);
 
   useEffect(() => {
     const fetchUserEffects = async () => {
@@ -476,13 +510,13 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
               }}
               className={`flex ${
                 isSender ? "justify-end" : "justify-start"
-              } relative `}
+              } relative group`}
               onMouseEnter={() => handleMouseEnter(index)}
               onMouseLeave={handleMouseLeave}
               onTouchStart={() => handleTouchStart(index)}
               onTouchEnd={handleTouchEnd}
             >
-              <div className="flex-col">
+              <div className="flex-col relative">
                 <span
                   className="font-normal"
                   style={{
@@ -514,7 +548,14 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
                     )}
                   </div>
                 )}
-                {message.images && message.images.length > 0 ? (
+
+                {message.unsent ? (
+                  <div className="p-2 max-w-xs">
+                    <p className="text-gray-500 italic text-sm">
+                      Message unsent
+                    </p>
+                  </div>
+                ) : message.images && message.images.length > 0 ? (
                   <div className="relative p-2 rounded-xl max-w-xs z-0">
                     <div className="flex items-center space-x-[-12px]">
                       {message.images.map((image, imgIndex) => {
@@ -578,16 +619,33 @@ function Chat({ messages, setIsImageEnlarged, onReply, typingStatus }) {
                   </div>
                 )}
               </div>
-              {showReplyButton === index && (
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  onClick={() => handleReply(message)}
-                  className="text-gray-500 hover:text-gray-300 p-1 rounded-full bg-gray-800 bg-opacity-50 self-end mb-1"
+              {showReplyButton === index && !message.unsent && (
+                <div
+                  className={`flex items-center ${
+                    isSender ? "ml-2" : "mr-2"
+                  } gap-2`}
                 >
-                  <FaReply size={13} />
-                </motion.button>
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    onClick={() => onReply(message)}
+                    className="text-gray-500 hover:text-blue-500 p-1 rounded-full"
+                  >
+                    <FaReply size={13} />
+                  </motion.button>
+                  {isSender && (
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      onClick={() => handleUnsendMessage(message.id)}
+                      className="text-gray-500 hover:text-red-500 p-1 rounded-full"
+                    >
+                      <FaTrash size={13} />
+                    </motion.button>
+                  )}
+                </div>
               )}
             </div>
           );
