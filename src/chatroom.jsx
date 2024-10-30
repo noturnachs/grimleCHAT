@@ -443,7 +443,9 @@ function ChatRoom() {
     const handleMessageUnsent = ({ messageId, username: unsendUsername }) => {
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
-          msg.id === messageId ? { ...msg, unsent: true } : msg
+          msg.id === messageId && !msg.isAdmin && msg.username !== "System"
+            ? { ...msg, unsent: true }
+            : msg
         )
       );
     };
