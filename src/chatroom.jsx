@@ -439,6 +439,15 @@ function ChatRoom() {
       ]);
     };
 
+    // Add the new handler here
+    const handleMessageUnsent = ({ messageId, username: unsendUsername }) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === messageId ? { ...msg, unsent: true } : msg
+        )
+      );
+    };
+
     window.addEventListener("beforeunload", handleBeforeUnload);
     socket.on("userCountUpdate", handleUserCountUpdate);
     socket.on("typing", handleTyping);
@@ -448,6 +457,7 @@ function ChatRoom() {
     socket.on("banned", handleBanned); // Listen for the "banned" event
     socket.on("roomClosed", handleRoomClosed);
     socket.on("inactivityWarning", handleInactivityWarning);
+    socket.on("messageUnsent", handleMessageUnsent); // Add this line
 
     const interval = setInterval(() => {
       if (
@@ -470,6 +480,7 @@ function ChatRoom() {
       socket.off("banned", handleBanned); // Cleanup the "banned" event listener
       socket.off("roomClosed", handleRoomClosed);
       socket.off("inactivityWarning", handleInactivityWarning);
+      socket.off("messageUnsent", handleMessageUnsent); // Add this line
     };
   }, [loadingMessage, navigate, username]);
 
@@ -572,7 +583,9 @@ function ChatRoom() {
   const sendMessage = (message) => {
     if (room) {
       const { messageText, gif, sticker, replyTo, images, audio } = message;
-      const messageId = Date.now().toString(); // Generate a unique ID for the message
+      const messageId = `${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}`; // More unique ID
       const messageData = {
         room,
         message: {
@@ -730,6 +743,9 @@ function ChatRoom() {
               setIsImageEnlarged={setIsImageEnlarged}
               onReply={handleReply}
               typingStatus={typingStatus}
+              socket={socketRef.current}
+              room={room}
+              setMessages={setMessages} // Add this line
             />
           </div>
           {!isImageEnlarged && (
