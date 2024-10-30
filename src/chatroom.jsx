@@ -599,6 +599,7 @@ function ChatRoom() {
           replyTo: replyTo || null,
           images: images || null,
           audio: audio || null,
+          reactions: {}, // Initialize empty reactions object
         },
       };
       socket.emit("sendMessage", messageData);
