@@ -44,7 +44,8 @@ function Chat({
       socket.on("messageUnsent", ({ messageId }) => {
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
-            msg.id === messageId
+            // Only modify non-system messages
+            msg.id === messageId && !msg.isAdmin && msg.username !== "System"
               ? { ...msg, unsent: true, messageText: "Message unsent" }
               : msg
           )
