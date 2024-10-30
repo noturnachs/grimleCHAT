@@ -629,7 +629,7 @@ function Chat({
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    onClick={() => onReply(message)}
+                    onClick={() => handleReply(message)} // Change this line from onReply to handleReply
                     className="text-gray-500 hover:text-blue-500 p-1 rounded-full"
                   >
                     <FaReply size={13} />
