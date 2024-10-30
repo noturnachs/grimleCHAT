@@ -4,6 +4,15 @@ import userStyles from "./userStyles.json";
 import { MinimalAudioPlayer } from "./CustomAudioPlayer";
 import { motion } from "framer-motion";
 import { FaReply } from "react-icons/fa";
+import {
+  FaSmile,
+  FaHeart,
+  FaThumbsUp,
+  FaLaugh,
+  FaAngry,
+  FaSadTear,
+} from "react-icons/fa";
+
 import { FaTrash } from "react-icons/fa";
 
 function Chat({
@@ -31,6 +40,50 @@ function Chat({
   const [pendingLink, setPendingLink] = useState(null);
 
   const [userEffects, setUserEffects] = useState({});
+  const [showReactionPicker, setShowReactionPicker] = useState(null);
+  const [reactionPickerPosition, setReactionPickerPosition] = useState({
+    top: 0,
+    left: 0,
+  });
+
+  const REACTIONS = [
+    { emoji: "👍", icon: FaThumbsUp, name: "thumbsup" },
+    { emoji: "❤️", icon: FaHeart, name: "heart" },
+    { emoji: "😄", icon: FaLaugh, name: "laugh" },
+    { emoji: "😢", icon: FaSadTear, name: "sad" },
+    { emoji: "😠", icon: FaAngry, name: "angry" },
+  ];
+
+  const handleReaction = (messageId, reaction) => {
+    if (socket) {
+      socket.emit("messageReaction", {
+        room,
+        messageId,
+        reaction,
+        username,
+      });
+    }
+    setShowReactionPicker(null);
+  };
+
+  const renderReactions = (reactions) => {
+    if (!reactions || Object.keys(reactions).length === 0) return null;
+
+    return (
+      <div className="flex flex-wrap gap-1 mt-1">
+        {Object.entries(reactions).map(([reaction, users]) => (
+          <div
+            key={reaction}
+            className="bg-gray-700 hover:bg-gray-600 rounded-full px-2 py-0.5 text-xs flex items-center gap-1 cursor-pointer transition-colors"
+            title={`${users.join(", ")}`} // Shows users who reacted on hover
+          >
+            <span>{reaction}</span>
+            <span className="text-gray-400">{users.length}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   const handleUnsendMessage = (messageId) => {
     if (socket && room) {
@@ -275,6 +328,19 @@ function Chat({
   };
 
   useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showReactionPicker && !event.target.closest("button")) {
+        setShowReactionPicker(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showReactionPicker]);
+
+  useEffect(() => {
     messages.forEach((message) => {
       if (
         message.replyTo &&
@@ -497,6 +563,23 @@ function Chat({
     return isSender ? styles.sender : styles.receiver;
   };
 
+  // Add this useEffect to handle reaction updates
+  useEffect(() => {
+    if (socket) {
+      socket.on("messageReactionUpdate", ({ messageId, reactions }) => {
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === messageId ? { ...msg, reactions } : msg
+          )
+        );
+      });
+
+      return () => {
+        socket.off("messageReactionUpdate");
+      };
+    }
+  }, [socket]);
+
   return (
     <>
       <div ref={chatContainerRef} className="flex flex-col space-y-4  h-full ">
@@ -526,7 +609,6 @@ function Chat({
                 >
                   {renderUsername(message.username, isAdmin)}{" "}
                 </span>
-
                 {message.replyTo && (
                   <div
                     className="bg-gray-700 p-2 rounded-lg mb-1 text-sm cursor-pointer"
@@ -619,6 +701,7 @@ function Chat({
                     />
                   </div>
                 )}
+                {message.reactions && renderReactions(message.reactions)}
               </div>
               {showReplyButton === index && !message.unsent && (
                 <div
@@ -626,15 +709,18 @@ function Chat({
                     isSender ? "ml-2" : "mr-2"
                   } gap-2`}
                 >
+                  {/* Reply button */}
                   <motion.button
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    onClick={() => handleReply(message)} // Change this line from onReply to handleReply
+                    onClick={() => handleReply(message)}
                     className="text-gray-500 hover:text-blue-500 p-1 rounded-full"
                   >
                     <FaReply size={13} />
                   </motion.button>
+
+                  {/* Unsend button */}
                   {isSender && (
                     <motion.button
                       initial={{ opacity: 0, scale: 0.8 }}
@@ -645,6 +731,53 @@ function Chat({
                     >
                       <FaTrash size={13} />
                     </motion.button>
+                  )}
+
+                  {/* Reaction button */}
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setReactionPickerPosition({
+                        top: rect.top - 40, // Position above the button
+                        left: isSender ? rect.left - 150 : rect.left, // Adjust based on sender/receiver
+                      });
+                      setShowReactionPicker(message.id);
+                    }}
+                    className="text-gray-500 hover:text-yellow-500 p-1 rounded-full"
+                  >
+                    <FaSmile size={13} />
+                  </motion.button>
+
+                  {/* Reaction Picker */}
+                  {showReactionPicker === message.id && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      style={{
+                        position: "absolute",
+                        top: "-40px", // Position above the message
+                        right: isSender ? "0" : "auto",
+                        left: isSender ? "auto" : "0",
+                        zIndex: 1000,
+                      }}
+                      className="bg-gray-800 rounded-full px-2 py-1 flex gap-1 shadow-lg border border-gray-700"
+                    >
+                      {REACTIONS.map((reaction) => (
+                        <button
+                          key={reaction.name}
+                          onClick={() =>
+                            handleReaction(message.id, reaction.emoji)
+                          }
+                          className="hover:bg-gray-700 p-1.5 rounded-full transition-colors"
+                        >
+                          {reaction.emoji}
+                        </button>
+                      ))}
+                    </motion.div>
                   )}
                 </div>
               )}
