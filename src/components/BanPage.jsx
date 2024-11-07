@@ -1,14 +1,53 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const BanPage = () => {
   const [visitorId, setVisitorId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Retrieve the visitor ID from localStorage or wherever it's stored
-    const storedVisitorId = localStorage.getItem("visitorId");
-    setVisitorId(storedVisitorId);
-  }, []);
+    const checkBanStatus = async () => {
+      try {
+        // Retrieve the visitor ID from localStorage
+        const storedVisitorId = localStorage.getItem("visitorId");
+        setVisitorId(storedVisitorId);
 
+        // Check if user is actually banned
+        const response = await fetch(
+          `${process.env.REACT_APP_SERVER_ORIGIN}/api/identify-user`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ visitorId: storedVisitorId }),
+          }
+        );
+
+        if (response.status !== 403) {
+          // If user is not banned (status !== 403), redirect to home
+          navigate("/");
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error checking ban status:", error);
+        navigate("/");
+      }
+    };
+
+    checkBanStatus();
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  // Rest of your component remains the same
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
       <div className="bg-gray-800 p-10 rounded-lg shadow-lg text-center max-w-md mx-auto">
