@@ -97,9 +97,13 @@ function Chat({
       socket.on("messageUnsent", ({ messageId }) => {
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
-            // Only modify non-system messages
             msg.id === messageId && !msg.isAdmin && msg.username !== "System"
-              ? { ...msg, unsent: true, messageText: "Message unsent" }
+              ? {
+                  ...msg,
+                  unsent: true,
+                  messageText: "Message unsent",
+                  reactions: {},
+                }
               : msg
           )
         );
@@ -601,17 +605,19 @@ function Chat({
               onTouchEnd={handleTouchEnd}
             >
               <div className="flex-col relative">
-                <span
-                  className="font-normal"
-                  style={{
-                    ...getUsernameStyles(message.username),
-                  }}
-                >
-                  {renderUsername(message.username, isAdmin)}{" "}
-                </span>
+                <div className={`${isSender ? "text-right" : "text-left"}`}>
+                  <span
+                    className="font-normal"
+                    style={{
+                      ...getUsernameStyles(message.username),
+                    }}
+                  >
+                    {renderUsername(message.username, isAdmin)}{" "}
+                  </span>
+                </div>
                 {message.replyTo && (
                   <div
-                    className="bg-gray-700 p-2 rounded-lg mb-1 text-sm cursor-pointer"
+                    className="bg-gray-900 p-2 rounded-lg mb-1 text-sm cursor-pointer"
                     onClick={() => scrollToMessage(message.replyTo.id)}
                   >
                     <p className="text-gray-400 font-semibold text-xs">
@@ -668,37 +674,44 @@ function Chat({
                   </div>
                 ) : (
                   <div
-                    className={`p-2 max-w-xs ${
-                      isAdmin
-                        ? "bg-red-500 text-white rounded-xl"
-                        : isSender
-                        ? "rounded-[20px] rounded-br-[4px]" // Sender message
-                        : "rounded-[20px] rounded-bl-[4px]" // Receiver message
+                    className={`flex ${
+                      isSender ? "justify-end" : "justify-start"
                     }`}
-                    style={{
-                      ...(!isAdmin
-                        ? getMessageStyles(message.username, isSender)
-                        : {}),
-                      wordBreak: "break-word",
-                    }}
                   >
-                    <p
-                      className="text-sm font-normal"
-                      dangerouslySetInnerHTML={{
-                        __html: processMessageText(message.messageText), // Update this line
-                      }}
-                      onClick={(e) => {
-                        const clickedLink = e.target.closest("a");
-                        if (clickedLink) {
-                          handleLinkClick(e, clickedLink.href);
-                        }
-                      }}
+                    <div
+                      className={`p-2 inline-block max-w-xs  ${
+                        isAdmin
+                          ? "bg-red-500 text-white rounded-xl"
+                          : isSender
+                          ? "rounded-[20px] rounded-br-[4px] " // Sender message
+                          : "rounded-[20px] rounded-bl-[4px]" // Receiver message
+                      }`}
                       style={{
-                        color: isAdmin
-                          ? "white"
-                          : getMessageStyles(message.username, isSender).color,
+                        ...(!isAdmin
+                          ? getMessageStyles(message.username, isSender)
+                          : {}),
+                        wordBreak: "break-word",
                       }}
-                    />
+                    >
+                      <p
+                        className="text-sm font-normal"
+                        dangerouslySetInnerHTML={{
+                          __html: processMessageText(message.messageText), // Update this line
+                        }}
+                        onClick={(e) => {
+                          const clickedLink = e.target.closest("a");
+                          if (clickedLink) {
+                            handleLinkClick(e, clickedLink.href);
+                          }
+                        }}
+                        style={{
+                          color: isAdmin
+                            ? "white"
+                            : getMessageStyles(message.username, isSender)
+                                .color,
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
                 {message.reactions && renderReactions(message.reactions)}
