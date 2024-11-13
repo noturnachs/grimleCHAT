@@ -8,6 +8,7 @@ import FAQ from "./Faq";
 import { FaFlag } from "react-icons/fa";
 import Ads from "./ads";
 import { FaFacebook } from "react-icons/fa";
+import HOS from "./hallOfShame";
 // import Warning from "./warning"; // Import the Warning component
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
@@ -567,6 +568,7 @@ function Home() {
           </div>
         </div>
       )}
+      <HOS />
       <FAQ />
 
       <button
