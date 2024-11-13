@@ -35,7 +35,7 @@ body {
 }
 
 .scrollable-chat::-webkit-scrollbar {
-  width: 8px; /* Width of the scrollbar */
+  width: 2px; /* Width of the scrollbar */
 }
 
 .scrollable-chat::-webkit-scrollbar-track {
@@ -55,7 +55,7 @@ body {
 }
 
 .scrollbar-custom::-webkit-scrollbar {
-  width: 8px; /* Width of the scrollbar */
+  width: 2px; /* Width of the scrollbar */
 }
 
 .scrollbar-custom::-webkit-scrollbar-track {
@@ -69,7 +69,30 @@ body {
   background-clip: content-box; /* Ensures the border is transparent */
 }
 
+.chat-container {
+  padding-left: 0;
+  padding-right: 0;
+}
 /* Prevent manual resizing of the textarea */
 .resize-none {
   resize: none;
+}
+
+/* Custom scrollbar styles */
+.space-y-4::-webkit-scrollbar {
+  width: 4px;
+}
+
+.space-y-4::-webkit-scrollbar-track {
+  background: rgba(31, 41, 55, 0.2);
+  border-radius: 2px;
+}
+
+.space-y-4::-webkit-scrollbar-thumb {
+  background: rgba(239, 68, 68, 0.2);
+  border-radius: 2px;
+}
+
+.space-y-4::-webkit-scrollbar-thumb:hover {
+  background: rgba(239, 68, 68, 0.4);
 }
