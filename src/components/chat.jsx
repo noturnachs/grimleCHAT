@@ -824,6 +824,29 @@ function Chat({
           className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-90 overlay"
           onClick={handleOverlayClick} // Close the enlarged image on click outside the image
         >
+          <button
+            onClick={() => {
+              setEnlargedImages([]);
+              setIsImageEnlarged(false);
+            }}
+            className="absolute top-4 right-4 z-[1001] text-white bg-red-600 rounded-full p-2 hover:bg-red-700 transition-all"
+            aria-label="Close image view"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
           <img
             src={enlargedImages[currentIndex]}
             alt="Enlarged"
