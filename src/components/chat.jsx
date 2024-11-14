@@ -615,16 +615,18 @@ function Chat({
               onTouchEnd={handleTouchEnd}
             >
               <div className="flex-col relative">
-                <div className={`${isSender ? "text-right" : "text-left"}`}>
-                  <span
-                    className="font-normal"
-                    style={{
-                      ...getUsernameStyles(message.username),
-                    }}
-                  >
-                    {renderUsername(message.username, isAdmin)}{" "}
-                  </span>
-                </div>
+                {!message.unsent && ( // Only show username if message is not unsent
+                  <div className={`${isSender ? "text-right" : "text-left"}`}>
+                    <span
+                      className="font-normal"
+                      style={{
+                        ...getUsernameStyles(message.username),
+                      }}
+                    >
+                      {renderUsername(message.username, isAdmin)}{" "}
+                    </span>
+                  </div>
+                )}
                 {message.replyTo && (
                   <div
                     className="bg-gray-900 p-2 rounded-lg mb-1 text-sm cursor-pointer"
