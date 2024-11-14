@@ -315,7 +315,12 @@ function Chat({
 
   // Add this function to process text and convert links to clickable elements
   const processMessageText = (text) => {
-    // First escape special characters
+    // If the message is from System or contains HTML tags we want to keep, return as is
+    if (text.includes("<strong>") || text.includes("</strong>")) {
+      return text;
+    }
+
+    // For regular user messages, escape special characters
     const escapedText = text
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -336,7 +341,6 @@ function Chat({
       })
       .join("");
   };
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showReactionPicker && !event.target.closest("button")) {
