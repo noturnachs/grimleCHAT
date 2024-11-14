@@ -315,16 +315,22 @@ function Chat({
 
   // Add this function to process text and convert links to clickable elements
   const processMessageText = (text) => {
+    // First escape special characters
+    const escapedText = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const parts = text.split(urlRegex);
+    const parts = escapedText.split(urlRegex);
 
     return parts
       .map((part, index) => {
         if (part.match(urlRegex)) {
           return `<a href="${part}" class="text-blue-400 hover:text-blue-300 underline inline-flex items-center gap-1" onclick="return false;">
-          ${part}
-          <span class="inline-block"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></svg></span>
-        </a>`;
+            ${part}
+            <span class="inline-block"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></svg></span>
+          </a>`;
         }
         return part;
       })
