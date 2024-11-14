@@ -40,7 +40,7 @@ function Announcement() {
   };
 
   return (
-    <div className="w-full bg-blue-500 text-white text-center p-2 fixed top-0 z-50 text-xs">
+    <div className="w-full bg-[#27435f] text-white text-center p-2 fixed top-0 z-50 text-xs">
       <div dangerouslySetInnerHTML={createMarkup(announcement)} />
     </div>
   );
