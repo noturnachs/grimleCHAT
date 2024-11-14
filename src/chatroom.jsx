@@ -673,7 +673,7 @@ function ChatRoom() {
         />
       )}{" "}
       {adminPresent && (
-        <div className="bg-red-500 text-white p-2 text-center">
+        <div className="bg-red-700 text-white p-2 text-center text-sm">
           An admin is present in this room
         </div>
       )}
