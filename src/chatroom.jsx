@@ -737,8 +737,9 @@ function ChatRoom() {
                 reportError={reportError}
                 reportSuccess={reportSuccess}
                 isSubmittingReport={isSubmittingReport}
-                sidebarRef={sidebarRef} // Pass sidebarRef to the Sidebar
+                sidebarRef={sidebarRef}
                 className="z-[9999]"
+                reportedUsername={partnerUsername} // Add this line
               />
             )}
             <Chat
