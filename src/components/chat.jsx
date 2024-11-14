@@ -678,10 +678,11 @@ function Chat({
                       isSender ? "justify-end" : "justify-start"
                     }`}
                   >
+                    {/* bg-[#D4A5A5] */}
                     <div
                       className={`p-2 inline-block max-w-xs  ${
                         isAdmin
-                          ? "bg-red-500 text-white rounded-xl"
+                          ? "bg-[#8C9A76] text-white rounded-xl "
                           : isSender
                           ? "rounded-[20px] rounded-br-[4px] " // Sender message
                           : "rounded-[20px] rounded-bl-[4px]" // Receiver message
