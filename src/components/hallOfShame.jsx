@@ -12,7 +12,11 @@ function HOS() {
           `${process.env.REACT_APP_SERVER_ORIGIN}/api/banned-users`
         );
         const data = await response.json();
-        setBannedUsers(data);
+
+        const sortedUsers = data.sort(
+          (a, b) => new Date(b.bannedAt) - new Date(a.bannedAt)
+        );
+        setBannedUsers(sortedUsers);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching banned users:", error);
