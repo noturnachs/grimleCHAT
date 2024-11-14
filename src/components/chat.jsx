@@ -103,6 +103,7 @@ function Chat({
                   unsent: true,
                   messageText: "Message unsent",
                   reactions: {},
+                  replyTo: null,
                 }
               : msg
           )
