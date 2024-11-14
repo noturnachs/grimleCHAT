@@ -15,6 +15,7 @@ function Sidebar({
   isSubmittingReport,
   sidebarRef,
   className,
+  reportedUsername,
 }) {
   const textareaRef = useRef(null);
 
@@ -38,6 +39,14 @@ function Sidebar({
         </button>
 
         <h2 className="text-2xl font-bold mb-4 text-white">Report User</h2>
+        {reportedUsername && (
+          <p className="text-lg text-gray-300 mb-4">
+            Reporting user{" "}
+            <span className="font-semibold text-red-600">
+              {reportedUsername}
+            </span>
+          </p>
+        )}
         {reportError && <p className="text-red-500 mb-4">{reportError}</p>}
         {reportSuccess && (
           <p className="text-green-500 mb-4">{reportSuccess}</p>
