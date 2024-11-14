@@ -191,12 +191,16 @@ function Home() {
   };
 
   useEffect(() => {
+    // Request current user count when component mounts
+    socket.emit("requestUserCount");
+
     const handleUserCountUpdate = (count) => {
       setUserCount(count);
     };
 
     socket.on("userCountUpdate", handleUserCountUpdate);
 
+    // Clean up event listeners when component unmounts
     return () => {
       socket.off("userCountUpdate", handleUserCountUpdate);
     };
