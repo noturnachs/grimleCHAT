@@ -339,17 +339,24 @@ function Home() {
         <div className="mt-[15vh] md:mt-[20vh]  z-10">
           {/* <Song ytLink={youtubeLink} /> */}
           <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-full md:p-8">
-            {/* <Warning /> */}
-            <h1 className="text-2xl font-normal mb-6 text-white text-center ">
-              Welcome to LeeyosChat
-            </h1>
+            <div className="text-center space-y-3 mb-8">
+              <h1 className="text-3xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 text-transparent bg-clip-text tracking-tight">
+                Welcome to LeeyosChat
+              </h1>
 
-            <p className="text-sm text-gray-300 mb-4">
-              Talk with random strangers anywhere and everywhere.
-            </p>
+              <div className="space-y-2">
+                <p className="text-lg text-gray-200 font-medium">
+                  Connect Instantly. Chat Anonymously.
+                </p>
+                <p className="text-sm text-gray-400">
+                  Join thousands of people making meaningful connections
+                  worldwide
+                </p>
+              </div>
+            </div>
 
             {/* Display user count */}
-            <div className="text-sm text-gray-300 mb-4 text-center">
+            <div className="text-sm text-gray-300 mb-6 text-center">
               <Counter value={userCount} />
             </div>
 
