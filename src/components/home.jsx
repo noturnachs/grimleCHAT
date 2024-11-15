@@ -10,6 +10,7 @@ import Ads from "./ads";
 import { FaFacebook } from "react-icons/fa";
 import HOS from "./hallOfShame";
 import Survey from "./Survey";
+import Shoutout from "./shoutout";
 // import Warning from "./warning"; // Import the Warning component
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
@@ -338,6 +339,7 @@ function Home() {
       <Announcement />
       <div className="flex flex-col space-y-10 justify-center items-center md:flex-row md:space-x-5 md:space-y-0 ">
         <div className="mt-[15vh] md:mt-[20vh]  z-10">
+          <Shoutout />
           <Survey />
           <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-full md:p-8">
             <div className="text-center space-y-3 mb-8">
