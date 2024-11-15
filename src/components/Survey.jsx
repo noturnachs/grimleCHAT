@@ -81,7 +81,7 @@ function Survey() {
   if (loading) return null;
 
   return (
-    <div className="bg-[#15202b] p-6 rounded-lg shadow-lg max-w-md w-full mb-6 border border-gray-700/30">
+    <div className="bg-[#15202b] p-6 rounded-lg shadow-lg max-w-md w-full mt-10 border border-gray-700/30">
       <h2 className="text-xl font-bold text-white mb-4">Community Survey</h2>
       <p className="text-gray-300 mb-4">
         Should we allow sending videos in chat?
