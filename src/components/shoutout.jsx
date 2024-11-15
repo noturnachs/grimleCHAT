@@ -39,17 +39,44 @@ function Shoutout() {
     }
   };
 
+  // Add this function near your other utility functions
+  const containsInappropriateContent = (text) => {
+    // Convert text to lowercase and remove spaces for checking
+    const normalizedText = text.toLowerCase().replace(/\s+/g, "");
+
+    // List of banned words and their variations
+    const bannedPatterns = [
+      /h[o0]rn[yi3]/, // matches: horny, h0rny, h0rni, etc.
+      /h[4a]rn[yi3]/, // matches: h4rny, harny, etc.
+      /h[o0]rn[e3]y/, // matches: horney, h0rney, etc.
+    ];
+
+    // Check if any banned pattern is found in the text
+    return bannedPatterns.some((pattern) => pattern.test(normalizedText));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!message.trim()) {
+    const trimmedMessage = message.trim();
+    const trimmedUsername = username.trim();
+    if (!trimmedMessage) {
       setError("Please enter a message");
       return;
     }
 
-    if (!username.trim()) {
+    if (!trimmedUsername) {
       setError("Please enter a username");
+      return;
+    }
+
+    // Check both username and message for inappropriate content
+    if (
+      containsInappropriateContent(trimmedMessage) ||
+      containsInappropriateContent(trimmedUsername)
+    ) {
+      setError("Please keep the content appropriate");
       return;
     }
 
