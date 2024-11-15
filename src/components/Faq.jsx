@@ -1,115 +1,90 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiChevronDown } from "react-icons/fi";
 
 function FAQ() {
-  // State to track the currently open question
   const [openQuestion, setOpenQuestion] = useState(null);
 
-  // Function to toggle the visibility of the answer
-  const toggleAnswerVisibility = (questionIndex) => {
-    // If the clicked question is already open, close it; otherwise, open the clicked question
-    setOpenQuestion(openQuestion === questionIndex ? null : questionIndex);
-  };
+  const faqData = [
+    {
+      question: "Am I matched with people with the same interests?",
+      answer:
+        "Our website's logic will try to find people who share the same interests as you. If no match is found with the same interests, you will be paired with a random person.",
+    },
+    {
+      question:
+        "Why can't I read or send messages whenever I came back from switching an app?",
+      answer:
+        "Everything sent during the chat is not stored in any way, so whenever you leave the website, everything is gone. That is why you are unable to send or read new messages already. Just find another match.",
+    },
+    {
+      question: "What happens to inactive rooms after 5 minutes?",
+      answer:
+        "Rooms that are inactive for 5 minutes will be destroyed to ensure optimal performance and resource management on our platform.",
+    },
+    {
+      question: "Why do I randomly match with users who don't reply?",
+      answer:
+        'It could be due to many reasons. One reason is that the user may have accidentally performed a "back" action without opting to end the chat or stop finding a match.',
+    },
+  ];
 
   return (
-    <div className="bg-[#15202b] p-6 rounded-lg shadow-lg mt-10 max-w-md w-full">
-      <h2 className="text-xl font-semibold text-white mb-4 text-center">
+    <div className="bg-[#15202b] p-6 rounded-2xl shadow-lg mt-10 max-w-md w-full border border-gray-700/30">
+      <h2 className="text-xl font-bold text-white mb-6">
         Frequently Asked Questions
       </h2>
-      <div className="text-sm text-gray-300">
-        <div className="mb-4">
-          {/* Clickable question */}
-          <h2
-            className="font-bold text-white text-md mb-3 cursor-pointer bg-[#121b22] rounded p-2"
-            onClick={() => toggleAnswerVisibility(0)} // Pass the index of the question
-          >
-            Am I matched with people with the same interests?
-          </h2>
-          {/* Conditionally render the answer with smooth transition */}
-          <div
-            className={`transition-max-height duration-500 ease-in-out overflow-hidden ${
-              openQuestion === 0 ? "max-h-40" : "max-h-0"
-            }`}
-          >
-            <p className="text-sm text-justify">
-              Our website's logic will try to find people who share the same
-              interests as you. If no match is found with the same interests,
-              you will be paired with a random person.
-            </p>
-          </div>
-        </div>
-      </div>
 
-      <div className="text-sm text-gray-300">
-        <div className="mb-4">
-          {/* Clickable question */}
-          <h2
-            className="font-bold text-white text-md mb-3 cursor-pointer bg-[#121b22] rounded p-2"
-            onClick={() => toggleAnswerVisibility(1)} // Pass the index of the question
-          >
-            Why can't I read or send messages whenever I came back from
-            switching an app?
-          </h2>
-          {/* Conditionally render the answer with smooth transition */}
+      <div className="space-y-3">
+        {faqData.map((faq, index) => (
           <div
-            className={`transition-max-height duration-500 ease-in-out overflow-hidden ${
-              openQuestion === 1 ? "max-h-40" : "max-h-0"
-            }`}
+            key={index}
+            className="overflow-hidden rounded-xl bg-[#192734] border border-gray-700/20"
           >
-            <p className="text-sm text-justify">
-              Everything sent during the chat is not stored in any way, so
-              whenever you leave the website, everything is gone. That is why you
-              are unable to send or read new messages already. Just find another
-              match.
-            </p>
-          </div>
-        </div>
-      </div>
+            <button
+              className="flex items-center justify-between w-full p-4 text-left text-white hover:bg-[#1d2f3f] transition-colors duration-200"
+              onClick={() =>
+                setOpenQuestion(openQuestion === index ? null : index)
+              }
+            >
+              <span className="pr-4 font-medium">{faq.question}</span>
+              <motion.div
+                animate={{ rotate: openQuestion === index ? 180 : 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                <FiChevronDown className="flex-shrink-0 w-5 h-5 text-gray-400" />
+              </motion.div>
+            </button>
 
-      <div className="text-sm text-gray-300">
-        <div className="mb-4">
-          {/* Clickable question */}
-          <h2
-            className="font-bold text-white text-md mb-3 cursor-pointer bg-[#121b22] rounded p-2"
-            onClick={() => toggleAnswerVisibility(2)} // Pass the index of the question
-          >
-            What happens to inactive rooms after 5 minutes?
-          </h2>
-          {/* Conditionally render the answer with smooth transition */}
-          <div
-            className={`transition-max-height duration-500 ease-in-out overflow-hidden ${
-              openQuestion === 2 ? "max-h-40" : "max-h-0"
-            }`}
-          >
-            <p className="text-sm text-justify">
-              Rooms that are inactive for 5 minutes will be destroyed to ensure
-              optimal performance and resource management on our platform.
-            </p>
+            <AnimatePresence>
+              {openQuestion === index && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{
+                    height: "auto",
+                    opacity: 1,
+                    transition: {
+                      height: { duration: 0.2, ease: "easeOut" },
+                      opacity: { duration: 0.2, ease: "easeOut" },
+                    },
+                  }}
+                  exit={{
+                    height: 0,
+                    opacity: 0,
+                    transition: {
+                      height: { duration: 0.2, ease: "easeIn" },
+                      opacity: { duration: 0.1 },
+                    },
+                  }}
+                >
+                  <div className="px-4 pb-4 text-gray-300 text-sm leading-relaxed">
+                    {faq.answer}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </div>
-      </div>
-
-      <div className="text-sm text-gray-300">
-        <div className="mb-4">
-          {/* Clickable question */}
-          <h2
-            className="font-bold text-white text-md mb-3 cursor-pointer bg-[#121b22] rounded p-2"
-            onClick={() => toggleAnswerVisibility(3)} // Pass the index of the question
-          >
-            Why do I randomly match with users who don't reply?
-          </h2>
-          {/* Conditionally render the answer with smooth transition */}
-          <div
-            className={`transition-max-height duration-500 ease-in-out overflow-hidden ${
-              openQuestion === 3 ? "max-h-40" : "max-h-0"
-            }`}
-          >
-            <p className="text-sm text-justify">
-              It could be due to many reasons. One reason is that the user may
-              have accidentally performed a "back" action without opting to end
-              the chat or stop finding a match.
-            </p>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );
