@@ -185,7 +185,7 @@ function Shoutout() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Username"
+                placeholder="From?"
                 maxLength={20}
                 className="flex-1 text-sm px-4 py-2 bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700/50 
                      rounded-xl text-white placeholder:text-gray-400 
