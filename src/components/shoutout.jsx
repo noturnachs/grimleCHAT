@@ -172,7 +172,9 @@ function Shoutout() {
       {remainingShoutouts > 0 ? (
         <form onSubmit={handleSubmit} className="mb-4">
           <div className="flex flex-col space-y-2">
+            <h1 className="text-xl font-bold text-white mb-4">Shoutouts</h1>
             {error && <p className="text-red-500 text-sm">{error}</p>}
+
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -201,7 +203,7 @@ function Shoutout() {
                 className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 
                      transition-colors text-sm font-medium whitespace-nowrap"
               >
-                Post
+                Post Shoutout
               </button>
             </div>
             <div className="flex justify-between items-center">
