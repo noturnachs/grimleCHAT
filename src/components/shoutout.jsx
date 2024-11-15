@@ -188,6 +188,9 @@ function Shoutout() {
               <span className="text-xs text-gray-400">
                 {remainingShoutouts} shoutouts remaining today
               </span>
+              <span className="text-xs text-red-300 italic">
+                Shoutouts only last for 20 minutes
+              </span>
               {error && <p className="text-red-500 text-sm">{error}</p>}
             </div>
           </div>
