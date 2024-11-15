@@ -206,6 +206,7 @@ function ChatRoom() {
     const formData = new FormData();
     formData.append("visitorId", partnerVisitorId);
     formData.append("reason", reportReason);
+    formData.append("room", room); // Add room ID to the report
 
     if (screenshot) {
       formData.append("screenshot", screenshot);
