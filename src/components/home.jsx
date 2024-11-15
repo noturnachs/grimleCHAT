@@ -624,7 +624,7 @@ function Home() {
           </div>
         </div>
       )}
-      <Survey />
+      {/* <Survey /> */}
       <HOS />
       <FAQ />
 
