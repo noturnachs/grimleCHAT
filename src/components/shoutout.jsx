@@ -58,6 +58,7 @@ function Shoutout() {
       /h[o0]rn[yi3]/, // matches: horny, h0rny, h0rni, etc.
       /h[4a]rn[yi3]/, // matches: h4rny, harny, etc.
       /h[o0]rn[e3]y/, // matches: horney, h0rney, etc.
+      /hrny/, // matches: hrny
     ];
 
     // Check if any banned pattern is found in the text
