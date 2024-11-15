@@ -172,6 +172,7 @@ function Shoutout() {
       {remainingShoutouts > 0 ? (
         <form onSubmit={handleSubmit} className="mb-4">
           <div className="flex flex-col space-y-2">
+            {error && <p className="text-red-500 text-sm">{error}</p>}
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -210,7 +211,6 @@ function Shoutout() {
               <span className="text-xs text-red-300 italic">
                 Shoutouts only last for 20 minutes
               </span>
-              {error && <p className="text-red-500 text-sm">{error}</p>}
             </div>
           </div>
         </form>
