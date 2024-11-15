@@ -11,6 +11,7 @@ import {
   FaLaugh,
   FaAngry,
   FaSadTear,
+  FaSadCry,
 } from "react-icons/fa";
 
 import { FaTrash } from "react-icons/fa";
@@ -70,6 +71,7 @@ function Chat({
     { emoji: "❤️", icon: FaHeart, name: "heart" },
     { emoji: "😄", icon: FaLaugh, name: "laugh" },
     { emoji: "😢", icon: FaSadTear, name: "sad" },
+    { emoji: "😭", icon: FaSadCry, name: "sob" },
     { emoji: "😠", icon: FaAngry, name: "angry" },
   ];
 
