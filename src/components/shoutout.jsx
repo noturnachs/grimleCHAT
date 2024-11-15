@@ -61,6 +61,10 @@ function Shoutout() {
       /hrny/, // matches: hrny
       /jaks/, // matches: jaks
       /j[4a]ks/, // matches: j4ks
+      /nudes/, // matches: nudes
+      /n[0o]d[0o]s/, // matches: n0des, n00des, etc.
+      /nud[0o]s/, // matches: nuds, n0ds, etc.
+      /n[0o]d[0o]s/, // matches: n0d3s, n00d3s, etc.
     ];
 
     // Check if any banned pattern is found in the text
