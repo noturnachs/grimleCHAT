@@ -216,16 +216,16 @@ function Chat({
 
   @keyframes glowRainbow {
     0%, 100% { 
-      text-shadow: 0 0 4px #ff0000, 0 0 11px #ff0000, 0 0 19px #ff0000;
+      text-shadow: 0 0 2px #ff0000, 0 0 5px #ff0000;
     }
     25% { 
-      text-shadow: 0 0 4px #00ff00, 0 0 11px #00ff00, 0 0 19px #00ff00;
+      text-shadow: 0 0 2px #00ff00, 0 0 5px #00ff00;
     }
     50% { 
-      text-shadow: 0 0 4px #0000ff, 0 0 11px #0000ff, 0 0 19px #0000ff;
+      text-shadow: 0 0 2px #0000ff, 0 0 5px #0000ff;
     }
     75% { 
-      text-shadow: 0 0 4px #ff00ff, 0 0 11px #ff00ff, 0 0 19px #ff00ff;
+      text-shadow: 0 0 2px #ff00ff, 0 0 5px #ff00ff;
     }
   }
 `;
