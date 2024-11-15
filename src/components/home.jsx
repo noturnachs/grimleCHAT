@@ -11,6 +11,8 @@ import { FaFacebook } from "react-icons/fa";
 import HOS from "./hallOfShame";
 import Survey from "./Survey";
 import Shoutout from "./shoutout";
+import { FiInfo } from "react-icons/fi";
+
 // import Warning from "./warning"; // Import the Warning component
 
 const SERVER_ORIGIN = process.env.REACT_APP_SERVER_ORIGIN;
@@ -102,6 +104,7 @@ function Home() {
   const [isSpecialUsername, setIsSpecialUsername] = useState(false);
   const [specialToken, setSpecialToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
     async function generateFingerprint() {
@@ -341,7 +344,7 @@ function Home() {
         <div className="mt-[15vh] md:mt-[20vh]  z-10">
           <Shoutout />
 
-          <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-full md:p-8">
+          <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-full md:p-8 ">
             <div className="text-center space-y-3 mb-8">
               <h1 className="text-3xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 text-transparent bg-clip-text tracking-tight">
                 LeeyosChat
@@ -443,24 +446,57 @@ function Home() {
                   type="text"
                 />
 
-                <input
-                  id="interest"
-                  value={interestInput}
-                  placeholder="What are your interests?"
-                  onChange={(e) => setInterestInput(e.target.value)}
-                  onKeyDown={handleInterestKeyDown} // Add interest on Enter key
-                  onBlur={() => {
-                    if (interestInput.trim()) {
-                      setInterest([...interest, interestInput.trim()]);
-                      setInterestInput(""); // Clear the input field after adding the interest
-                    }
-                  }} // Add interest when the input loses focus
-                  className="mt-3 w-full px-6 py-3.5 bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700/50 
-                  rounded-xl text-white placeholder:text-gray-400 
-                  focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 
-                  transition-all duration-300 outline-none"
-                  type="text"
-                />
+                <div className="relative mt-3">
+                  <input
+                    id="interest"
+                    value={interestInput}
+                    placeholder="What are your interests?"
+                    onChange={(e) => setInterestInput(e.target.value)}
+                    onKeyDown={handleInterestKeyDown}
+                    onBlur={() => {
+                      if (interestInput.trim()) {
+                        setInterest([...interest, interestInput.trim()]);
+                        setInterestInput("");
+                      }
+                    }}
+                    className="w-full px-6 py-3.5 bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700/50 
+            rounded-xl text-white placeholder:text-gray-400 
+            focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 
+            transition-all duration-300 outline-none pr-12"
+                    type="text"
+                  />
+                  <div
+                    className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
+                    onClick={() => setShowTooltip(!showTooltip)}
+                  >
+                    <FiInfo
+                      className={`w-5 h-5 transition-colors ${
+                        showTooltip
+                          ? "text-blue-400"
+                          : "text-gray-400 hover:text-blue-400"
+                      }`}
+                    />
+
+                    {/* Tooltip */}
+                    <div
+                      className={`absolute bottom-full right-0 mb-2 w-64 p-3 
+                bg-gray-800/90 
+                rounded-lg shadow-lg border border-gray-700/50 
+                text-xs text-gray-200
+                transition-opacity duration-200 
+                ${
+                  showTooltip ? "opacity-100" : "opacity-0 pointer-events-none"
+                }`}
+                    >
+                      <div className="relative">
+                        Our website's logic will try to find people who share
+                        the same interests as you. If no match is found with the
+                        same interests, you will be paired with a random person.
+                        <div className="absolute -bottom-2 right-4 w-2 h-2 bg-gray-800/90 backdrop-blur-sm border-r border-b border-gray-700/50 transform rotate-45"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 {/* Display the interests as tags with remove buttons */}
                 <div className="flex flex-wrap gap-2 mt-2">
                   {interest.map((item, index) => (
