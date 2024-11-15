@@ -207,6 +207,27 @@ function Chat({
       text-shadow: 0 0 4px #87CEEB, 0 0 15px #87CEEB, 0 0 25px #87CEEB;
     }
   }
+
+  @keyframes rainbow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  @keyframes glowRainbow {
+    0%, 100% { 
+      text-shadow: 0 0 4px #ff0000, 0 0 11px #ff0000, 0 0 19px #ff0000;
+    }
+    25% { 
+      text-shadow: 0 0 4px #00ff00, 0 0 11px #00ff00, 0 0 19px #00ff00;
+    }
+    50% { 
+      text-shadow: 0 0 4px #0000ff, 0 0 11px #0000ff, 0 0 19px #0000ff;
+    }
+    75% { 
+      text-shadow: 0 0 4px #ff00ff, 0 0 11px #ff00ff, 0 0 19px #ff00ff;
+    }
+  }
 `;
 
   const getSpecialStyle = (style) => {
@@ -235,6 +256,13 @@ function Chat({
         sparkleColor: "#ffd700", // Yellow stars
         glowAnimation:
           "shine 3s linear infinite, glowLightBlue 2s ease-in-out infinite",
+      },
+      rainbow: {
+        gradient:
+          "linear-gradient(to right, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff)",
+        sparkleColor: "#ffd700", // White stars for rainbow style
+        glowAnimation:
+          "rainbow 3s linear infinite, glowRainbow 4s ease-in-out infinite",
       },
     };
 
