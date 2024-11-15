@@ -172,7 +172,7 @@ function Shoutout() {
       {remainingShoutouts > 0 ? (
         <form onSubmit={handleSubmit} className="mb-4">
           <div className="flex flex-col space-y-2">
-            <h1 className="text-xl font-bold text-white mb-4">Shoutouts</h1>
+            <h1 className="text-xl font-bold text-white mb-4">To Everyone</h1>
             {error && <p className="text-red-500 text-sm">{error}</p>}
 
             <textarea
