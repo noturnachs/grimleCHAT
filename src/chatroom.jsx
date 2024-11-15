@@ -62,6 +62,23 @@ function ChatRoom() {
     setReplyTo(replyData);
   };
 
+  const detectInappropriateContent = (text) => {
+    // Convert text to lowercase for case-insensitive matching
+    const lowerText = text.toLowerCase();
+
+    // Regular expressions to catch various attempts to hide the word
+    const patterns = [
+      /h+\s*o+\s*r+\s*n+\s*[yi]+/i, // Matches h o r n y with spaces
+      /h0+r+n[yi]+/i, // Matches h0rny
+      /h\s*[\d]+\s*r\s*n[yi]+/i, // Matches h4rny or similar number substitutions
+      /horni/i, // Matches "horni" variation
+      /h♡rny/i, // Matches heart symbol substitution
+      /h❤️rny/i, // Matches heart emoji substitution
+    ];
+
+    return patterns.some((pattern) => pattern.test(lowerText));
+  };
+
   useEffect(() => {
     const visitorId = state?.visitorId || localStorage.getItem("visitorId");
     if (!visitorId) {
@@ -352,8 +369,24 @@ function ChatRoom() {
     };
 
     const handleMessage = (message) => {
+      // Check for inappropriate content
+      if (
+        message.messageText &&
+        detectInappropriateContent(message.messageText)
+      ) {
+        // Add system warning message
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            username: "System",
+            messageText:
+              "Please report any users who are being inappropriate. Thank you!",
+            timestamp: Date.now(),
+            isSystemWarning: true,
+          },
+        ]);
+      }
       setMessages((prevMessages) => [...prevMessages, message]);
-      // Removed title change logic
     };
 
     const handleMatchFound = ({
