@@ -685,30 +685,68 @@ function ChatRoom() {
               {prevUsernameLeft} left the chat.
             </div>
           )}
+
+          {/* Enhanced Start Finding Match Button */}
           <button
             onClick={startMatch}
-            className={`${
-              loading ? "bg-transparent mb-5" : "bg-blue-500 mb-1"
-            } text-white font-normal p-1 rounded text-md`}
-            disabled={loading} // Disable button when loading
+            disabled={loading}
+            className={`
+        relative group overflow-hidden
+        ${
+          loading
+            ? "bg-transparent mb-5"
+            : "bg-gradient-to-r from-blue-500 to-blue-600 mb-1 hover:from-blue-400 hover:to-blue-500"
+        }
+        text-white font-medium px-6 py-3 rounded-xl
+        transition-all duration-300 transform
+        hover:shadow-lg hover:shadow-blue-500/25
+        disabled:opacity-70 disabled:cursor-not-allowed
+      `}
           >
-            {loading ? loadingMessage : "Start Finding a Match"}
+            {/* Button content */}
+            <span className="relative z-10 flex items-center justify-center">
+              {loading ? loadingMessage : "Start Finding a Match"}
+            </span>
+
+            {/* Hover effect overlay */}
+            {!loading && (
+              <div
+                className="absolute inset-0 -translate-x-full group-hover:translate-x-0 
+          bg-gradient-to-r from-blue-400/20 to-transparent transition-transform duration-500"
+              />
+            )}
           </button>
+
+          {/* Loading animation */}
           {loading && (
             <l-line-wobble
               size="80"
               stroke="5"
               bg-opacity="0.1"
               speed="1.75"
-              color="green"
-              className="inline-block ml-2"
-            ></l-line-wobble>
+              color="rgb(59, 130, 246)"
+              className="mb-6"
+            />
           )}
+
+          {/* Enhanced Cancel Button */}
           <button
             onClick={handleCancel}
-            className="mt-6 inline-flex items-center p-2 text-red-600 transition ease-in-out delay-75 hover:bg-red-300 text-sm font-medium rounded-md hover:-translate-y-1 hover:scale-110"
+            className="group relative p-2 rounded-full overflow-hidden 
+        transition-transform duration-200 hover:scale-110 mt-4"
           >
-            <FaTimes size={20} /> {/* Replace text with the icon */}
+            {/* Background with hover effect */}
+            <div
+              className="absolute inset-0 bg-red-500/10 
+        group-hover:bg-red-500/20 transition-colors duration-200 rounded-full"
+            />
+
+            {/* Icon */}
+            <FaTimes
+              size={24}
+              className="relative z-10 text-red-400 group-hover:text-red-500 
+          transition-colors duration-200"
+            />
           </button>
         </div>
       ) : (
