@@ -315,33 +315,281 @@ function Chat({
   };
 
   // Add this function to process text and convert links to clickable elements
+  // ... existing code ...
+
   const processMessageText = (text) => {
-    // If the message is from System or contains HTML tags we want to keep, return as is
     if (text.includes("<strong>") || text.includes("</strong>")) {
       return text;
     }
 
-    // For regular user messages, escape special characters
     const escapedText = text
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
 
+    // Regex patterns for different platforms
+    const patterns = {
+      spotify: {
+        playlist: /https:\/\/open\.spotify\.com\/playlist\/([a-zA-Z0-9]+)/,
+        track: /https:\/\/open\.spotify\.com\/track\/([a-zA-Z0-9]+)/,
+        album: /https:\/\/open\.spotify\.com\/album\/([a-zA-Z0-9]+)/,
+      },
+      facebook: {
+        post: /https?:\/\/(?:www\.)?facebook\.com\/share\/(?:p|v)\/([a-zA-Z0-9_-]+)/,
+        video:
+          /https?:\/\/(?:www\.)?facebook\.com\/(?:watch\/\?v=|video\.php\?v=)(\d+)/,
+      },
+      youtube: {
+        video:
+          /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/,
+        shorts:
+          /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/,
+      },
+      twitter: /https?:\/\/twitter\.com\/\w+\/status\/(\d+)/,
+      soundcloud: /https?:\/\/soundcloud\.com\/([a-zA-Z0-9-]+\/[a-zA-Z0-9-]+)/,
+      instagram:
+        /https?:\/\/(?:www\.)?instagram\.com\/(?:p|reel)\/([a-zA-Z0-9_-]+)/,
+      tiktok: /https?:\/\/(?:www\.)?tiktok\.com\/@[\w.-]+\/video\/(\d+)/,
+    };
+
+    const facebookMatch =
+      text.match(patterns.facebook.post) || text.match(patterns.facebook.video);
+    if (facebookMatch) {
+      const postId = facebookMatch[1];
+      return generateFacebookEmbed(postId, text);
+    }
+
+    // Check for matches
+    // Spotify Playlist
+    const spotifyPlaylistMatch = text.match(patterns.spotify.playlist);
+    if (spotifyPlaylistMatch) {
+      const playlistId = spotifyPlaylistMatch[1];
+      return generateSpotifyEmbed("playlist", playlistId, text);
+    }
+
+    // Spotify Track
+    const spotifyTrackMatch = text.match(patterns.spotify.track);
+    if (spotifyTrackMatch) {
+      const trackId = spotifyTrackMatch[1];
+      return generateSpotifyEmbed("track", trackId, text);
+    }
+
+    // Spotify Album
+    const spotifyAlbumMatch = text.match(patterns.spotify.album);
+    if (spotifyAlbumMatch) {
+      const albumId = spotifyAlbumMatch[1];
+      return generateSpotifyEmbed("album", albumId, text);
+    }
+
+    // YouTube
+    const youtubeMatch =
+      text.match(patterns.youtube.video) || text.match(patterns.youtube.shorts);
+    if (youtubeMatch) {
+      const videoId = youtubeMatch[1];
+      return generateYouTubeEmbed(videoId, text);
+    }
+
+    // Twitter/X
+    const twitterMatch = text.match(patterns.twitter);
+    if (twitterMatch) {
+      const tweetId = twitterMatch[1];
+      return generateTwitterEmbed(tweetId, text);
+    }
+
+    // SoundCloud
+    const soundcloudMatch = text.match(patterns.soundcloud);
+    if (soundcloudMatch) {
+      const track = soundcloudMatch[1];
+      return generateSoundCloudEmbed(track, text);
+    }
+
+    // Instagram
+    const instagramMatch = text.match(patterns.instagram);
+    if (instagramMatch) {
+      const postId = instagramMatch[1];
+      return generateInstagramEmbed(postId, text);
+    }
+
+    // TikTok
+    const tiktokMatch = text.match(patterns.tiktok);
+    if (tiktokMatch) {
+      const videoId = tiktokMatch[1];
+      return generateTikTokEmbed(videoId, text);
+    }
+
+    // Handle regular URLs
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const parts = escapedText.split(urlRegex);
-
     return parts
-      .map((part, index) => {
+      .map((part) => {
         if (part.match(urlRegex)) {
-          return `<a href="${part}" class="text-blue-400 hover:text-blue-300 underline inline-flex items-center gap-1" onclick="return false;">
-            ${part}
-            <span class="inline-block"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></svg></span>
-          </a>`;
+          return generateDefaultLinkPreview(part);
         }
         return part;
       })
       .join("");
   };
+
+  // Add the Facebook embed generator function
+  const generateFacebookEmbed = (postId, originalUrl) => `
+<div class="facebook-preview bg-[#282828] p-3 rounded-lg mt-2">
+  <div class="flex items-center gap-2 mb-2">
+    <svg class="w-6 h-6 text-[#1877F2]" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+    </svg>
+    <span class="text-white font-medium">Facebook Post</span>
+  </div>
+  <div class="facebook-embed rounded bg-white">
+    <div class="fb-post" 
+      data-href="https://www.facebook.com/share/p/${postId}"
+      data-width="500"
+      data-show-text="true">
+    </div>
+    <script async defer src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.2"></script>
+  </div>
+</div>
+${generateDefaultLinkPreview(originalUrl)}
+`;
+
+  const generateTwitterEmbed = (tweetId, originalUrl) => `
+  <div class="twitter-preview bg-[#282828] p-3 rounded-lg mt-2">
+    <div class="flex items-center gap-2 mb-2">
+      <svg class="w-6 h-6 text-[#1DA1F2]" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+      </svg>
+      <span class="text-white font-medium">Twitter Post</span>
+    </div>
+    <div class="twitter-embed rounded bg-black p-2">
+      <blockquote class="twitter-tweet" data-conversation="none">
+        <a href="https://twitter.com/i/status/${tweetId}"></a>
+      </blockquote>
+      <script async src="https://platform.twitter.com/widgets.js"></script>
+    </div>
+  </div>
+  ${generateDefaultLinkPreview(originalUrl)}
+`;
+
+  const generateInstagramEmbed = (postId, originalUrl) => `
+  <div class="instagram-preview bg-[#282828] p-3 rounded-lg mt-2">
+    <div class="flex items-center gap-2 mb-2">
+      <svg class="w-6 h-6 text-[#E4405F]" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.897 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.897-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
+      </svg>
+      <span class="text-white font-medium">Instagram Post</span>
+    </div>
+    <div class="instagram-embed rounded bg-white">
+      <blockquote 
+        class="instagram-media" 
+        data-instgrm-permalink="https://www.instagram.com/p/${postId}/"
+        data-instgrm-version="14"
+        style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%;"
+      >
+      </blockquote>
+      <script async src="//www.instagram.com/embed.js"></script>
+    </div>
+  </div>
+  ${generateDefaultLinkPreview(originalUrl)}
+`;
+
+  const generateTikTokEmbed = (videoId, originalUrl) => `
+  <div class="tiktok-preview bg-[#282828] p-3 rounded-lg mt-2">
+    <div class="flex items-center gap-2 mb-2">
+      <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19.589 6.686a4.793 4.793 0 01-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 01-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 013.183-4.51v-3.5a6.329 6.329 0 00-5.394 10.692 6.33 6.33 0 1010.857-4.424V8.687a8.182 8.182 0 004.773 1.526V6.79a4.831 4.831 0 01-1.003-.104z"/>
+      </svg>
+      <span class="text-white font-medium">TikTok Video</span>
+    </div>
+    <div class="tiktok-embed rounded">
+      <blockquote 
+        class="tiktok-embed" 
+        cite="https://www.tiktok.com/@username/video/${videoId}"
+        data-video-id="${videoId}"
+        style="max-width: 605px;min-width: 325px;"
+      >
+      </blockquote>
+      <script async src="https://www.tiktok.com/embed.js"></script>
+    </div>
+  </div>
+  ${generateDefaultLinkPreview(originalUrl)}
+`;
+
+  // Helper functions to generate embeds
+  const generateSpotifyEmbed = (type, id, originalUrl) => `
+    <div class="spotify-preview bg-[#282828] p-3 rounded-lg mt-2">
+      <div class="flex items-center gap-2 mb-2">
+        <svg class="w-6 h-6 text-[#1DB954]" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+        </svg>
+        <span class="text-white font-medium">Spotify ${
+          type.charAt(0).toUpperCase() + type.slice(1)
+        }</span>
+      </div>
+      <iframe 
+        src="https://open.spotify.com/embed/${type}/${id}" 
+        width="100%" 
+        height="80" 
+        frameborder="0" 
+        allowtransparency="true" 
+        allow="encrypted-media"
+        class="rounded"
+      ></iframe>
+    </div>
+    ${generateDefaultLinkPreview(originalUrl)}
+  `;
+
+  const generateYouTubeEmbed = (videoId, originalUrl) => `
+    <div class="youtube-preview bg-[#282828] p-3 rounded-lg mt-2">
+      <div class="flex items-center gap-2 mb-2">
+        <svg class="w-6 h-6 text-red-600" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+        </svg>
+        <span class="text-white font-medium">YouTube Video</span>
+      </div>
+      <div class="relative pb-[56.25%] h-0">
+        <iframe 
+          class="absolute top-0 left-0 w-full h-full rounded"
+          src="https://www.youtube.com/embed/${videoId}"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+    ${generateDefaultLinkPreview(originalUrl)}
+  `;
+
+  const generateSoundCloudEmbed = (track, originalUrl) => `
+    <div class="soundcloud-preview bg-[#282828] p-3 rounded-lg mt-2">
+      <div class="flex items-center gap-2 mb-2">
+        <svg class="w-6 h-6 text-[#ff5500]" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M1.175 12.225c-.051 0-.094.046-.101.1l-.233 2.154.233 2.105c.007.058.05.098.101.098.05 0 .09-.04.099-.098l.255-2.105-.27-2.154c-.009-.06-.052-.1-.102-.1m-.899-1.574c-.074 0-.118.068-.127.146l-.183 3.682.183 3.635c.009.08.053.146.127.146.075 0 .119-.066.128-.146l.201-3.635-.201-3.682c-.009-.08-.053-.146-.128-.146m8.24 4.007c-.057-.057-.132-.093-.215-.093-.082 0-.157.036-.214.093-.057.057-.093.132-.093.214v3.929c0 .132.034.259.093.372.055.112.142.203.243.267.1.064.21.098.326.098.057 0 .113-.007.168-.022.056-.014.107-.035.154-.061.046-.027.088-.059.126-.098.037-.038.068-.081.093-.126.024-.045.043-.093.054-.143.012-.049.018-.099.018-.15v-3.929c0-.082-.036-.157-.093-.214m-2.732.015c-.055-.059-.13-.094-.215-.094-.084 0-.16.035-.215.094-.059.054-.093.13-.093.214v3.929c0 .083.034.158.093.214.055.057.13.093.215.093.084 0 .16-.036.215-.093.059-.056.093-.131.093-.214v-3.929c0-.084-.034-.16-.093-.214"/>
+        </svg>
+        <span class="text-white font-medium">SoundCloud Track</span>
+      </div>
+      <iframe 
+        width="100%" 
+        height="166" 
+        scrolling="no" 
+        frameborder="no" 
+        allow="autoplay"
+        src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/${track}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"
+        class="rounded"
+      ></iframe>
+    </div>
+    ${generateDefaultLinkPreview(originalUrl)}
+  `;
+
+  const generateDefaultLinkPreview = (url) => `
+    <a href="${url}" class="text-blue-400 hover:text-blue-300 underline inline-flex items-center gap-1 mt-1" onclick="return false;">
+      ${url}
+      <span class="inline-block">
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/>
+        </svg>
+      </span>
+    </a>
+  `;
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showReactionPicker && !event.target.closest("button")) {
