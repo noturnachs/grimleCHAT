@@ -21,15 +21,17 @@ function Counter({ value }) {
   return (
     <div
       style={{ fontSize }}
-      className="flex space-x-2 overflow-hidden rounded bg-[#0d141b] px-2 leading-none text-white"
+      className="flex space-x-2 overflow-hidden rounded-xl bg-gradient-to-r from-gray-900/80 to-gray-800/80 backdrop-blur-sm px-4 py-2 leading-none text-white border border-gray-700/30 shadow-lg"
     >
-      <Digit place={100000} value={value} />
-      <Digit place={10000} value={value} />
-      <Digit place={1000} value={value} />
-      <Digit place={100} value={value} />
-      <Digit place={10} value={value} />
-      <Digit place={1} value={value} />
-      <span className="text-[#3ba55c] font-extrabold flex items-center text-[20px] md:text-[25px]">
+      <div className="flex space-x-1">
+        <Digit place={100000} value={value} />
+        <Digit place={10000} value={value} />
+        <Digit place={1000} value={value} />
+        <Digit place={100} value={value} />
+        <Digit place={10} value={value} />
+        <Digit place={1} value={value} />
+      </div>
+      <span className="text-emerald-400 font-bold flex items-center text-[20px] md:text-[25px] tracking-wide">
         ONLINE
       </span>
     </div>
@@ -424,7 +426,10 @@ function Home() {
                     setUsername(filteredValue);
                   }}
                   required
-                  className="bg-[#192734] border-2 border-[#3e3e3e] rounded-lg text-white px-6 py-3 text-base hover:border-[#fff] cursor-pointer transition w-full"
+                  className="w-full px-6 py-3.5 bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700/50 
+                  rounded-xl text-white placeholder:text-gray-400 
+                  focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 
+                  transition-all duration-300 outline-none"
                   type="text"
                 />
 
@@ -440,7 +445,10 @@ function Home() {
                       setInterestInput(""); // Clear the input field after adding the interest
                     }
                   }} // Add interest when the input loses focus
-                  className="bg-[#192734] border-2 border-[#3e3e3e] rounded-lg text-white px-6 py-3 text-base hover:border-[#fff] cursor-pointer transition w-full mt-2"
+                  className="mt-3 w-full px-6 py-3.5 bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700/50 
+                  rounded-xl text-white placeholder:text-gray-400 
+                  focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 
+                  transition-all duration-300 outline-none"
                   type="text"
                 />
                 {/* Display the interests as tags with remove buttons */}
@@ -448,14 +456,16 @@ function Home() {
                   {interest.map((item, index) => (
                     <div
                       key={index}
-                      className="flex items-center bg-blue-500 text-white px-2 py-1 rounded-lg text-sm"
+                      className="group flex items-center gap-1.5 px-3 py-1.5 
+        bg-blue-500/10 text-blue-400 rounded-full text-sm
+        border border-blue-500/20 hover:border-blue-500/40 transition-all"
                     >
                       {item}
                       <button
-                        className="ml-2 text-red-500 hover:text-red-700"
                         onClick={() => handleRemoveInterest(index)}
+                        className="text-blue-400/60 hover:text-blue-400 transition-colors"
                       >
-                        &times;
+                        ×
                       </button>
                     </div>
                   ))}
@@ -485,71 +495,103 @@ function Home() {
 
               {/* Checkboxes */}
               <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="over18"
-                  className="text-white flex items-center text-md"
-                >
-                  <input
-                    type="checkbox"
-                    id="over18"
-                    checked={over18}
-                    onChange={() => setOver18(!over18)}
-                    className="mr-2 w-4 h-4"
-                    required
-                  />
-                  I am over 18 years old
+                <label className="flex items-center space-x-3 group cursor-pointer">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      className="peer hidden"
+                      checked={over18}
+                      onChange={() => setOver18(!over18)}
+                    />
+                    <div
+                      className="w-5 h-5 border-2 border-gray-600 rounded-md 
+      peer-checked:bg-blue-500 peer-checked:border-blue-500 
+      transition-all duration-200"
+                    >
+                      {over18 && (
+                        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24">
+                          <path
+                            d="M20 6L9 17l-5-5"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            fill="none"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-gray-300 group-hover:text-white transition-colors">
+                    I am over 18 years old
+                  </span>
                 </label>
 
                 <label
                   htmlFor="agreeTerms"
-                  className="text-white flex items-center text-md"
+                  className="flex items-center space-x-3 group cursor-pointer"
                 >
-                  <input
-                    type="checkbox"
-                    id="agreeTerms"
-                    checked={agreeTerms}
-                    onChange={() => setAgreeTerms(!agreeTerms)}
-                    className="mr-2 w-4 h-4"
-                    required
-                  />
-                  I agree to the&nbsp;
-                  <button
-                    type="button"
-                    onClick={() => setShowTerms(true)}
-                    className="underline cursor-pointer"
-                  >
-                    Terms of Service
-                  </button>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      id="agreeTerms"
+                      className="peer hidden"
+                      checked={agreeTerms}
+                      onChange={() => setAgreeTerms(!agreeTerms)}
+                      required
+                    />
+                    <div
+                      className="w-5 h-5 border-2 border-gray-600 rounded-md 
+      peer-checked:bg-blue-500 peer-checked:border-blue-500 
+      group-hover:border-gray-500
+      transition-all duration-200"
+                    >
+                      {agreeTerms && (
+                        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24">
+                          <path
+                            d="M20 6L9 17l-5-5"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            fill="none"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-gray-300 group-hover:text-white transition-colors">
+                    I agree to the{" "}
+                    <button
+                      type="button"
+                      onClick={() => setShowTerms(true)}
+                      className="text-blue-400 hover:text-blue-300 transition-colors underline-offset-2 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500/50 rounded"
+                    >
+                      Terms of Service
+                    </button>
+                  </span>
                 </label>
               </div>
 
               {!showTerms && (
                 <button
                   type="submit"
-                  className={`overflow-hidden w-full p-2 h-12 ${
-                    visitorIdGenerated && !isLoading
-                      ? "bg-[#325E87]"
-                      : "bg-gray-500 cursor-not-allowed"
-                  } text-white border-none rounded-md text-md font-normal relative z-10 group flex items-center justify-center`}
                   disabled={!visitorIdGenerated || isLoading}
+                  className={`
+                  w-full py-3.5 rounded-xl font-medium text-sm
+                  transition-all duration-300
+                  ${
+                    visitorIdGenerated && !isLoading
+                      ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white shadow-lg shadow-blue-500/20"
+                      : "bg-gray-700/50 text-gray-400 cursor-not-allowed"
+                  }
+                  relative overflow-hidden group
+                `}
                 >
-                  {!visitorIdGenerated ? (
-                    "Generating Visitor ID..."
-                  ) : isLoading ? (
-                    "Loading..."
-                  ) : (
-                    <>
-                      <span className="absolute inset-0 flex items-center justify-center bg-[#325E87] group-hover:opacity-0 transition-opacity duration-1000">
-                        Are you ready?
-                      </span>
-                      <span className="absolute w-[200%] h-32 -top-8 -left-1/2 bg-green-200 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-500 duration-1000 origin-bottom"></span>
-                      <span className="absolute w-[200%] h-32 -top-8 -left-1/2 bg-green-400 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-700 duration-700 origin-bottom"></span>
-                      <span className="absolute w-[200%] h-32 -top-8 -left-1/2 bg-green-600 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-1000 duration-500 origin-bottom"></span>
-                      <span className="group-hover:opacity-100 group-hover:duration-1000 duration-100 opacity-0 absolute inset-0 flex items-center justify-center z-10">
-                        Continue
-                      </span>
-                    </>
-                  )}
+                  <span className="relative z-10">
+                    {!visitorIdGenerated
+                      ? "Generating Visitor ID..."
+                      : isLoading
+                      ? "Loading..."
+                      : "Are you ready?"}
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                 </button>
               )}
             </form>
