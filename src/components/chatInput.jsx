@@ -620,137 +620,124 @@ function ChatInput({
         >
           {confirmEndChat ? "Confirm" : "End"}
         </motion.button>
-        <div className="relative " ref={optionsRef}>
+        <div className="relative" ref={optionsRef}>
           <motion.button
             type="button"
-            onClick={toggleOptions} // Toggle the visibility of the additional options
-            className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
+            onClick={toggleOptions}
+            className="text-gray-400 hover:text-gray-300 p-2 rounded-full transition-all duration-200 hover:bg-gray-700/30"
           >
-            <div className={`w-8 h-10 flex items-center justify-center`}>
-              <FaPlus size={20} /> {/* Plus Icon */}
-            </div>
+            <FaPlus size={18} />
           </motion.button>
 
-          {/* Conditionally render microphone and image buttons */}
-          {showOptions && (
-            <div className="absolute flex flex-col space-y-2 bottom-12 left-0 bg-[#1a2631] rounded-lg">
-              <motion.button
-                type="button"
-                onClick={startRecording}
-                className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
-              >
-                <div className={`w-8 h-10 flex items-center justify-center`}>
-                  <FaMicrophone size={24} />
-                </div>
-              </motion.button>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageSelect}
-                ref={fileInputRef}
-                className="hidden"
-                multiple
-              />
-              <motion.button
-                type="button"
-                onClick={() =>
-                  fileInputRef.current && fileInputRef.current.click()
-                }
-                className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
-              >
-                <div className={`w-8 h-10 flex items-center justify-center`}>
-                  <FaImage size={24} />
-                </div>
-              </motion.button>
-              {username === "admin" && (
-                <motion.button
-                  type="button"
-                  onClick={toggleGifPicker}
-                  className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
-                >
-                  <div className={`w-8 h-10 flex items-center justify-center`}>
-                    <span>🎉</span>
-                  </div>
-                </motion.button>
-              )}
+          {/* Hidden file input */}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageSelect}
+            ref={fileInputRef}
+            className="hidden"
+            multiple
+          />
 
-              {username === "admin" && (
+          {showOptions && (
+            <div className="absolute bottom-12 left-0 bg-gray-800/95 backdrop-blur-sm rounded-2xl p-2 shadow-xl border border-gray-700/50 min-w-[45px]">
+              <div className="flex flex-col gap-3">
+                {/* Voice Record Button */}
                 <motion.button
                   type="button"
-                  onClick={toggleEffects}
-                  className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
+                  onClick={startRecording}
+                  className="p-2 text-gray-400 hover:text-gray-200 rounded-xl hover:bg-gray-700/50 transition-all duration-200 flex items-center justify-center"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <div className={`w-8 h-10 flex items-center justify-center`}>
-                    <FaStar size={24} /> {/* Effects Icon */}
-                  </div>
+                  <FaMicrophone size={18} />
                 </motion.button>
-              )}
+
+                {/* Image Upload Button */}
+                <motion.button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 text-gray-400 hover:text-gray-200 rounded-xl hover:bg-gray-700/50 transition-all duration-200 flex items-center justify-center"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FaImage size={18} />
+                </motion.button>
+
+                {/* GIF Button (Admin only) */}
+                {username === "admin" && (
+                  <motion.button
+                    type="button"
+                    onClick={toggleGifPicker}
+                    className="p-2 text-gray-400 hover:text-gray-200 rounded-xl hover:bg-gray-700/50 transition-all duration-200 flex items-center justify-center"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="text-lg">🎉</span>
+                  </motion.button>
+                )}
+
+                {/* Effects Button (Admin only) */}
+                {username === "admin" && (
+                  <motion.button
+                    type="button"
+                    onClick={toggleEffects}
+                    className="p-2 text-gray-400 hover:text-gray-200 rounded-xl hover:bg-gray-700/50 transition-all duration-200 flex items-center justify-center"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <FaStar size={18} />
+                  </motion.button>
+                )}
+              </div>
+
+              {/* Effects Menu */}
               {showEffects && (
-                <div className="absolute flex flex-col bottom-12 left-0 bg-[#1a2631] rounded-lg p-2 w-[150px]">
+                <div className="absolute left-full bottom-0 ml-2 bg-gray-800/95 backdrop-blur-sm rounded-xl p-2 shadow-xl border border-gray-700/50">
                   <motion.button
                     type="button"
                     onClick={() => handleEffectSelect("confetti")}
-                    className="text-white p-1 transition-transform transform hover:scale-105 focus:outline-none bg-transparent"
+                    className="w-full px-4 py-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-700/50 transition-all duration-200 text-sm"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     Confetti
                   </motion.button>
-                  {/* Add more effects here if needed */}
                 </div>
               )}
+
+              {/* GIF Picker */}
               {showGifPicker && (
-                <div className="absolute flex flex-col bottom-12 left-0 bg-[#1a2631] rounded-lg p-2 w-[300px] scrollbar-custom">
-                  <input
-                    type="text"
-                    value={gifSearchQuery}
-                    onChange={(e) => {
-                      setGifSearchQuery(e.target.value);
-                      fetchGifs(e.target.value); // Fetch GIFs dynamically as you type
-                    }}
-                    placeholder="Search GIFs..."
-                    className="p-2 mb-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {gifError ? (
-                    <p className="text-red-500">{gifError}</p>
-                  ) : (
-                    <div
-                      className="grid grid-cols-2 gap-2 overflow-y-auto overflow-x-hidden"
-                      style={{ maxHeight: "300px" }}
-                    >
+                <div className="absolute left-full bottom-0 ml-2 bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-xl border border-gray-700/50 w-[300px]">
+                  <div className="p-3 space-y-3">
+                    <input
+                      type="text"
+                      value={gifSearchQuery}
+                      onChange={(e) => {
+                        setGifSearchQuery(e.target.value);
+                        fetchGifs(e.target.value);
+                      }}
+                      placeholder="Search GIFs..."
+                      className="w-full px-3 py-2 bg-gray-700/50 text-gray-200 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm"
+                    />
+
+                    <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800/50">
                       {gifs.map((gif) => (
                         <motion.button
                           key={gif.id}
                           onClick={() => handleGifSelect(gif)}
-                          className="transition-transform transform hover:scale-105 focus:outline-none"
-                          style={{
-                            cursor: "pointer",
-                            border: "none",
-                            background: "none",
-                            padding: 0,
-                          }}
-                          whileTap={{ scale: 0.9 }}
+                          className="rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500/50 transition-all duration-200"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
                         >
                           <img
                             src={gif.images.fixed_height.url}
                             alt={gif.title}
-                            className="rounded-lg w-full h-auto"
+                            className="w-full h-auto"
                           />
                         </motion.button>
                       ))}
                     </div>
-                  )}
-
-                  {/* Display pre-saved stickers */}
-                  <h3 className="text-white mt-2">Stickers:</h3>
-                  <div className="flex space-x-2 overflow-x-auto">
-                    {preSavedStickers.map((sticker, index) => (
-                      <img
-                        key={index}
-                        src={sticker}
-                        alt={`Sticker ${index + 1}`}
-                        className="min-w-10 max-w-md h-10 cursor-pointer"
-                        onClick={() => sendMessage({ username, sticker })} // Send sticker on click
-                      />
-                    ))}
                   </div>
                 </div>
               )}
@@ -758,7 +745,7 @@ function ChatInput({
           )}
         </div>
 
-        <div className="relative flex-grow">
+        <div className="relative flex-grow ">
           <div className="relative">
             <textarea
               ref={textareaRef}
@@ -766,14 +753,19 @@ function ChatInput({
               onChange={handleTyping}
               onKeyDown={handleKeyDown}
               disabled={disabled}
-              className="w-full px-4 py-2 pr-10 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow shadow-sm resize-none"
+              className="w-full px-4 py-3 rounded-xl
+              bg-gray-800/50 backdrop-blur-sm
+              border border-gray-700
+              focus:border-blue-500 focus:ring-1 focus:ring-blue-500
+              text-gray-100 placeholder-gray-400
+              transition-all duration-200"
               placeholder="Type your message..."
               rows={1}
             />
             <button
               type="button"
               onClick={toggleEmojiPicker}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 focus:outline-none"
+              className="absolute right-2 top-[45%] transform -translate-y-1/2 text-gray-400 hover:text-gray-300 focus:outline-none"
             >
               <FaSmile size={20} />
             </button>
@@ -801,8 +793,13 @@ function ChatInput({
         <motion.button
           type="submit"
           disabled={disabled}
-          className=" text-blue-400 p-1 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ scale: scaleTransform }}
+          className={`
+    p-2 rounded-lg transform hover:scale-105
+    transition-all duration-200
+    disabled:opacity-50 disabled:hover:scale-100
+    focus:outline-none focus:ring-2 focus:ring-blue-500/50
+    text-blue-400
+  `}
           whileTap={{ scale: 1.1 }}
         >
           <IoSend size={25} />
