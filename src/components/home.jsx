@@ -342,7 +342,7 @@ function Home() {
           <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-full md:p-8">
             <div className="text-center space-y-3 mb-8">
               <h1 className="text-3xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 text-transparent bg-clip-text tracking-tight">
-                Welcome to LeeyosChat
+                LeeyosChat
               </h1>
 
               <div className="space-y-2">
