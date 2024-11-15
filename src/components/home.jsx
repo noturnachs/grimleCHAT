@@ -624,12 +624,39 @@ function Home() {
       <HOS />
       <FAQ />
 
-      <button
-        onClick={handleReportClick}
-        className="flex items-center text-white mt-4 rounded bg-[#d6663a] p-2 md:p-3 md:mt-6" // Adjust padding and margin for larger screens
-      >
-        <FaFlag className="mr-2" /> Report an Issue
-      </button>
+      <div className="mt-8 mb-6">
+        <button
+          onClick={handleReportClick}
+          className="group relative inline-flex items-center justify-center px-6 py-3 
+    bg-gradient-to-r from-orange-500 to-red-500 
+    rounded-xl text-white font-medium shadow-lg 
+    hover:shadow-orange-500/25 transition-all duration-200 
+    overflow-hidden"
+        >
+          {/* Background animation on hover */}
+          <div
+            className="absolute inset-0 w-full h-full bg-gradient-to-r from-red-500 to-orange-500 
+      opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          />
+
+          {/* Icon and text container */}
+          <div className="relative flex items-center space-x-2">
+            <FaFlag className="w-4 h-4 text-white/90" />
+            <span className="tracking-wide">Report an Issue</span>
+          </div>
+
+          {/* Subtle shine effect */}
+          <div
+            className="absolute inset-0 w-1/4 h-full bg-white/20 skew-x-12 
+      -translate-x-full group-hover:translate-x-[400%] transition-transform duration-700"
+          />
+        </button>
+
+        {/* Optional tooltip */}
+        <p className="text-center text-sm text-gray-400 mt-2">
+          Found a bug? Let us know!
+        </p>
+      </div>
 
       <footer className="w-full py-6 bg-transparent text-white">
         <div className="max-w-screen-sm mx-auto px-4">
