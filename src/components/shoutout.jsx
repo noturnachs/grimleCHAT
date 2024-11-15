@@ -65,6 +65,9 @@ function Shoutout() {
       /n[0o]d[0o]s/, // matches: n0des, n00des, etc.
       /nud[0o]s/, // matches: nuds, n0ds, etc.
       /n[0o]d[0o]s/, // matches: n0d3s, n00d3s, etc.
+      /f[u0]ck/, // matches: fuck, f0ck, fuc, etc.
+      /f[4u]ck/, // matches: f4ck, etc.
+      /f[0o]ck/, // matches: f0ck, etc.
     ];
 
     // Check if any banned pattern is found in the text
