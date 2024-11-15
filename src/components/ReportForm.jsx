@@ -21,7 +21,9 @@ const ReportForm = () => {
   const problemOptions = [
     "Problem sending message",
     "Problem sending image",
-    "Problem using video messaging",
+    "Problem sending voice message",
+    "Found a bug",
+    // "Problem using video messaging",
     "Other", // You can add more options as needed
   ];
 
