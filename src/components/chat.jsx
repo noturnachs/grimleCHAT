@@ -46,6 +46,25 @@ function Chat({
     left: 0,
   });
 
+  const [verifiedUsers, setVerifiedUsers] = useState(new Set());
+  useEffect(() => {
+    const fetchVerifiedUsers = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_SERVER_ORIGIN}/api/verified-users`
+        );
+        const data = await response.json();
+        if (data.verifiedUsers) {
+          setVerifiedUsers(new Set(data.verifiedUsers));
+        }
+      } catch (error) {
+        console.error("Error fetching verified users:", error);
+      }
+    };
+
+    fetchVerifiedUsers();
+  }, []);
+
   const REACTIONS = [
     { emoji: "👍", icon: FaThumbsUp, name: "thumbsup" },
     { emoji: "❤️", icon: FaHeart, name: "heart" },
@@ -224,7 +243,6 @@ function Chat({
   };
 
   const renderUsername = (messageUsername, isAdmin) => {
-    // Get the style from the database-populated userStyles
     const style = userEffects[messageUsername.toLowerCase()];
 
     if (style) {
@@ -232,70 +250,98 @@ function Chat({
       return (
         <>
           <style>{sparkleGlowAnimation}</style>
-          <span className="relative inline-block">
-            {/* Sparkle elements */}
-            <span
-              style={{
-                position: "absolute",
-                top: "-4px",
-                left: "-4px",
-                content: "✯",
-                color: styleConfig.sparkleColor,
-                animation: "sparkleStars 1.5s ease-in-out infinite",
-                fontSize: "0.8em",
-              }}
-            >
-              ✯
+          <div className="flex items-center gap-1">
+            <span className="relative inline-block">
+              {/* Sparkle elements */}
+              <span
+                style={{
+                  position: "absolute",
+                  top: "-4px",
+                  left: "-4px",
+                  content: "✯",
+                  color: styleConfig.sparkleColor,
+                  animation: "sparkleStars 1.5s ease-in-out infinite",
+                  fontSize: "0.8em",
+                }}
+              >
+                ✯
+              </span>
+              <span
+                style={{
+                  position: "absolute",
+                  top: "-4px",
+                  right: "-4px",
+                  content: "✯",
+                  color: styleConfig.sparkleColor,
+                  animation: "sparkleStars 1.5s ease-in-out infinite 0.2s",
+                  fontSize: "0.8em",
+                }}
+              >
+                ✯
+              </span>
+              {/* Main username text */}
+              <span
+                style={{
+                  background: styleConfig.gradient,
+                  backgroundSize: "200% auto",
+                  color: "transparent",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  animation: styleConfig.glowAnimation,
+                  fontWeight: "bold",
+                  padding: "0 4px",
+                  display: "inline-block",
+                }}
+              >
+                {messageUsername}
+              </span>
+              {/* Bottom sparkle */}
+              <span
+                style={{
+                  position: "absolute",
+                  bottom: "-4px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  content: "✯",
+                  color: styleConfig.sparkleColor,
+                  animation: "sparkleStars 1.5s ease-in-out infinite 0.4s",
+                  fontSize: "0.8em",
+                }}
+              >
+                ✯
+              </span>
             </span>
-            <span
-              style={{
-                position: "absolute",
-                top: "-4px",
-                right: "-4px",
-                content: "✯",
-                color: styleConfig.sparkleColor,
-                animation: "sparkleStars 1.5s ease-in-out infinite 0.2s",
-                fontSize: "0.8em",
-              }}
-            >
-              ✯
-            </span>
-            {/* Main username text */}
-            <span
-              style={{
-                background: styleConfig.gradient,
-                backgroundSize: "200% auto",
-                color: "transparent",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                animation: styleConfig.glowAnimation,
-                fontWeight: "bold",
-                padding: "0 4px",
-                display: "inline-block",
-              }}
-            >
-              {messageUsername}
-            </span>
-            {/* Bottom sparkle */}
-            <span
-              style={{
-                position: "absolute",
-                bottom: "-4px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                content: "✯",
-                color: styleConfig.sparkleColor,
-                animation: "sparkleStars 1.5s ease-in-out infinite 0.4s",
-                fontSize: "0.8em",
-              }}
-            >
-              ✯
-            </span>
-          </span>
+
+            {/* Verified badge */}
+            {verifiedUsers.has(messageUsername) && (
+              <svg
+                className="w-3.5 h-3.5 text-blue-500"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                title="Verified User"
+              >
+                <path d="M23,12L20.56,9.22L20.9,5.54L17.29,4.72L15.4,1.54L12,3L8.6,1.54L6.71,4.72L3.1,5.53L3.44,9.21L1,12L3.44,14.78L3.1,18.47L6.71,19.29L8.6,22.47L12,21L15.4,22.46L17.29,19.28L20.9,18.46L20.56,14.78L23,12M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z" />
+              </svg>
+            )}
+          </div>
         </>
       );
     }
-    return messageUsername;
+    return (
+      <div className="flex items-center gap-1">
+        <span>{messageUsername}</span>
+        {verifiedUsers.has(messageUsername) && (
+          <svg
+            className="w-3.5 h-3.5 text-blue-500"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            title="Verified User"
+          >
+            <path d="M23,12L20.56,9.22L20.9,5.54L17.29,4.72L15.4,1.54L12,3L8.6,1.54L6.71,4.72L3.1,5.53L3.44,9.21L1,12L3.44,14.78L3.1,18.47L6.71,19.29L8.6,22.47L12,21L15.4,22.46L17.29,19.28L20.9,18.46L20.56,14.78L23,12M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z" />
+          </svg>
+        )}
+      </div>
+    );
   };
 
   // Add this function to handle link clicks
