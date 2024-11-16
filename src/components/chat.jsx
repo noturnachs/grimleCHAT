@@ -153,83 +153,102 @@ function Chat({
     fetchUserEffects();
   }, []);
 
+  // Update the sparkleGlowAnimation with reduced glow intensity
   const sparkleGlowAnimation = `
-  @keyframes shine {
-    0% {
-      background-position: -100%;
-    }
-    100% {
-      background-position: 200%;
-    }
+@keyframes shine {
+  0% {
+    background-position: -100%;
   }
-  
-  @keyframes glowGold {
-    0%, 100% { 
-      text-shadow: 0 0 4px #ffd700, 0 0 11px #ffd700, 0 0 19px #ffd700;
-    }
-    50% { 
-      text-shadow: 0 0 4px #ffd700, 0 0 15px #ffd700, 0 0 25px #ffd700;
-    }
+  100% {
+    background-position: 200%;
   }
+}
 
-  @keyframes glowPurple {
-    0%, 100% { 
-      text-shadow: 0 0 4px #c27eff, 0 0 11px #c27eff, 0 0 19px #c27eff;
-    }
-    50% { 
-      text-shadow: 0 0 4px #c27eff, 0 0 15px #c27eff, 0 0 25px #c27eff;
-    }
+@keyframes glowGold {
+  0%, 100% { 
+    text-shadow: 0 0 2px #ffd700, 0 0 4px #ffd700;
   }
+  50% { 
+    text-shadow: 0 0 2px #ffd700, 0 0 6px #ffd700;
+  }
+}
 
-  @keyframes sparkleStars {
-    0%, 100% { 
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% { 
-      opacity: 0.4;
-      transform: scale(0.8);
-    }
+@keyframes glowPurple {
+  0%, 100% { 
+    text-shadow: 0 0 2px #c27eff, 0 0 4px #c27eff;
   }
+  50% { 
+    text-shadow: 0 0 2px #c27eff, 0 0 6px #c27eff;
+  }
+}
 
-  @keyframes glowPink {
-    0%, 100% { 
-      text-shadow: 0 0 4px #ff69b4, 0 0 11px #ff69b4, 0 0 19px #ff69b4;
-    }
-    50% { 
-      text-shadow: 0 0 4px #ff69b4, 0 0 15px #ff69b4, 0 0 25px #ff69b4;
-    }
+@keyframes glowPink {
+  0%, 100% { 
+    text-shadow: 0 0 2px #ff69b4, 0 0 4px #ff69b4;
   }
+  50% { 
+    text-shadow: 0 0 2px #ff69b4, 0 0 6px #ff69b4;
+  }
+}
 
-  @keyframes glowLightBlue {
-    0%, 100% { 
-      text-shadow: 0 0 4px #87CEEB, 0 0 11px #87CEEB, 0 0 19px #87CEEB;
-    }
-    50% { 
-      text-shadow: 0 0 4px #87CEEB, 0 0 15px #87CEEB, 0 0 25px #87CEEB;
-    }
+@keyframes glowLightBlue {
+  0%, 100% { 
+    text-shadow: 0 0 2px #87CEEB, 0 0 4px #87CEEB;
   }
+  50% { 
+    text-shadow: 0 0 2px #87CEEB, 0 0 6px #87CEEB;
+  }
+}
 
-  @keyframes rainbow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
+@keyframes glowEmerald {
+  0%, 100% { text-shadow: 0 0 2px #50C878, 0 0 4px #50C878; }
+  50% { text-shadow: 0 0 2px #3CB371, 0 0 6px #3CB371; }
+}
 
-  @keyframes glowRainbow {
-    0%, 100% { 
-      text-shadow: 0 0 2px #ff0000, 0 0 5px #ff0000;
-    }
-    25% { 
-      text-shadow: 0 0 2px #00ff00, 0 0 5px #00ff00;
-    }
-    50% { 
-      text-shadow: 0 0 2px #0000ff, 0 0 5px #0000ff;
-    }
-    75% { 
-      text-shadow: 0 0 2px #ff00ff, 0 0 5px #ff00ff;
-    }
+@keyframes glowSunset {
+  0%, 100% { text-shadow: 0 0 2px #FF6B6B, 0 0 4px #FF6B6B; }
+  50% { text-shadow: 0 0 2px #FFB88C, 0 0 6px #FFB88C; }
+}
+
+@keyframes glowOcean {
+  0%, 100% { text-shadow: 0 0 2px #00B4DB, 0 0 4px #00B4DB; }
+  50% { text-shadow: 0 0 2px #0083B0, 0 0 6px #0083B0; }
+}
+
+@keyframes glowNeon {
+  0%, 100% { text-shadow: 0 0 2px #FF1493, 0 0 4px #FF1493; }
+  50% { text-shadow: 0 0 2px #00FF00, 0 0 6px #00FF00; }
+}
+
+@keyframes glowGalaxy {
+  0%, 100% { text-shadow: 0 0 2px #663399, 0 0 4px #663399; }
+  50% { text-shadow: 0 0 2px #BC13FE, 0 0 6px #BC13FE; }
+}
+
+@keyframes glowFire {
+  0%, 100% { text-shadow: 0 0 2px #FF4500, 0 0 4px #FF4500; }
+  50% { text-shadow: 0 0 2px #FFA500, 0 0 6px #FFA500; }
+}
+
+@keyframes glowArctic {
+  0%, 100% { text-shadow: 0 0 2px #A5F2F3, 0 0 4px #A5F2F3; }
+  50% { text-shadow: 0 0 2px #D7FFFE, 0 0 6px #D7FFFE; }
+}
+
+@keyframes glowRainbow {
+  0%, 100% { 
+    text-shadow: 0 0 2px #ff0000, 0 0 4px #ff0000;
   }
+  25% { 
+    text-shadow: 0 0 2px #00ff00, 0 0 4px #00ff00;
+  }
+  50% { 
+    text-shadow: 0 0 2px #0000ff, 0 0 4px #0000ff;
+  }
+  75% { 
+    text-shadow: 0 0 2px #ff00ff, 0 0 4px #ff00ff;
+  }
+}
 `;
 
   const getSpecialStyle = (style) => {
@@ -265,6 +284,48 @@ function Chat({
         sparkleColor: "#ffd700", // White stars for rainbow style
         glowAnimation:
           "rainbow 3s linear infinite, glowRainbow 4s ease-in-out infinite",
+      },
+      emerald: {
+        gradient: "linear-gradient(90deg, #50C878, #3CB371, #50C878)",
+        sparkleColor: "#98FF98",
+        glowAnimation:
+          "shine 3s linear infinite, glowEmerald 2s ease-in-out infinite",
+      },
+      sunset: {
+        gradient: "linear-gradient(90deg, #FF6B6B, #FFB88C, #FF6B6B)",
+        sparkleColor: "#FFD700",
+        glowAnimation:
+          "shine 3s linear infinite, glowSunset 2s ease-in-out infinite",
+      },
+      ocean: {
+        gradient: "linear-gradient(90deg, #00B4DB, #0083B0, #00B4DB)",
+        sparkleColor: "#87CEEB",
+        glowAnimation:
+          "shine 3s linear infinite, glowOcean 2s ease-in-out infinite",
+      },
+      neon: {
+        gradient: "linear-gradient(90deg, #FF1493, #00FF00, #FF1493)",
+        sparkleColor: "#FFFFFF",
+        glowAnimation:
+          "shine 3s linear infinite, glowNeon 2s ease-in-out infinite",
+      },
+      galaxy: {
+        gradient: "linear-gradient(90deg, #663399, #BC13FE, #663399)",
+        sparkleColor: "#E6E6FA",
+        glowAnimation:
+          "shine 3s linear infinite, glowGalaxy 2s ease-in-out infinite",
+      },
+      fire: {
+        gradient: "linear-gradient(90deg, #FF4500, #FFA500, #FF4500)",
+        sparkleColor: "#FFD700",
+        glowAnimation:
+          "shine 3s linear infinite, glowFire 2s ease-in-out infinite",
+      },
+      arctic: {
+        gradient: "linear-gradient(90deg, #A5F2F3, #D7FFFE, #A5F2F3)",
+        sparkleColor: "#FFFFFF",
+        glowAnimation:
+          "shine 3s linear infinite, glowArctic 2s ease-in-out infinite",
       },
     };
 
