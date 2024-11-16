@@ -55,25 +55,45 @@ function Shoutout() {
 
     // List of banned words and their variations
     const bannedPatterns = [
-      /h[o0]rn[yi3]/, // matches: horny, h0rny, h0rni, etc.
-      /h[4a]rn[yi3]/, // matches: h4rny, harny, etc.
-      /h[o0]rn[e3]y/, // matches: horney, h0rney, etc.
-      /hrny/, // matches: hrny
-      /jaks/, // matches: jaks
-      /j[4a]ks/, // matches: j4ks
-      /nudes/, // matches: nudes
-      /n[0o]d[0o]s/, // matches: n0des, n00des, etc.
-      /nud[0o]s/, // matches: nuds, n0ds, etc.
-      /n[0o]d[0o]s/, // matches: n0d3s, n00d3s, etc.
-      /f[u0]ck/, // matches: fuck, f0ck, fuc, etc.
-      /f[4u]ck/, // matches: f4ck, etc.
-      /f[0o]ck/, // matches: f0ck, etc.
-      /h[oo]k[ups]/i, // matches: hookups, hook ups, etc.
-      /h[0o]ok[ups]/i, // matches: h0okups, h0ok ups, etc.
-      /h[4u]k[ups]/i, // matches: h4kups, h4k ups, etc.
-      /h[oo]k[0o]ups/i, // matches: hook0ups, hook0 ups, etc.
-      /h[oo]k[ups]{1,2}/i, // matches: hookups, hook up, etc.
-      /h[0o]ok[ups]{1,2}/i, // matches: h0okups, h0ok up, etc.
+      // English sexual terms
+      /h[o0]rn[yi3]/i, // horny
+      /h[4a]rn[yi3]/i, // h4rny
+      /h[o0]rn[e3]y/i, // horney
+      /f[u0]ck/i, // fuck
+      /f[4u]ck/i, // f4ck
+      /s[e3]x/i, // sex
+      /l[i1]b[o0]g/i, // libog
+      /k[a@]nt[o0]t/i, // kantot
+      /n[0o]d[0o]s/i, // nudes
+      /fubu/i, // fubu
+      /hook[ups]?/i, // hookups
+      /s[0o]m[0o]n[0o]s/i, // somn0s (slang for sexual acts)
+
+      // Tagalog/Cebuano sexual terms
+      /s3x/i, // s3x (common slang)
+      /[l1]ibog/i, // libog (arousal)
+      /[kq]antot/i, // kantot (to have sex)
+      /[b8]ab[a@]e/i, // babe
+      /[b8]oy/i, // boy
+      /[s5]exy/i, // sexy
+      /[s5]exy[ ]?time/i, // sexy time
+      /[s5]exy[ ]?girl/i, // sexy girl
+      /[s5]exy[ ]?boy/i, // sexy boy
+      /[s5]exy[ ]?babe/i, // sexy babe
+      /[s5]exy[ ]?fubu/i, // sexy fubu
+      /[s5]exy[ ]?hookup/i, // sexy hookup
+      /[s5]exy[ ]?partner/i, // sexy partner
+      /[s5]exy[ ]?friend/i, // sexy friend
+
+      // Phrases related to finding sex
+      /find[ ]?fubu/i, // find fubu
+      /find[ ]?hookup/i, // find hookup
+      /looking[ ]?for[ ]?sex/i, // looking for sex
+      /looking[ ]?for[ ]?fubu/i, // looking for fubu
+      /looking[ ]?for[ ]?hookup/i, // looking for hookup
+      /searching[ ]?for[ ]?sex/i, // searching for sex
+      /searching[ ]?for[ ]?fubu/i, // searching for fubu
+      /searching[ ]?for[ ]?hookup/i, // searching for hookup
     ];
 
     // Check if any banned pattern is found in the text
