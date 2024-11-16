@@ -68,6 +68,12 @@ function Shoutout() {
       /f[u0]ck/, // matches: fuck, f0ck, fuc, etc.
       /f[4u]ck/, // matches: f4ck, etc.
       /f[0o]ck/, // matches: f0ck, etc.
+      /h[oo]k[ups]/i, // matches: hookups, hook ups, etc.
+      /h[0o]ok[ups]/i, // matches: h0okups, h0ok ups, etc.
+      /h[4u]k[ups]/i, // matches: h4kups, h4k ups, etc.
+      /h[oo]k[0o]ups/i, // matches: hook0ups, hook0 ups, etc.
+      /h[oo]k[ups]{1,2}/i, // matches: hookups, hook up, etc.
+      /h[0o]ok[ups]{1,2}/i, // matches: h0okups, h0ok up, etc.
     ];
 
     // Check if any banned pattern is found in the text
