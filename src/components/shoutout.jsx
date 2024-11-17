@@ -94,6 +94,12 @@ function Shoutout() {
       /searching[ ]?for[ ]?sex/i, // searching for sex
       /searching[ ]?for[ ]?fubu/i, // searching for fubu
       /searching[ ]?for[ ]?hookup/i, // searching for hookup
+
+
+      /h[-o0]r[-n]y/i, // h-o-r-n-y, h0rny, h0rn-y, etc.
+      /h[-o0]r[-n][yi3]/i, // h-o-r-n-y, h0rny, h0rn[yi3], etc.
+      /h[-o0]rn[-yi3]/i, // h-o-rn-y, h0rn[yi3], etc.
+      /h[-o0]rn[4a]/i, // h-o-rn4, etc.
     ];
 
     // Check if any banned pattern is found in the text
