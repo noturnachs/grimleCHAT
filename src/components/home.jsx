@@ -12,6 +12,7 @@ import HOS from "./hallOfShame";
 import Survey from "./Survey";
 import Shoutout from "./shoutout";
 import { FiInfo } from "react-icons/fi";
+import ReportHistory from "./ReportHistory";
 
 // import Warning from "./warning"; // Import the Warning component
 
@@ -644,7 +645,6 @@ function Home() {
           </div>
         </div>
       </div>
-
       <Ads />
       {/* Conditional Modal Popup */}
       {isModalOpen && (
@@ -661,9 +661,14 @@ function Home() {
         </div>
       )}
       {/* <Survey /> */}
+      {visitorIdGenerated && (
+        <div className="w-full max-w-md mx-auto">
+          <ReportHistory visitorId={visitorId} />{" "}
+          {/* Make sure we're using visitorId state, not visitorIdRef */}
+        </div>
+      )}{" "}
       <HOS />
       <FAQ />
-
       <div className="mt-8 mb-6">
         <button
           onClick={handleReportClick}
@@ -697,7 +702,6 @@ function Home() {
           Found a bug? Let us know!
         </p>
       </div>
-
       <footer className="w-full py-6 bg-transparent text-white">
         <div className="max-w-screen-sm mx-auto px-4">
           <div className="flex items-center justify-center space-x-6 border-t border-gray-700 pt-6">

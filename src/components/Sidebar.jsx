@@ -61,7 +61,7 @@ function Sidebar({
           disabled={isSubmittingReport}
         />
 
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <label className="block text-white font-semibold mb-2">
             Attach a screenshot{" "}
             <span className="text-gray-400 text-[10px]">optional</span>
@@ -84,7 +84,7 @@ function Sidebar({
               <span className="ml-4 text-gray-300">{screenshot.name}</span>
             )}
           </div>
-        </div>
+        </div> */}
 
         <div className="flex justify-end space-x-4">
           <button
