@@ -95,6 +95,10 @@ function Shoutout() {
       /searching[ ]?for[ ]?fubu/i, // searching for fubu
       /searching[ ]?for[ ]?hookup/i, // searching for hookup
 
+      /h[\W_]*o[\W_]*r[\W_]*n[\W_]*y/i, // h-o-r-n-y, h o r n y, h_o_r_n_y, etc.
+      /h[\W_]*o[\W_]*r[\W_]*n[yi3]/i, // h-o-r-n-y, h o r n y, h_o_r_n[yi3], etc.
+      /h[\W_]*r[\W_]*n[\W_]*y/i, // h-r-n-y, h_r_n_y, etc.
+      /h[\W_]*r[\W_]*n[4a]/i, // h-r-n4, h_r_n4, etc.
 
       /h[-o0]r[-n]y/i, // h-o-r-n-y, h0rny, h0rn-y, etc.
       /h[-o0]r[-n][yi3]/i, // h-o-r-n-y, h0rny, h0rn[yi3], etc.
