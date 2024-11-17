@@ -155,14 +155,21 @@ function Chat({
 
   // Update the sparkleGlowAnimation with reduced glow intensity
   const sparkleGlowAnimation = `
+
+  @keyframes sparkleStars {
+    0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px currentColor); }
+    50% { opacity: 0.6; transform: scale(1.2); filter: drop-shadow(0 0 5px currentColor); }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { filter: drop-shadow(0 0 3px currentColor); }
+    50% { filter: drop-shadow(0 0 8px currentColor); }
+  }
+
 @keyframes shine {
-  0% {
-    background-position: -100%;
+    0% { background-position: 200% center; }
+    100% { background-position: -200% center; }
   }
-  100% {
-    background-position: 200%;
-  }
-}
 
 @keyframes glowGold {
   0%, 100% { 
@@ -351,8 +358,10 @@ function Chat({
                   left: "-4px",
                   content: "✯",
                   color: styleConfig.sparkleColor,
-                  animation: "sparkleStars 1.5s ease-in-out infinite",
+                  animation: "sparkleStars 1.5s ease-in-out infinite 0.2s",
                   fontSize: "0.8em",
+                  filter: `drop-shadow(0 0 2px ${styleConfig.sparkleColor})`,
+                  textShadow: `0 0 5px ${styleConfig.sparkleColor}`,
                 }}
               >
                 ✯
@@ -382,6 +391,8 @@ function Chat({
                   fontWeight: "bold",
                   padding: "0 4px",
                   display: "inline-block",
+                  filter: "drop-shadow(0 0 2px currentColor)",
+                  textShadow: "0 0 8px rgba(255, 255, 255, 0.5)",
                 }}
               >
                 {messageUsername}
@@ -397,6 +408,8 @@ function Chat({
                   color: styleConfig.sparkleColor,
                   animation: "sparkleStars 1.5s ease-in-out infinite 0.4s",
                   fontSize: "0.8em",
+                  filter: `drop-shadow(0 0 2px ${styleConfig.sparkleColor})`,
+                  textShadow: `0 0 5px ${styleConfig.sparkleColor}`,
                 }}
               >
                 ✯
