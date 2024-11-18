@@ -6,7 +6,7 @@ function Shoutout() {
   const [currentShoutoutIndex, setCurrentShoutoutIndex] = useState(0);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [remainingShoutouts, setRemainingShoutouts] = useState(5);
+  const [remainingShoutouts, setRemainingShoutouts] = useState(3);
   const [username, setUsername] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
