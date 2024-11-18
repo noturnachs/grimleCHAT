@@ -8,6 +8,8 @@ function Shoutout() {
   const [error, setError] = useState("");
   const [remainingShoutouts, setRemainingShoutouts] = useState(5);
   const [username, setUsername] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const VerifiedBadge = () => (
     <svg
@@ -113,25 +115,30 @@ function Shoutout() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccessMessage("");
+    setIsSubmitting(true);
 
     const trimmedMessage = message.trim();
     const trimmedUsername = username.trim();
+
     if (!trimmedMessage) {
       setError("Please enter a message");
+      setIsSubmitting(false);
       return;
     }
 
     if (!trimmedUsername) {
       setError("Please enter a username");
+      setIsSubmitting(false);
       return;
     }
 
-    // Check both username and message for inappropriate content
     if (
       containsInappropriateContent(trimmedMessage) ||
       containsInappropriateContent(trimmedUsername)
     ) {
       setError("Please keep the content appropriate");
+      setIsSubmitting(false);
       return;
     }
 
@@ -158,8 +165,9 @@ function Shoutout() {
         return;
       }
 
-      // Clear the message input
+      // Clear the message input and show success
       setMessage("");
+      setSuccessMessage("Shoutout posted successfully!");
 
       // Add the new shoutout to the existing shoutouts array
       const newShoutout = {
@@ -167,21 +175,24 @@ function Shoutout() {
         created_at: new Date().toISOString(),
       };
 
-      // Update shoutouts state with the new message
       setShoutouts((prevShoutouts) =>
         shuffleArray([newShoutout, ...prevShoutouts])
       );
-
-      // Reset the current index to show the new message
       setCurrentShoutoutIndex(0);
-
-      // Update remaining shoutouts
       checkRemainingShoutouts();
+
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
     } catch (error) {
       console.error("Error posting shoutout:", error);
       setError("Failed to post shoutout");
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
   // Add function to shuffle array
   const shuffleArray = (array) => {
     let shuffled = [...array];
@@ -209,8 +220,17 @@ function Shoutout() {
         <form onSubmit={handleSubmit} className="mb-4">
           <div className="flex flex-col space-y-2">
             <h1 className="text-xl font-bold text-white mb-4">To Everyone</h1>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-
+            {/* Status Messages */}
+            {error && (
+              <div className="bg-red-500/20 border border-red-500/50 text-red-400 px-3 py-2 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+            {successMessage && (
+              <div className="bg-green-500/20 border border-green-500/50 text-green-400 px-3 py-2 rounded-lg text-sm">
+                {successMessage}
+              </div>
+            )}
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
