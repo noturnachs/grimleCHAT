@@ -95,7 +95,7 @@ function Sidebar({
             Cancel
           </button>
           <button
-            onClick={handleReportSubmit}
+            onClick={handleReportSubmit} // Use the new wrapper function
             className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center"
             disabled={isSubmittingReport}
           >

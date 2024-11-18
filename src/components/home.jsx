@@ -663,10 +663,13 @@ function Home() {
       {/* <Survey /> */}
       {visitorIdGenerated && (
         <div className="w-full max-w-md mx-auto">
-          <ReportHistory visitorId={visitorId} />{" "}
-          {/* Make sure we're using visitorId state, not visitorIdRef */}
+          {console.log(
+            "Rendering ReportHistory with visitorId:",
+            localStorage.getItem("visitorId")
+          )}
+          <ReportHistory visitorId={localStorage.getItem("visitorId")} />
         </div>
-      )}{" "}
+      )}
       <HOS />
       <FAQ />
       <div className="mt-8 mb-6">

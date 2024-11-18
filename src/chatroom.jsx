@@ -216,14 +216,18 @@ function ChatRoom() {
   };
 
   const handleReportSubmit = async () => {
-    setIsSubmittingReport(true); // Start loader and disable input
+    setIsSubmittingReport(true);
     setReportError(null);
     setReportSuccess(null);
 
     const formData = new FormData();
-    formData.append("visitorId", partnerVisitorId);
+    formData.append("visitorId", partnerVisitorId); // The reported user's ID
     formData.append("reason", reportReason);
-    formData.append("room", room); // Add room ID to the report
+    formData.append("room", room);
+    formData.append(
+      "reportedByVisitorId",
+      state?.visitorId || localStorage.getItem("visitorId")
+    ); // Add reporter's ID
 
     if (screenshot) {
       formData.append("screenshot", screenshot);
@@ -254,7 +258,7 @@ function ChatRoom() {
       setReportSuccess(null);
     }
 
-    setIsSubmittingReport(false); // Stop loader
+    setIsSubmittingReport(false);
   };
 
   const fetchMissedMessages = () => {
@@ -812,6 +816,9 @@ function ChatRoom() {
                 sidebarRef={sidebarRef}
                 className="z-[9999]"
                 reportedUsername={partnerUsername} // Add this line
+                visitorId={
+                  state?.visitorId || localStorage.getItem("visitorId")
+                } // Add this line
               />
             )}
             <Chat

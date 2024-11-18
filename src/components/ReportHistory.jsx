@@ -17,17 +17,24 @@ function ReportHistory({ visitorId }) {
   useEffect(() => {
     const fetchReports = async () => {
       try {
+        console.log("Fetching reports for visitorId:", visitorId);
+
         const response = await fetch(
-          `${process.env.REACT_APP_SERVER_ORIGIN}/api/admin/reports`
+          `${process.env.REACT_APP_SERVER_ORIGIN}/api/reports/history/${visitorId}`
         );
         const data = await response.json();
-        // Filter reports for the current user
-        const userReports = data.filter(
-          (report) => report.visitor_id === visitorId
-        );
-        setReports(userReports);
+        console.log("Received reports data:", data);
+
+        // Check if data is an error message or array
+        if (Array.isArray(data)) {
+          setReports(data);
+        } else {
+          console.error("Unexpected data format:", data);
+          setReports([]);
+        }
       } catch (error) {
         console.error("Error fetching reports:", error);
+        setReports([]); // Set empty array on error
       } finally {
         setLoading(false);
       }
@@ -35,10 +42,15 @@ function ReportHistory({ visitorId }) {
 
     if (visitorId) {
       fetchReports();
+    } else {
+      console.log("No visitorId provided");
+      setReports([]); // Set empty array when no visitorId
     }
   }, [visitorId]);
 
   if (loading) {
+    console.log("Loading state:", { loading, reports, visitorId }); // Debug log
+
     return (
       <div className="mt-10 w-full max-w-md mb-10">
         <div className="bg-[#15202b] rounded-lg p-4 shadow-lg border border-gray-700/50">
@@ -71,6 +83,7 @@ function ReportHistory({ visitorId }) {
   }
 
   if (reports.length === 0) {
+    console.log("No reports found:", { reports, visitorId }); // Debug log
     return null;
   }
 
