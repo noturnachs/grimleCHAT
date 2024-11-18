@@ -240,7 +240,6 @@ function Home() {
           navigate("/banned");
         } else if (response.ok) {
           const data = await response.json();
-          console.log(data.message); // Handle successful identification
           setVisitorIdGenerated(true); // Set the state to true when visitorId is generated
         } else {
           console.error("Unexpected response:", response);
@@ -663,10 +662,6 @@ function Home() {
       {/* <Survey /> */}
       {visitorIdGenerated && (
         <div className="w-full max-w-md mx-auto">
-          {console.log(
-            "Rendering ReportHistory with visitorId:",
-            localStorage.getItem("visitorId")
-          )}
           <ReportHistory visitorId={localStorage.getItem("visitorId")} />
         </div>
       )}

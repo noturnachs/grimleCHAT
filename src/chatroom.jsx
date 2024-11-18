@@ -154,8 +154,6 @@ function ChatRoom() {
     }
 
     const handleTelegramMessage = (data) => {
-      console.log("Telegram message received:", data);
-
       // Add message to chat history as an admin message
       setMessages((prevMessages) => [
         ...prevMessages,
