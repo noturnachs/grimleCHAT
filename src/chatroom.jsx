@@ -57,6 +57,51 @@ function ChatRoom() {
   const [error, setError] = useState(null);
 
   const [adminPresent, setAdminPresent] = useState(false);
+  const [isAdminRequest, setIsAdminRequest] = useState(false);
+
+  // Add handler for admin requests
+  const handleAdminRequest = async () => {
+    setIsSubmittingReport(true);
+    setReportError(null);
+    setReportSuccess(null);
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_SERVER_ORIGIN}/api/admin/request`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            room,
+            reason: reportReason,
+            visitorId: state?.visitorId || localStorage.getItem("visitorId"),
+            username,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        setReportSuccess("Admin request sent successfully.");
+        setReportError(null);
+        setReportReason("");
+        setTimeout(() => {
+          setIsSidebarOpen(false);
+        }, 2000);
+      } else {
+        const errorData = await response.json();
+        setReportError(errorData.message || "Failed to request admin.");
+        setReportSuccess(null);
+      }
+    } catch (error) {
+      console.error("Error requesting admin:", error);
+      setReportError("An error occurred while requesting admin.");
+      setReportSuccess(null);
+    }
+
+    setIsSubmittingReport(false);
+  };
 
   const handleReply = (replyData) => {
     setReplyTo(replyData);
@@ -817,6 +862,9 @@ function ChatRoom() {
                 visitorId={
                   state?.visitorId || localStorage.getItem("visitorId")
                 } // Add this line
+                isAdminRequest={isAdminRequest}
+                setIsAdminRequest={setIsAdminRequest}
+                handleAdminRequest={handleAdminRequest}
               />
             )}
             <Chat

@@ -16,6 +16,9 @@ function Sidebar({
   sidebarRef,
   className,
   reportedUsername,
+  isAdminRequest,
+  setIsAdminRequest,
+  handleAdminRequest,
 }) {
   const textareaRef = useRef(null);
 
@@ -38,8 +41,35 @@ function Sidebar({
           <FaTimes size={20} />
         </button>
 
-        <h2 className="text-2xl font-bold mb-4 text-white">Report User</h2>
-        {reportedUsername && (
+        {/* Add toggle buttons for Report/Admin Request */}
+        <div className="flex mb-4 bg-gray-700 rounded-lg p-1">
+          <button
+            onClick={() => setIsAdminRequest(false)}
+            className={`flex-1 py-2 rounded-lg transition-colors ${
+              !isAdminRequest
+                ? "bg-blue-500 text-white"
+                : "text-gray-300 hover:bg-gray-600"
+            }`}
+          >
+            Report User
+          </button>
+          <button
+            onClick={() => setIsAdminRequest(true)}
+            className={`flex-1 py-2 rounded-lg transition-colors ${
+              isAdminRequest
+                ? "bg-blue-500 text-white"
+                : "text-gray-300 hover:bg-gray-600"
+            }`}
+          >
+            Request Admin
+          </button>
+        </div>
+
+        <h2 className="text-2xl font-bold mb-4 text-white">
+          {isAdminRequest ? "Request Admin Assistance" : "Report User"}
+        </h2>
+
+        {reportedUsername && !isAdminRequest && (
           <p className="text-lg text-gray-300 mb-4">
             Reporting user{" "}
             <span className="font-semibold text-red-600">
@@ -52,10 +82,13 @@ function Sidebar({
           <p className="text-green-500 mb-4">{reportSuccess}</p>
         )}
         <textarea
-          ref={textareaRef}
           value={reportReason}
           onChange={(e) => setReportReason(e.target.value)}
-          placeholder="Enter the reason for reporting (required)"
+          placeholder={
+            isAdminRequest
+              ? "Explain why you need admin assistance..."
+              : "Enter the reason for reporting..."
+          }
           className="w-full p-2 mb-4 bg-gray-700 text-white rounded-lg resize-none"
           rows={4}
           disabled={isSubmittingReport}
@@ -95,18 +128,23 @@ function Sidebar({
             Cancel
           </button>
           <button
-            onClick={handleReportSubmit} // Use the new wrapper function
+            onClick={isAdminRequest ? handleAdminRequest : handleReportSubmit}
             className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center"
             disabled={isSubmittingReport}
           >
             {isSubmittingReport ? (
-              <l-squircle
-                size="20"
-                stroke="3"
-                speed="1.5"
-                color="white"
-                className="mr-2"
-              />
+              <>
+                <l-squircle
+                  size="20"
+                  stroke="3"
+                  speed="1.5"
+                  color="white"
+                  className="mr-2"
+                />
+                Sending...
+              </>
+            ) : isAdminRequest ? (
+              "Request Admin"
             ) : (
               "Send Report"
             )}
