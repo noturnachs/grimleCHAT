@@ -5,7 +5,6 @@ import {
   FaImage,
   FaTimes,
   FaPlus,
-  FaStar,
   FaSmile,
 } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
@@ -13,10 +12,7 @@ import { CustomAudioPlayer } from "./CustomAudioPlayer";
 import autosize from "autosize";
 import RecordRTC from "recordrtc";
 import imageCompression from "browser-image-compression";
-import { GiphyFetch } from "@giphy/js-fetch-api";
 import EmojiPicker from "emoji-picker-react";
-
-const giphyFetch = new GiphyFetch("1BhL1pC32fiqXaGE9ckNqzbKYYkgPf3vC"); // Replace with your Giphy API key
 
 function ChatInput({
   sendMessage,
