@@ -35,18 +35,14 @@ function ChatInput({
   const [messageText, setMessageText] = useState("");
   const [confirmEndChat, setConfirmEndChat] = useState(false);
 
-  const [gifs, setGifs] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]);
   const [showOptions, setShowOptions] = useState(false);
   const [error, setError] = useState("");
   const optionsRef = useRef(null);
-  const [gifError, setGifError] = useState(""); // Add this state
-  const [gifSearchQuery, setGifSearchQuery] = useState(""); // New state for GIF search query
 
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [showGifPicker, setShowGifPicker] = useState(false);
   const [recordedAudio, setRecordedAudio] = useState(null);
   const [recordingError, setRecordingError] = useState(null);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -59,7 +55,6 @@ function ChatInput({
   const typingTimeoutRef = useRef(null);
   const springConfig = { stiffness: 300, damping: 20 };
   const scaleSpring = useSpring(0, springConfig);
-  const [preSavedStickers, setPreSavedStickers] = useState([]);
   const scaleTransform = useTransform(scaleSpring, (value) =>
     value > 0 ? 1 + value / 10 : 1
   );
@@ -185,90 +180,8 @@ function ChatInput({
     }
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (optionsRef.current && !optionsRef.current.contains(event.target)) {
-        setShowOptions(false);
-        setShowGifPicker(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [optionsRef]);
-
   const toggleOptions = () => {
     setShowOptions(!showOptions);
-  };
-
-  // const toggleGifPicker = () => {
-  //   setShowGifPicker(!showGifPicker);
-  //   setGifSearchQuery(""); // Clear the search query when the picker is toggled
-  //   if (!showGifPicker) {
-  //     fetchGifs(); // Fetch GIFs when the picker is opened
-  //   }
-  // };
-
-  const customFetch = async (fetchFunction) => {
-    try {
-      return await fetchFunction();
-    } catch (error) {
-      if (error.message.includes("API rate limit exceeded")) {
-        throw new Error("API rate limit exceeded"); // Throw the same error to be caught later
-      } else {
-        throw error; // Re-throw other errors
-      }
-    }
-  };
-
-  const fetchGifs = async (query = "") => {
-    try {
-      const { data } = query
-        ? await customFetch(() => giphyFetch.search(query, { limit: 10 }))
-        : await customFetch(() => giphyFetch.trending({ limit: 10 }));
-
-      setGifs(data);
-      setGifError(""); // Clear any previous error message
-    } catch (error) {
-      if (
-        error.message.includes("API rate limit exceeded") ||
-        error.message.includes("Unauthorized")
-      ) {
-        console.log("Giphy broke 😂");
-        // Fallback to fetching stickers if GIF fetch fails
-        fetchStickers(); // Call the fetchStickers function to get stickers
-      } else {
-        setGifError("Error loading GIFs. Please try again later.");
-      }
-    }
-  };
-
-  const fetchStickers = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_SERVER_ORIGIN}/api/stickers`
-      ); // Use the environment variable
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      if (data.success) {
-        setPreSavedStickers(data.stickers); // Set the stickers from the response
-      } else {
-        console.error("Failed to fetch stickers:", data.message);
-      }
-    } catch (error) {
-      console.error("Error fetching stickers:", error);
-      setError("Error loading stickers. Please try again later.");
-    }
-  };
-
-  const handleGifSelect = (gif) => {
-    // Send the GIF URL as part of the message
-    sendMessage({ username, gif: gif.images.original.url }); // Include the username and gif in the message
-    setShowGifPicker(false);
   };
 
   const fileInputRef = useRef(null);
@@ -388,22 +301,6 @@ function ChatInput({
       );
     }
   };
-
-  useEffect(() => {
-    socket.on("new-sticker", (newStickerUrl) => {
-      setPreSavedStickers((prevStickers) => {
-        // Ensure the sticker isn't duplicated
-        if (!prevStickers.includes(newStickerUrl)) {
-          return [...prevStickers, newStickerUrl];
-        }
-        return prevStickers;
-      });
-    });
-
-    return () => {
-      socket.off("new-sticker");
-    };
-  }, [socket]);
 
   const handleImageSelect = async (e) => {
     const files = Array.from(e.target.files);
@@ -703,42 +600,6 @@ function ChatInput({
                   >
                     Confetti
                   </motion.button>
-                </div>
-              )}
-
-              {/* GIF Picker */}
-              {showGifPicker && (
-                <div className="absolute left-full bottom-0 ml-2 bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-xl border border-gray-700/50 w-[300px]">
-                  <div className="p-3 space-y-3">
-                    <input
-                      type="text"
-                      value={gifSearchQuery}
-                      onChange={(e) => {
-                        setGifSearchQuery(e.target.value);
-                        fetchGifs(e.target.value);
-                      }}
-                      placeholder="Search GIFs..."
-                      className="w-full px-3 py-2 bg-gray-700/50 text-gray-200 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm"
-                    />
-
-                    <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800/50">
-                      {gifs.map((gif) => (
-                        <motion.button
-                          key={gif.id}
-                          onClick={() => handleGifSelect(gif)}
-                          className="rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500/50 transition-all duration-200"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <img
-                            src={gif.images.fixed_height.url}
-                            alt={gif.title}
-                            className="w-full h-auto"
-                          />
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               )}
             </div>
