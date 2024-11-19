@@ -6,7 +6,7 @@ function Shoutout() {
   const [currentShoutoutIndex, setCurrentShoutoutIndex] = useState(0);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [remainingShoutouts, setRemainingShoutouts] = useState(3);
+  const [remainingShoutouts, setRemainingShoutouts] = useState(null);
   const [username, setUsername] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -216,7 +216,7 @@ function Shoutout() {
 
   return (
     <div className="bg-[#15202b] rounded-lg shadow-lg p-4 mb-4 max-w-md mx-auto flex flex-col">
-      {remainingShoutouts > 0 ? (
+      {remainingShoutouts !== null ? (
         <form onSubmit={handleSubmit} className="mb-4">
           <div className="flex flex-col space-y-2">
             <h1 className="text-xl font-bold text-white mb-4">To Everyone</h1>
