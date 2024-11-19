@@ -203,13 +203,13 @@ function ChatInput({
     setShowOptions(!showOptions);
   };
 
-  const toggleGifPicker = () => {
-    setShowGifPicker(!showGifPicker);
-    setGifSearchQuery(""); // Clear the search query when the picker is toggled
-    if (!showGifPicker) {
-      fetchGifs(); // Fetch GIFs when the picker is opened
-    }
-  };
+  // const toggleGifPicker = () => {
+  //   setShowGifPicker(!showGifPicker);
+  //   setGifSearchQuery(""); // Clear the search query when the picker is toggled
+  //   if (!showGifPicker) {
+  //     fetchGifs(); // Fetch GIFs when the picker is opened
+  //   }
+  // };
 
   const customFetch = async (fetchFunction) => {
     try {
@@ -665,7 +665,7 @@ function ChatInput({
                 </motion.button>
 
                 {/* GIF Button (Admin only) */}
-                {username === "admin" && (
+                {/* {username === "admin" && (
                   <motion.button
                     type="button"
                     onClick={toggleGifPicker}
@@ -675,7 +675,7 @@ function ChatInput({
                   >
                     <span className="text-lg">🎉</span>
                   </motion.button>
-                )}
+                )} */}
 
                 {/* Effects Button (Admin only) */}
                 {username === "admin" && (
@@ -686,7 +686,7 @@ function ChatInput({
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <FaStar size={18} />
+                    🎉
                   </motion.button>
                 )}
               </div>
