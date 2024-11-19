@@ -11,12 +11,12 @@ function FAQ() {
       answer:
         "Our website's logic will try to find people who share the same interests as you. If no match is found with the same interests, you will be paired with a random person.",
     },
-    {
-      question:
-        "Why can't I read or send messages whenever I came back from switching an app?",
-      answer:
-        "Everything sent during the chat is not stored in any way, so whenever you leave the website, everything is gone. That is why you are unable to send or read new messages already. Just find another match.",
-    },
+    // {
+    //   question:
+    //     "Why can't I read or send messages whenever I came back from switching an app?",
+    //   answer:
+    //     "Everything sent during the chat is not stored in any way, so whenever you leave the website, everything is gone. That is why you are unable to send or read new messages already. Just find another match.",
+    // },
     {
       question: "What happens to inactive rooms after 5 minutes?",
       answer:
