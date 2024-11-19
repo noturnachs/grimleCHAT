@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion"; // Add AnimatePresence
 
-function Shoutout() {
+function Shoutout({ maintenanceMode }) {
   const [shoutouts, setShoutouts] = useState([]);
   const [currentShoutoutIndex, setCurrentShoutoutIndex] = useState(0);
   const [message, setMessage] = useState("");
@@ -220,6 +220,11 @@ function Shoutout() {
         <form onSubmit={handleSubmit} className="mb-4">
           <div className="flex flex-col space-y-2">
             <h1 className="text-xl font-bold text-white mb-4">To Everyone</h1>
+            {maintenanceMode && (
+              <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 px-3 py-2 rounded-lg text-sm">
+                System is under maintenance. Posting is temporarily disabled.
+              </div>
+            )}
             {/* Status Messages */}
             {error && (
               <div className="bg-red-500/20 border border-red-500/50 text-red-400 px-3 py-2 rounded-lg text-sm">
@@ -236,7 +241,7 @@ function Shoutout() {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Want to say something? Share your thoughts with everyone..."
               maxLength={100}
-              disabled={isSubmitting}
+              disabled={isSubmitting || maintenanceMode}
               className="w-full text-sm px-4 py-2 bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700/50 
               rounded-xl text-white placeholder:text-gray-400 
               focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 
@@ -250,23 +255,25 @@ function Shoutout() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="From?"
-                disabled={isSubmitting}
+                disabled={isSubmitting || maintenanceMode}
                 maxLength={20}
                 className="flex-1 text-sm px-4 py-2 bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700/50 
-             rounded-xl text-white placeholder:text-gray-400 
-             focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 
-             transition-all duration-300 outline-none
-             disabled:opacity-50 disabled:cursor-not-allowed"
+                rounded-xl text-white placeholder:text-gray-400 
+                focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 
+                transition-all duration-300 outline-none
+                disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || maintenanceMode}
                 className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 
-             transition-colors text-sm font-medium whitespace-nowrap
-             disabled:opacity-50 disabled:cursor-not-allowed
-             flex items-center gap-2"
+                transition-colors text-sm font-medium whitespace-nowrap
+                disabled:opacity-50 disabled:cursor-not-allowed
+                flex items-center gap-2"
               >
-                {isSubmitting ? (
+                {maintenanceMode ? (
+                  "Maintenance Mode"
+                ) : isSubmitting ? (
                   <>
                     <svg
                       className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"

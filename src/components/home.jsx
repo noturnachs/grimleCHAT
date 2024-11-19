@@ -9,7 +9,7 @@ import { FaFlag } from "react-icons/fa";
 import Ads from "./ads";
 import { FaFacebook } from "react-icons/fa";
 import HOS from "./hallOfShame";
-import Survey from "./Survey";
+// import Survey from "./Survey";
 import Shoutout from "./shoutout";
 import { FiInfo } from "react-icons/fi";
 import ReportHistory from "./ReportHistory";
@@ -54,7 +54,7 @@ function Digit({ place, value }) {
   return (
     <div style={{ height }} className="relative w-[1ch] tabular-nums">
       {[...Array(10).keys()].map((i) => (
-        <Number key={i} mv={animatedValue} number={i} />
+        <Number key={`${place}-${i}`} mv={animatedValue} number={i} />
       ))}
     </div>
   );
@@ -106,6 +106,35 @@ function Home() {
   const [specialToken, setSpecialToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+
+  // Add useEffect to listen for maintenance status
+  // Add this useEffect to fetch initial maintenance status
+  useEffect(() => {
+    const fetchMaintenanceStatus = async () => {
+      try {
+        const response = await fetch(`${SERVER_ORIGIN}/api/maintenance-status`);
+        if (response.ok) {
+          const data = await response.json();
+          setMaintenanceMode(data.enabled);
+        }
+      } catch (error) {
+        console.error("Error fetching maintenance status:", error);
+      }
+    };
+
+    fetchMaintenanceStatus(); // Initial fetch
+
+    // Listen for maintenance mode updates via socket
+    socket.on("maintenanceStatus", ({ enabled }) => {
+      setMaintenanceMode(enabled);
+    });
+
+    // Cleanup socket listener
+    return () => {
+      socket.off("maintenanceStatus");
+    };
+  }, []); // Empty dependency array means this runs once on mount
 
   useEffect(() => {
     async function generateFingerprint() {
@@ -342,8 +371,7 @@ function Home() {
       <Announcement />
       <div className="flex flex-col space-y-10 justify-center items-center md:flex-row md:space-x-5 md:space-y-0 ">
         <div className="mt-[15vh] md:mt-[20vh]  z-10">
-          <Shoutout />
-
+          <Shoutout maintenanceMode={maintenanceMode} />
           <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-full md:p-8 ">
             <div className="text-center space-y-3 mb-8">
               <h1 className="text-3xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 text-transparent bg-clip-text tracking-tight">
@@ -425,6 +453,7 @@ function Home() {
                 <input
                   id="username"
                   value={username}
+                  disabled={maintenanceMode}
                   placeholder="What should we call you?"
                   onChange={(e) => {
                     // Get the input value
@@ -439,10 +468,13 @@ function Home() {
                     setUsername(filteredValue);
                   }}
                   required
-                  className="w-full px-6 py-3.5 bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700/50 
-                  rounded-xl text-white placeholder:text-gray-400 
-                  focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 
-                  transition-all duration-300 outline-none"
+                  className={`w-full px-6 py-3.5 ${
+                    maintenanceMode
+                      ? "bg-gray-700 cursor-not-allowed"
+                      : "bg-gray-800/50"
+                  } backdrop-blur-sm border-2 border-gray-700/50 rounded-xl text-white 
+                  placeholder:text-gray-400 focus:border-blue-500/50 focus:ring-2 
+                  focus:ring-blue-500/20 transition-all duration-300 outline-none`}
                   type="text"
                 />
 
@@ -450,6 +482,7 @@ function Home() {
                   <input
                     id="interest"
                     value={interestInput}
+                    disabled={maintenanceMode}
                     placeholder="What are your interests?"
                     onChange={(e) => setInterestInput(e.target.value)}
                     onKeyDown={handleInterestKeyDown}
@@ -459,10 +492,13 @@ function Home() {
                         setInterestInput("");
                       }
                     }}
-                    className="w-full px-6 py-3.5 bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700/50 
-            rounded-xl text-white placeholder:text-gray-400 
-            focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 
-            transition-all duration-300 outline-none pr-12"
+                    className={`w-full px-6 py-3.5 ${
+                      maintenanceMode
+                        ? "bg-gray-700 cursor-not-allowed"
+                        : "bg-gray-800/50"
+                    } backdrop-blur-sm border-2 border-gray-700/50 rounded-xl text-white 
+                    placeholder:text-gray-400 focus:border-blue-500/50 focus:ring-2 
+                    focus:ring-blue-500/20 transition-all duration-300 outline-none`}
                     type="text"
                   />
                   <div
@@ -618,12 +654,14 @@ function Home() {
               {!showTerms && (
                 <button
                   type="submit"
-                  disabled={!visitorIdGenerated || isLoading}
+                  disabled={!visitorIdGenerated || isLoading || maintenanceMode}
                   className={`
                   w-full py-3.5 rounded-xl font-medium text-sm
                   transition-all duration-300
                   ${
-                    visitorIdGenerated && !isLoading
+                    maintenanceMode
+                      ? "bg-gray-700/50 text-gray-400 cursor-not-allowed"
+                      : visitorIdGenerated && !isLoading
                       ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white shadow-lg shadow-blue-500/20"
                       : "bg-gray-700/50 text-gray-400 cursor-not-allowed"
                   }
@@ -631,13 +669,21 @@ function Home() {
                 `}
                 >
                   <span className="relative z-10">
-                    {!visitorIdGenerated
+                    {maintenanceMode
+                      ? "System Under Maintenance"
+                      : !visitorIdGenerated
                       ? "Generating Visitor ID..."
                       : isLoading
                       ? "Loading..."
                       : "Are you ready?"}
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                  <div
+                    className={`
+                    absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 
+                    translate-y-full group-hover:translate-y-0 transition-transform duration-300
+                    ${maintenanceMode ? "hidden" : ""}
+                  `}
+                  />
                 </button>
               )}
             </form>

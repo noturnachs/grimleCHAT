@@ -60,9 +60,9 @@ function HOS() {
             scrollbarColor: "rgba(239, 68, 68, 0.2) rgba(31, 41, 55, 0.2)",
           }}
         >
-          {bannedUsers.map((user) => (
+          {bannedUsers.map((user, index) => (
             <div
-              key={user.id}
+              key={`${user.id}-${user.bannedAt}-${index}`}
               className="bg-[#192734] p-4 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-colors"
             >
               <div className="flex items-start justify-between">
