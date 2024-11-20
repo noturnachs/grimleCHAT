@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion"; // Add AnimatePresence
 
-function Shoutout({ maintenanceMode }) {
+function Shoutout({ maintenanceMode, socket }) {
   const [shoutouts, setShoutouts] = useState([]);
   const [currentShoutoutIndex, setCurrentShoutoutIndex] = useState(0);
   const [message, setMessage] = useState("");
@@ -10,6 +10,25 @@ function Shoutout({ maintenanceMode }) {
   const [username, setUsername] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    // Connect to socket
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    // Listen for new shoutouts
+    socket.on("newShoutout", (newShoutout) => {
+      setShoutouts((prevShoutouts) =>
+        shuffleArray([newShoutout, ...prevShoutouts])
+      );
+    });
+
+    // Cleanup on unmount
+    return () => {
+      socket.off("newShoutout");
+    };
+  }, [socket]);
 
   const VerifiedBadge = () => (
     <svg
