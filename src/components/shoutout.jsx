@@ -234,7 +234,7 @@ function Shoutout({ maintenanceMode, socket }) {
   }, [shoutouts.length]);
 
   return (
-    <div className="bg-[#15202b] rounded-lg shadow-lg p-4 mb-4 min-h-[280px] flex flex-col">
+    <div className="bg-[#15202b] rounded-lg shadow-lg p-4 mb-4 flex flex-col">
       {remainingShoutouts !== null ? (
         <form onSubmit={handleSubmit} className="mb-4">
           <div className="flex flex-col space-y-2">
