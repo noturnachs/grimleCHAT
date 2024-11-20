@@ -47,7 +47,7 @@ const Popup = ({ message, onClose, isHtml }) => {
             transition={{ duration: 0.3, ease: "easeOut" }}
             className="pointer-events-auto mx-auto max-w-md w-full"
           >
-            <div className="backdrop-blur-lg bg-white/10 rounded-2xl overflow-hidden shadow-2xl border border-white/20">
+            <div className="bg-white rounded-2xl overflow-hidden shadow-2xl">
               {/* Header */}
               <div className="bg-gradient-to-r from-indigo-600 to-blue-500 px-4 py-3 flex justify-between items-center">
                 <div className="flex items-center space-x-2">
@@ -80,8 +80,8 @@ const Popup = ({ message, onClose, isHtml }) => {
               {/* Message Content */}
               <div
                 ref={messageRef}
-                className="px-4 py-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md overflow-y-auto"
-                style={{ maxHeight: "40vh" }} // Limit height on mobile
+                className="px-4 py-3 bg-white dark:bg-gray-900 overflow-y-auto"
+                style={{ maxHeight: "40vh" }}
               >
                 <motion.div
                   initial={{ opacity: 0 }}
