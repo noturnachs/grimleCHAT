@@ -228,8 +228,54 @@ function Home() {
   };
 
   useEffect(() => {
-    // Request current user count when component mounts
+    // Ensure socket is connected
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    // Immediately request user count
     socket.emit("requestUserCount");
+
+    // Handle reconnection
+    socket.on("connect", () => {
+      socket.emit("requestUserCount");
+    });
+
+    // Handle user count updates
+    const handleUserCountUpdate = (count) => {
+      if (count === 0) {
+        // If count is 0, request again after a short delay
+        setTimeout(() => socket.emit("requestUserCount"), 1000);
+      } else {
+        setUserCount(count);
+      }
+    };
+
+    socket.on("userCountUpdate", handleUserCountUpdate);
+
+    // Set up periodic count updates
+    const countInterval = setInterval(() => {
+      socket.emit("requestUserCount");
+    }, 5000);
+
+    // Cleanup function
+    return () => {
+      socket.off("userCountUpdate", handleUserCountUpdate);
+      socket.off("connect");
+      clearInterval(countInterval);
+    };
+  }, []);
+
+  useEffect(() => {
+    const requestAndSetUserCount = () => {
+      socket.emit("requestUserCount");
+    };
+
+    // Request count immediately when component mounts
+    requestAndSetUserCount();
+
+    // Set up interval to request count periodically
+    const interval = setInterval(requestAndSetUserCount, 5000);
 
     const handleUserCountUpdate = (count) => {
       setUserCount(count);
@@ -237,9 +283,10 @@ function Home() {
 
     socket.on("userCountUpdate", handleUserCountUpdate);
 
-    // Clean up event listeners when component unmounts
+    // Clean up event listeners and interval when component unmounts
     return () => {
       socket.off("userCountUpdate", handleUserCountUpdate);
+      clearInterval(interval);
     };
   }, []);
 
