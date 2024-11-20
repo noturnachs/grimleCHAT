@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import DOMPurify from "dompurify";
+import { motion, AnimatePresence } from "framer-motion"; // Add framer-motion for smooth animations
 
 const Popup = ({ message, onClose, isHtml }) => {
   const [isVisible, setIsVisible] = useState(true);
@@ -36,44 +37,83 @@ const Popup = ({ message, onClose, isHtml }) => {
   };
 
   return (
-    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden z-50 transition-all duration-300 ease-in-out border border-gray-300">
-      <div className="bg-indigo-600 px-4 py-2 flex justify-between items-center">
-        <h1 className="text-white font-semibold text-sm">Admin Message</h1>
-        <button
-          onClick={onClose}
-          className="text-white hover:text-gray-200 transition-colors duration-200"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+    <AnimatePresence>
+      {isVisible && (
+        <div className="fixed inset-x-0 top-0 z-50 p-4 pointer-events-none">
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="pointer-events-auto mx-auto max-w-md w-full"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M6 18L18 6M6 6l12 12"
-            ></path>
-          </svg>
-        </button>
-      </div>
-      <div
-        ref={messageRef}
-        className="px-4 py-3 overflow-y-auto"
-        style={{ maxHeight: "200px", overflowY: "auto" }}
-      >
-        {message ? (
-          <div
-            className="text-gray-800 text-sm break-words"
-            dangerouslySetInnerHTML={createMarkup(message)}
-          />
-        ) : (
-          <p className="text-gray-800 text-sm">No message to display</p>
-        )}
-      </div>
-    </div>
+            <div className="backdrop-blur-lg bg-white/10 rounded-2xl overflow-hidden shadow-2xl border border-white/20">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-indigo-600 to-blue-500 px-4 py-3 flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                  <h1 className="text-white font-medium text-sm">
+                    Admin Message
+                  </h1>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="text-white/80 hover:text-white transition-colors duration-200 
+                           hover:bg-white/10 rounded-full p-1"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Message Content */}
+              <div
+                ref={messageRef}
+                className="px-4 py-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md overflow-y-auto"
+                style={{ maxHeight: "40vh" }} // Limit height on mobile
+              >
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="relative"
+                >
+                  {message ? (
+                    <div
+                      className="text-gray-700 dark:text-gray-200 text-sm leading-relaxed break-words"
+                      dangerouslySetInnerHTML={createMarkup(message)}
+                    />
+                  ) : (
+                    <p className="text-gray-500 dark:text-gray-400 text-sm italic">
+                      No message to display
+                    </p>
+                  )}
+                </motion.div>
+              </div>
+
+              {/* Progress Bar */}
+              <motion.div
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 8, ease: "linear" }}
+                className="h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 origin-left"
+              />
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };
 
