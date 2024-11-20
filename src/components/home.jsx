@@ -26,9 +26,9 @@ function Counter({ value }) {
   return (
     <div
       style={{ fontSize }}
-      className="flex space-x-2 overflow-hidden rounded-xl bg-gradient-to-r from-gray-900/80 to-gray-800/80 backdrop-blur-sm px-4 py-2 leading-none text-white border border-gray-700/30 shadow-lg"
+      className="flex justify-center items-center space-x-2 overflow-hidden rounded-xl bg-gradient-to-r from-gray-900/80 to-gray-800/80 backdrop-blur-sm px-4 py-2 leading-none text-white border border-gray-700/30 shadow-lg w-full"
     >
-      <div className="flex space-x-1">
+      <div className="flex items-center space-x-1">
         <Digit place={100000} value={value} />
         <Digit place={10000} value={value} />
         <Digit place={1000} value={value} />
@@ -367,10 +367,10 @@ function Home() {
   };
 
   return (
-    <div className="h-screen flex flex-col justify-start items-center bg-[#192734] p-4">
+    <div className="min-h-screen flex flex-col justify-start items-center bg-[#192734] p-4">
       <Announcement />
-      <div className="flex flex-col space-y-10 justify-center items-center md:flex-row md:space-x-5 md:space-y-0 ">
-        <div className="mt-[15vh] md:mt-[20vh]  z-10">
+      <div className="flex flex-col space-y-4 md:space-y-10 justify-center items-center md:flex-row md:space-x-5">
+        <div className="mt-[15vh] md:mt-[20vh] z-10">
           <Shoutout maintenanceMode={maintenanceMode} />
           <div className="bg-[#15202b] p-3 rounded-lg shadow-lg max-w-md w-full md:p-8 ">
             <div className="text-center space-y-3 mb-8">

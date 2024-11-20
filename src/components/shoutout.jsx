@@ -215,7 +215,7 @@ function Shoutout({ maintenanceMode }) {
   }, [shoutouts.length]);
 
   return (
-    <div className="bg-[#15202b] rounded-lg shadow-lg p-4 mb-4 max-w-md mx-auto flex flex-col">
+    <div className="bg-[#15202b] rounded-lg shadow-lg p-4 mb-4 min-h-[280px] flex flex-col">
       {remainingShoutouts !== null ? (
         <form onSubmit={handleSubmit} className="mb-4">
           <div className="flex flex-col space-y-2">
@@ -266,7 +266,7 @@ function Shoutout({ maintenanceMode }) {
               <button
                 type="submit"
                 disabled={isSubmitting || maintenanceMode}
-                className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 
+                className="px-3 md:px-6 py-2 bg-[#1d9bf0] text-white rounded-lg
                 transition-colors text-sm font-medium whitespace-nowrap
                 disabled:opacity-50 disabled:cursor-not-allowed
                 flex items-center gap-2"
@@ -298,16 +298,16 @@ function Shoutout({ maintenanceMode }) {
                     Posting...
                   </>
                 ) : (
-                  "Post Shoutout"
+                  "Post"
                 )}
               </button>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-400">
-                {remainingShoutouts} shoutouts remaining today
+              <span className="text-[10px] text-gray-400">
+                {remainingShoutouts} posts remaining today
               </span>
-              <span className="text-xs text-red-300 italic">
-                Shoutouts only last for 20 minutes
+              <span className="text-[10px] text-red-300 italic">
+                Posts only last for 20 mins
               </span>
             </div>
           </div>
